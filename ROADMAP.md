@@ -11,3 +11,8 @@
 
 ## LATER
 - MCP-verktyg för riktig Codex-arbetsledare att delegera och granska; leverantörsadaptrar för andra modeller.
+
+### v0.11.3
+NOW: Codex-arbetsledare för läsbaserade planförslag med separat mänskligt godkännande, tydligare autoarbetsstatus.
+NEXT: permanent backend-scheduler och separata arbetsytor för parallella Codex-agenter; verifierad agentanimation.
+LATER: Gemini-adapter med konfigurerbara kostnads-/takregler och kontoverifierade kvoter; specialiserade stationer.

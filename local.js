@@ -70,6 +70,11 @@ window.pixelWorksSkillsLive=async function(slug,agentId){
 
 // Arbetsorder: passiv projektkö, sorterad efter prioritet och manuell ordning.
 let activeOrderStation=null, queueRun=null, studioAuto=null;
+function dispatchOfficeStatus(message){
+ const hint=document.querySelector('.office-hint-right');if(hint)hint.textContent='🤖 Autoarbete: '+message;
+ const badge=document.querySelector('#studioAutoStatus');if(badge)badge.textContent=message;
+}
+
 function sortedOrders(items,station){return items.filter(o=>o.station===station).sort((a,b)=>a.priority-b.priority||items.indexOf(a)-items.indexOf(b));}
 async function launchOrder(slug,order){
   const mandate=(await api('/api/projects/'+slug+'/mandate')).mandate;
@@ -94,13 +99,13 @@ async function startQueue(slug,station){
 // specific authorized employee; each execution still passes normal API checks.
 async function stopStudioAuto(message='Autoarbete pausat'){
  studioAuto=null;
- const badge=document.querySelector('#studioAutoStatus');if(badge)badge.textContent='⏸ '+message;
+ dispatchOfficeStatus('⏸ '+message);
 }
 async function runStudioAuto(slug){
  if(!studioAuto||studioAuto.slug!==slug)return;
  try{
   const plan=await api('/api/projects/'+slug+'/dispatch');
-  if(!plan.next){await stopStudioAuto(plan.workspace_busy?'Arbetsytan upptagen':'Inga behöriga jobb');return;}
+  if(!plan.next){const reason=plan.workspace_busy?'Väntar på ledig arbetsyta':plan.waiting===0?'Inga väntande arbetsorder':(plan.blocked[0]?.reason||'Ingen tillgänglig behörig agent');await stopStudioAuto(reason);return;}
   const next=plan.next;
   // Server controls both station access and exclusive station ownership.
   await api('/api/projects/'+slug+'/station',{agent_id:next.agent_id,station:next.station});
@@ -111,7 +116,7 @@ async function runStudioAuto(slug){
   currentLiveJob={id:jobId,project:slug,agent_id:next.agent_id,agent_name:next.agent_name,
    station:next.station,instruction:next.instruction,state:'queued',events:[]};
   sessionStorage.setItem(LIVE_SESSION_KEY,jobId);lastJobState='';liveSpeechFresh=true;liveSpeechInitialized=false;
-  const badge=document.querySelector('#studioAutoStatus');if(badge)badge.textContent='▶ '+next.agent_name+' · '+next.station;
+  dispatchOfficeStatus('🔴 '+next.agent_name+' arbetar vid '+next.station+' · session '+jobId);
   await refreshOrderBadges(slug);
   await pollLiveJob();
  }catch(error){await stopStudioAuto('Pausad: '+error.message);alert('Autoarbete pausat: '+error.message);}
@@ -120,19 +125,54 @@ async function studioAutoControls(slug){
  try{
   const plan=await api('/api/projects/'+slug+'/dispatch');
   const running=studioAuto?.slug===slug;
+  const live=jobId?currentLiveJob:null;
+  const jobMessage=live?.project===slug&&['queued','running'].includes(live.state)?`<p class="state">🔴 Verklig Codex-session: ${esc(live.agent_name||'Agent')} · ${esc(live.state)} · ${esc(live.id)}</p>`:'';
   const message=plan.next?'Nästa: '+plan.next.agent_name+' → '+plan.next.station+' (P'+plan.next.priority+')':
    plan.workspace_busy?'Arbetsytan är upptagen':plan.waiting+' väntande · '+(plan.blocked[0]?.reason||'Inga tillgängliga uppdrag');
-  view(`<h3>🤖 STUDIO DISPATCH</h3><p>Välj <b>Självständig</b> eller <b>Specialist</b> på en anställd för att den ska kunna ta jobb. Stationsbehörigheter gäller alltid.</p><p class="state">${esc(message)}</p><p>Autoarbete körs endast medan den här webbläsarfliken är aktiv. Ett Codex-jobb per projekt; inga körningar återupptas automatiskt efter omstart.</p><p id="studioAutoStatus">${running?'▶ Autoarbete på':'⏸ Autoarbete av'}</p><button id="studioAutoToggle">${running?'⏸ Pausa nya jobb':'▶ Starta godkänd arbetskö'}</button><button id="studioAutoBack" class="alt">Till kontoret</button>`);
-  $('#studioAutoBack').onclick=()=>dialog.close();
+  view(`<h3>🤖 STUDIO DISPATCH</h3><p>Välj <b>Självständig</b> eller <b>Specialist</b> på en anställd för att den ska kunna ta jobb. Stationsbehörigheter gäller alltid.</p><p class="state">${esc(message)}</p><p>Autoarbete körs endast medan den här webbläsarfliken är aktiv. Ett Codex-jobb per projekt; inga körningar återupptas automatiskt efter omstart.</p>${jobMessage}<p id="studioAutoStatus">${running?'▶ Autoarbete på':'⏸ Autoarbete av'}</p><button id="studioAutoToggle">${running?'⏸ Pausa nya jobb':'▶ Starta godkänd arbetskö'}</button><button id="studioLead" class="alt">👔 Arbetsledaren</button><button id="studioAutoBack" class="alt">Till kontoret</button>`);
+  $('#studioAutoBack').onclick=()=>dialog.close();$('#studioLead').onclick=()=>leadStudio(slug);
   $('#studioAutoToggle').onclick=async()=>{
    if(studioAuto?.slug===slug){await stopStudioAuto();return studioAutoControls(slug);}
    const mandate=(await api('/api/projects/'+slug+'/mandate')).mandate;
    if(!mandate.enabled){alert('Ge först ett bestående projektmandat för Codex.');return;}
    if(!confirm('Starta automatiskt godkända arbetsorder i '+slug+'?\nEtt jobb i taget. Stoppa nya starter med Pausa.'))return;
-   studioAuto={slug};dialog.close();await runStudioAuto(slug);
+   studioAuto={slug};dialog.close();dispatchOfficeStatus('⏳ söker behörig agent…');await runStudioAuto(slug);
   };
  }catch(e){view('<p class="error">'+esc(e.message)+'</p>');}
 }
+
+// Codex-arbetsledaren only proposes tasks; accepting one creates an ordinary work order.
+async function leadStudio(slug){
+ try{
+  const staff=(await api('/api/projects/'+slug+'/staff')).staff.filter(a=>a.role_type==='lead'&&a.provider==='codex');
+  const data=(await api('/api/projects/'+slug+'/lead')).plans;
+  const latest=data.at(-1);
+  const tasks=latest?.tasks||[];
+  view(`<section class="local-screen"><h3>👔 ARBETSLEDAREN · ${esc(slug)}</h3>
+   <p class="local-note">Codex läser Game Bible och skapar <b>förslag</b> – ingen kod körs eller ändras vid planering. Du godkänner varje arbetsorder.</p>
+   ${staff.length?`<label>Välj arbetsledare<select id="leadAgent">${staff.map(a=>`<option value="${esc(a.id)}">${esc(a.name)}</option>`).join('')}</select></label>`:'<p class="error">Anställ eller ändra yrke till Arbetsledare (Codex) först.</p>'}
+   <label>Vad vill du att studion ska uppnå?<textarea id="leadObjective" maxlength="1500" rows="3" placeholder="Exempel: Gör Bläck-Berit till en oförglömlig NPC med ett litet fiskäventyr."></textarea></label>
+   <div class="local-actions"><button id="leadPlan" ${staff.length?'':'disabled'}>🧠 Be Codex planera</button><button id="leadBack" class="alt">Tillbaka</button></div>
+   <p class="local-note" id="leadStatus">AI-planering kräver en uttrycklig knapptryckning. Molnmodeller är inte anslutna.</p>
+   ${latest?`<h3>📋 Senaste plan · ${esc(latest.agent_name)}</h3><p>${esc(latest.summary||'Ingen sammanfattning')}</p><div class="station-queue">${tasks.map(x=>`<div class="line"><b>${esc(x.station)} · P${x.priority} · ${esc(x.state)}</b><p>${esc(x.instruction)}</p>${x.state==='proposed'?`<button data-lead="accept" data-task="${esc(x.id)}">✓ Godkänn arbetsorder</button><button class="alt" data-lead="reject" data-task="${esc(x.id)}">✕ Avvisa</button>`:''}</div>`).join('')}</div>`:''}</section>`);
+  $('#leadBack').onclick=()=>studioAutoControls(slug);
+  $('#leadPlan')?.addEventListener('click',async()=>{
+   const objective=$('#leadObjective').value.trim();if(objective.length<10){$('#leadStatus').textContent='Beskriv målet med minst 10 tecken.';return;}
+   if(!confirm('Be Codex planera detta mål i läsläge? Inga arbetsorder läggs i kön automatiskt.'))return;
+   $('#leadPlan').disabled=true;$('#leadStatus').textContent='🧠 Codex planerar i läsläge…';
+   try{await api('/api/projects/'+slug+'/lead',{action:'plan',objective,agent_id:$('#leadAgent').value,approval:'ASK_CODEX_TO_PLAN'});await leadStudio(slug);}
+   catch(e){$('#leadStatus').textContent='⚠ '+e.message;$('#leadPlan').disabled=false;}
+  });
+  dialog.querySelectorAll('[data-lead]').forEach(b=>b.onclick=async()=>{
+   try{const action=b.dataset.lead;if(action==='accept'&&!confirm('Lägg förslaget i projektets vanliga arbetskö?'))return;
+    await api('/api/projects/'+slug+'/lead',{action,plan_id:latest.id,task_id:b.dataset.task,approval:'ACCEPT_LEAD_TASK'});
+    await refreshOrderBadges(slug);await leadStudio(slug);
+   }catch(e){alert('Kunde inte behandla förslaget: '+e.message)}
+  });
+ }catch(e){view('<p class="error">Arbetsledaren: '+esc(e.message)+'</p>')}
+}
+window.pixelWorksLeadStudio=leadStudio;
+
 window.pixelWorksStudioDispatch=studioAutoControls;
 // A station may eventually supply its own interface; shared work orders remain the only source of truth.
 const TASK_CATALOG={
@@ -217,10 +257,11 @@ async function talkLive(slug,agentId){
       <div class="state"><b>Senaste egna uppdrag</b><p>${esc(record?.instruction||'Den här anställda har ingen registrerad Codex-session i den aktiva serverprocessen.')}</p></div>
       <h3>📡 Faktiska sessionshändelser · ${esc(name)}</h3><div class="log">${events.length?events.slice(-15).reverse().map(e=>esc(e.label+' – '+e.detail)).join('\n\n'):'Inga verifierade händelser för den här agenten.'}</div>
       <p class="local-note">Detta är en statusvy, inte en realtidschatt. Historiska sessioner från före serverstart syns via rapporterna.</p>
-      <div class="local-actions"><button id="talkRefresh">↻ Uppdatera</button><button id="talkRaw" ${record?'':'disabled'}>Teknisk logg</button><button id="talkQueue">📄 Arbetsorder</button><button id="talkClose" class="alt">Stäng</button></div>`);
+      <div class="local-actions"><button id="talkRefresh">↻ Uppdatera</button><button id="talkRaw" ${record?'':'disabled'}>Teknisk logg</button><button id="talkQueue">📄 Arbetsorder</button>${agent?.role_type==='lead'?'<button id="talkLead">👔 Planera arbete</button>':''}<button id="talkClose" class="alt">Stäng</button></div>`);
     $('#talkRefresh').onclick=render;
     $('#talkRaw').onclick=()=>{if(record){jobId=record.id;showJob();}};
     $('#talkQueue').onclick=()=>stationOrders(slug,agent?.station==='cafe'?'code':agent?.station||'code');
+    $('#talkLead')?.addEventListener('click',()=>leadStudio(slug));
     $('#talkClose').onclick=()=>dialog.close();
   };await render();
 }

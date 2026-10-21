@@ -19,3 +19,9 @@ Separata Codex-processer som skriver samtidigt i samma projekt är **inte** akti
 ## v0.11.2 – Studio Dispatch
 
 Öppna ett arbetsbord och välj **🤖 Autoarbete**. Backend visar en tillåten nästa arbetsorder. För att faktiskt köra behövs ett uttryckligt startbeslut, ett aktivt projektmandat och en agent vars arbetsbeteende i personalprofilen är **Specialist** eller **Självständig**. Automatiska fortsättningar sker endast medan denna webbläsarflik är öppen. **Pausa nya starter** via samma knapp. Vid fel pausas fortsatt körning. Systemet kör fortfarande högst en skrivande Codex-session per projekt och skapar aldrig nya arbetsorder på egen hand. Detta är ett första opt-in-dispatchflöde, inte en permanent serverscheduler eller MCP-arbetsledare.
+
+## v0.11.3 – Arbetsledaren och tydligare autoarbete
+
+Öppna **🤖 Autoarbete → 👔 Arbetsledaren** eller välj en agent med yrke **Arbetsledare** och **Planera arbete**. En explicit bekräftelse låter Codex CLI föreslå högst åtta arbetsorder, med projektets Game Bible som kontext. Codex körs i `read-only` och får inte ändra spelkoden under planeringen. Varje förslag godkänns eller avvisas separat; först efter godkännande läggs det till i den vanliga kön. **Google Gemini/Gemma är ännu inte inkopplade** och inga molnkvoter påstås vara verifierade.
+
+**Autoarbete är fortfarande webbläsarstyrt.** Efter att du tryckt på Starta godkänd arbetskö visas status i kontorets informationsrad: söker agent, arbetar med namngiven verklig Codex-session, väntar på arbetsyta eller pausad med förklaring. Om inget händer, kontrollera först att det finns väntande arbetsorder, aktivt projektmandat och en anställd med beteende Självständig eller Specialist vid tillåtet hemmabord. En redan färdig eller manuellt markerad order startas inte igen.

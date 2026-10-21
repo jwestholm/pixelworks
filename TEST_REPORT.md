@@ -1,9 +1,9 @@
-# Testrapport – v0.11.2
+# Testprotokoll – Pixel Works v0.11.3
 
-- `python -m unittest discover -s backend -p 'test*.py' -q`: **80 tester OK**, däribland 6 nya tester i `backend/test_dispatch_v0112.py`.
+- `python -m unittest discover -s backend -p 'test*.py' -q`: **86 tester OK**.
 - `node --check local.js`: **OK**.
-- `node test-station-creator.mjs`: **PASS**.
-- `node test-recruit-routing.mjs`: **PASS**.
-- Övriga MJS-modell- och navigeringstester kördes också och passerade.
+- Befintliga `test-*.mjs`: **OK**.
+- Ny arbetsledare: planering i uttryckligt läsläge, schemaval, begränsad uppgiftslista, godkännande/avvisning och arbetsorderkö – testat utan externa AI-anrop.
+- Autoarbete: status synlig i kontorets informationsrad samt verkligt sessions-ID vid start.
 
-Testad i lokal isolerad temporär projektmiljö. **Ingen verklig Codex-process kördes** och ingen användarprojektmapp eller GitHub-repo ändrades. Visuell Firefox- och faktisk live-kötestning återstår.
+**Ej verifierat:** Verklig Codex-planering, faktisk Google API-anslutning, automatisk jobbkörning på användarens dator och visuell Firefox-verifiering. Inga användarprojekt eller GitHub-grenar ändrades. Autoarbete kräver öppen webbläsarflik och högst ett skrivande jobb per projekt.
