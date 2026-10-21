@@ -1,0 +1,21 @@
+// Regression: rendering the staff list must not eagerly open Skills.
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const source = fs.readFileSync(new URL('./local.js', import.meta.url), 'utf8');
+const match = source.match(/^\s*dialog\.querySelectorAll\('\[data-skill-agent\]'\)\.forEach\(b=>b\.onclick=.*\);\s*$/m);
+assert.ok(match, 'Skills click-handler registration missing');
+const buttons = [ {dataset:{skillAgent:'agent-alpha'}}, {dataset:{skillAgent:'agent-beta'}} ];
+const invocations=[];
+const sandbox={dialog:{querySelectorAll(selector){assert.equal(selector,'[data-skill-agent]');return buttons;}},window:{pixelWorksSkillsLive(slug,id){invocations.push([slug,id]);}} ,slug:'minesweeper'};
+vm.runInNewContext(match[0],sandbox);
+assert.equal(invocations.length,0,'Skills opened just by rendering the staff list');
+assert.equal(typeof buttons[0].onclick,'function');
+assert.equal(typeof buttons[1].onclick,'function');
+buttons[1].onclick();
+assert.deepEqual(invocations,[['minesweeper','agent-beta']], 'Skills must open only for clicked employee');
+buttons[0].onclick();
+assert.deepEqual(invocations,[['minesweeper','agent-beta'],['minesweeper','agent-alpha']]);
+assert.match(source,/id="hireLiveYes"/,'Recruit action must exist');
+assert.match(source,/\$\('#hireLiveYes'\)\.onclick=/,'Recruit action must be wired');
+console.log('PASS recruit routing: no eager Skills dialog, exact agent on click, recruit button wired');

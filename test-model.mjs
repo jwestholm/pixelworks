@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {GameModel} from './src/model.js';
+const m=new GameModel();
+const st=m.getStation('art');assert.ok(st);
+const project=m.activeProjectId;
+const id=m.requestDecision({title:'Skriva i repo?',message:'Godkänna demo?' });
+assert.equal(m.mailbox.find(x=>x.id===id).outcome,null);
+assert.equal(m.respondDecision(id,true),true);
+assert.equal(m.mailbox.find(x=>x.id===id).outcome,'approved');
+assert.equal(m.respondDecision(id,false),false);
+m.deleteMail(id);assert.equal(m.mailbox.some(x=>x.id===id),false);
+const a=m.project.agents[0];const note=m.addStationNote('art','Grisen är grön men ska vara rosa.',a.id);
+assert.ok(note);assert.equal(note.assignee,a.id);assert.equal(note.requiredSkill,'art');assert.equal(m.getStationNotes('art').length,1);
+m.switchProject('aurora-relay');assert.equal(m.getStationNotes('art').length,0);assert.equal(m.mailbox.some(x=>x.id===id),false);
+m.switchProject(project);assert.equal(m.getStationNotes('art').length,1);
+assert.ok(m.getProgress().total>0);
+console.log('PASS: beslut ja/nej, dubbelbeslut, borttag, stationslapp, ägare, skill, projektisolering, status');

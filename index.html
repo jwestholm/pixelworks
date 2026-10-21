@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#171a2b" />
+  <title>Pixel Works — Studio Simulator</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="module" src="./local.js"></script>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar pixel-panel">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <div>
+          <div class="eyebrow">PIXEL WORKS · STUDIO SIMULATOR</div>
+          <div class="brand-title">Pixel Works <span class="version">v0.11.1.1</span></div>
+        </div>
+      </div>
+
+      <nav class="game-actions"><button class="pixel-button" id="newProjectBtn">✦ Ny produktion</button><button class="pixel-button secondary" id="hireBtn">✚ Rekrytera</button><button class="pixel-button secondary" id="deskBtn">✉ Mitt skrivbord <b id="mailCount">0</b></button><button class="pixel-button secondary" id="studioBtn">▤ Studio</button></nav><div class="project-switcher">
+        <label for="projectSelect">PROJEKT</label>
+        <select id="projectSelect" aria-label="Välj projekt"></select>
+      </div>
+
+      <div class="top-statuses"><div class="status-pill credit-pill">🪙 <strong id="creditBalance">48 000</strong> <span class="tiny-label">PK</span> <span id="creditBurn">−0/h</span></div>
+        <div id="storageLiveStatus" class="status-pill demo-pill">LAGRING: EJ VERIFIERAD</div><div class="status-pill demo-pill" id="agentModeBadge"><span class="dot blink"></span> DEMO / SIMULERAT</div>
+        <div class="status-pill"><span class="tiny-label">REAL KVOT</span><strong>okänt</strong></div>
+        <button id="pauseSimBtn" class="pixel-button secondary" type="button">Pausa simulering</button>
+      </div>
+    </header>
+
+    <main class="game-layout">
+      <section class="office-wrap pixel-panel" aria-label="Pixelkontor">
+        <div class="office-toolbar">
+          <div>
+            <span class="room-title" id="projectTitle">—</span>
+            <span class="room-subtitle" id="projectGoal">—</span>
+          </div>
+          <div class="legend" aria-label="Statusförklaring">
+            <span><i class="legend-dot idle"></i>ledig</span>
+            <span><i class="legend-dot working"></i>arbetar</span>
+            <span><i class="legend-dot blocked"></i>blockerad</span>
+            <span><i class="legend-dot done"></i>klar</span>
+          </div>
+        </div>
+
+        <div id="officeStage" class="office-stage" tabindex="0" aria-label="Interaktivt kontor. Dra agenter till arbetsstationer.">
+          <div class="skyline" aria-hidden="true">
+            <div class="window-grid"></div>
+            <div class="city-block b1"></div><div class="city-block b2"></div><div class="city-block b3"></div>
+          </div>
+          <div class="floor" aria-hidden="true"></div>
+          <div class="wall wall-left" aria-hidden="true"></div>
+          <div class="wall wall-back" aria-hidden="true"></div>
+          <div class="neon-sign" aria-hidden="true">BUILD // TEST // SHIP</div>
+
+          <div id="stationLayer" class="station-layer"></div>
+          <div id="agentLayer" class="agent-layer"></div><button class="office-prop paper-prop" id="officeDesk" title="Läs rapporter">✉<small>DITT SKRIVBORD</small><b id="deskAlert" class="desk-alert">!</b></button><button class="office-prop board-prop" id="officeBoard" title="Projektframsteg">▤<small>PROJEKTSTATUS</small></button><button class="office-prop hire-prop" id="officeHire" title="Rekrytera">✦<small>REKRYTERING</small></button>
+          <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
+        </div>
+
+        <div class="office-hint">
+          <span class="keycap">TIP</span> Dra en agent till en station, eller klicka för att öppna agentkortet.
+          <span class="office-hint-right">DEMO-miljö tills en verklig Codex-session startas.</span>
+        </div>
+      </section>
+
+      <aside class="right-rail">
+        <section class="pixel-panel mission-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">UPPDRAG</span>
+              <h2>Mission Board</h2>
+            </div>
+            <button id="newTaskBtn" class="pixel-button compact" type="button">+ Nytt</button>
+          </div>
+          <div class="lead-strip" id="leadStrip"></div>
+          <div id="taskList" class="task-list"></div>
+        </section>
+
+        <section class="pixel-panel event-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">HÄNDELSER</span>
+              <h2>Live feed <span class="demo-tag">DEMO</span></h2>
+            </div>
+            <button id="clearEventsBtn" class="icon-button" title="Rensa feed" aria-label="Rensa eventfeed">×</button>
+          </div>
+          <div id="eventFeed" class="event-feed" aria-live="polite"></div>
+        </section>
+      </aside>
+    </main>
+
+    <section id="agentDrawer" class="agent-drawer pixel-panel" aria-hidden="true">
+      <button id="closeDrawerBtn" class="drawer-close" aria-label="Stäng agentpanel">×</button>
+      <div id="agentDrawerContent"></div>
+    </section>
+
+    <dialog id="taskDialog" class="pixel-dialog">
+      <form id="taskForm" method="dialog">
+        <div class="dialog-title-row">
+          <div>
+            <span class="eyebrow">NYTT UPPDRAG</span>
+            <h2>Skapa mission card</h2>
+          </div>
+          <button class="icon-button" value="cancel" formmethod="dialog" aria-label="Stäng">×</button>
+        </div>
+        <label>Mål
+          <input name="title" required maxlength="90" placeholder="Ex. Förbättra onboarding-flödet" />
+        </label>
+        <label>Deluppgift / acceptanskriterium
+          <textarea name="details" rows="3" maxlength="220" placeholder="Beskriv ett konkret, verifierbart nästa steg"></textarea>
+        </label>
+        <div class="form-row">
+          <label>Prioritet
+            <select name="priority"><option value="high">Hög</option><option value="normal" selected>Normal</option><option value="low">Låg</option></select>
+          </label>
+          <label>Tilldela
+            <select name="assignee" id="taskAssignee"></select>
+          </label>
+        </div>
+        <div class="dialog-actions">
+          <button class="pixel-button secondary" value="cancel" formmethod="dialog">Avbryt</button>
+          <button class="pixel-button" value="default" type="submit">Skapa uppdrag</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="gameDialog" class="pixel-dialog game-dialog"><div id="gameDialogContent"></div></dialog>
+    <div id="toastLayer" class="toast-layer" aria-live="polite"></div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
