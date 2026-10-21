@@ -23,7 +23,7 @@ from urllib.parse import urlparse, unquote
 from mimetypes import guess_type
 
 APP = Path(__file__).resolve().parent.parent
-APP_VERSION = '0.11.1.1'
+APP_VERSION = '0.11.2'
 ROOT = Path(os.environ.get('PIXEL_WORKS_HOME', '~/.pixelworks')).expanduser().resolve()
 PROJECTS = ROOT / 'projects'
 TOKEN = secrets.token_urlsafe(32)
@@ -517,6 +517,39 @@ def order_action(slug,payload):
     orders_write(slug,items)
     return {'orders':items,'item':item if action!='delete' else None}
 
+
+# Read-only dispatcher plan: all permissions verified server-side, no automatic AI call.
+# No inference from a skill score alone; allowed stations and assignment policy win.
+def dispatch_plan(slug):
+    staff=staff_read(slug)
+    waiting=sorted((o for o in orders_read(slug) if o.get('status')=='waiting'),
+                   key=lambda o:(o.get('priority',2),o.get('created_at',''),o.get('id','')))
+    with LOCK:
+        busy=any(j.get('project')==slug and j.get('state') in ('queued','running') for j in JOBS.values())
+        working={j.get('agent_id') for j in JOBS.values() if j.get('state') in ('queued','running')}
+    proposed=[];blocked=[]
+    for o in waiting:
+        station=o.get('station')
+        candidates=[a for a in staff if a.get('work_mode') in ('specialist','autonomous')
+                    and a.get('id') not in working and agent_authorized(slug,a,station)
+                    and (a.get('work_mode')!='specialist' or a.get('home_station')==station)]
+        # Prefer a matching home desk, then explicitly permitted allrounders.
+        candidates.sort(key=lambda a:(a.get('home_station')!=station,a.get('name',''),a.get('id','')))
+        if candidates and not busy:
+            a=candidates[0]
+            proposed.append({'order_id':o['id'],'station':station,'priority':o['priority'],
+                             'agent_id':a['id'],'agent_name':a['name'],'instruction':o['instruction'],
+                             'attachment_ids':o.get('attachment_ids',[])})
+            # One writable job per project. Remaining orders are suggestions only.
+            busy=True
+        else:
+            blocked.append({'order_id':o['id'],'station':station,
+                            'reason':'Arbetsytan används redan' if busy else 'Ingen tillgänglig behörig självständig agent'})
+    with LOCK:
+        occupied=any(j.get('project')==slug and j.get('state') in ('queued','running') for j in JOBS.values())
+    return {'project':slug,'next':proposed[0] if proposed else None,
+            'blocked':blocked,'waiting':len(waiting),'workspace_busy':occupied}
+
 def project_mandate(slug):
     f=library_base(slug).parent/'management'/'WORK_MANDATE.json'
     if f.is_symlink():raise ValueError('Osäker mandatfil')
@@ -687,6 +720,9 @@ class Handler(SimpleHTTPRequestHandler):
             try:return self.reply(200,{'reports':list_reports(route.split('/')[3])})
             except (ValueError,OSError) as ex:return self.reply(400,{'error':str(ex)})
         if route=='/api/bootstrap': return self.reply(200,{'version':APP_VERSION,'token':TOKEN,'root':str(ROOT),'storage':inspect_root(),'codex':status()})
+        if re.fullmatch(r'/api/projects/[a-z0-9-]+/dispatch',route):
+            try:return self.reply(200,dispatch_plan(route.split('/')[3]))
+            except (ValueError,OSError) as ex:return self.reply(400,{'error':str(ex)})
         if re.fullmatch(r'/api/projects/[a-z0-9-]+/skills',route):
             try: return self.reply(200,{'skills':get_skill_settings(route.split('/')[3]),'stations':SKILL_STATIONS})
             except (ValueError,OSError,RuntimeError) as ex:return self.reply(400,{'error':str(ex)})

@@ -1,9 +1,9 @@
-# Pixel Works v0.11.1.1 – testresultat
+# Testrapport – v0.11.2
 
-- Backend: `python3 -m unittest discover -s backend -p 'test*.py' -q` – godkänt.
-- `node --check local.js` – godkänt.
-- `node test-station-creator.mjs` – godkänt.
-- `node test-recruit-routing.mjs` – godkänt.
-- `node test-model.mjs` – godkänt.
-- `node test-navigation.mjs` – godkänt.
-- Visuell kontroll i användarens Firefox: ej utförd.
+- `python -m unittest discover -s backend -p 'test*.py' -q`: **80 tester OK**, däribland 6 nya tester i `backend/test_dispatch_v0112.py`.
+- `node --check local.js`: **OK**.
+- `node test-station-creator.mjs`: **PASS**.
+- `node test-recruit-routing.mjs`: **PASS**.
+- Övriga MJS-modell- och navigeringstester kördes också och passerade.
+
+Testad i lokal isolerad temporär projektmiljö. **Ingen verklig Codex-process kördes** och ingen användarprojektmapp eller GitHub-repo ändrades. Visuell Firefox- och faktisk live-kötestning återstår.

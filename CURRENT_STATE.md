@@ -1,25 +1,25 @@
-# Pixel Works v0.11.1.1 — CURRENT STATE
+# Pixel Works v0.11.2 – CURRENT STATE
 
-## NOW — implementerat och lokalt testat
-- Stationsspecifika, klickbara snabbval med egna, lokalt renderade pixel-SVG-ikoner på 24×24-rutnät. Gemensam arbetsordermotor och separat katalog per arbetsstation.
-- Valfri stil/egenskap (t.ex. Jazz, Chiptune), alltid egen fri instruktion, filväljare, drag/drop och Ctrl+V-bilder i arbetsordern.
-- Kompakt valvy i sidor om sex val, arbetskö på separat skärm. Färdiga (`done`) arbetsorder döljs från aktiv kö och finns under **Visa historik**. De raderas inte från disk.
-- Agent-/Codex-sessioner och projektmandat vidareförda oförändrade från v0.11.0. Ingen ny automatisk AI-exekvering vid skapande av arbetsorder.
-- Ingen extern ikonhämtning eller tredjepartslicens krävs vid körning: ikonerna i detta paket är egna små SVG-piktogram inspirerade av pixelrutnätsprincipen.
+## NOW – implementerat
+- **Studio Dispatch**: servern föreslår nästa väntande arbetsorder enligt P1→P3, agentens `work_mode`, `allowed_stations`, hemmabord för specialister samt exklusiva stationsägare.
+- Klicka på ett bord → **🤖 Autoarbete** → granska föreslaget jobb → starta med ett uttryckligt klick och bekräftelse. Ett giltigt projektmandat krävs. Autoarbetet fortsätter till nästa väntande arbetsorder efter ett *avslutat* arbetspass, men **pausar vid fel**.
+- Studio Dispatch startar aldrig en Codex-process utan användarens aktivering. Läget finns bara i den aktiva webbläsarfliken och återaktiveras aldrig automatiskt vid omstart.
+- Backendens befintliga säkerhetsspärr behålls: högst ett skrivande Codex-arbetspass per projekt. Befintliga arbetsorder och Game Bible ändras inte vid installation.
+- Manuell agent hämtas aldrig automatiskt. Specialist får bara matchas till hemmabordet. Självständig agent får ta uppdrag vid uttryckligen tillåtna bord.
+- Validering för uppdragsstart, agent-ID, arbetsstation, arbetsmandat och bilagor görs fortfarande server-side.
+
+## Viktiga begränsningar
+- Dispatch är **webbläsarstyrd efter aktivt godkännande**, inte en beständig central serverscheduler. Stänger användaren fliken startas inga nya arbetspass; ett redan startat Codex-jobb kan fortfarande slutföras av servern.
+- Matchning baseras på faktiskt stationsansvar + arbetsbeteende, **inte** simulerade skillstjärnor. Ingen AI-arbetsledare eller MCP-server finns ännu.
+- En fungerande Codex CLI-installation behövs för verklig exekvering. Inga Codex-jobb kördes i utvecklingsmiljön.
+- Två agenter kan inte samtidigt skriva i samma projektarbetsyta; för parallellitet krävs isolerade Git-worktrees och kontrollerad merge.
+- Rekommendationen är en ögonblicksbild; servern återkontrollerar rättigheter vid varje riktig uppdragsstart.
 
 ## NEXT
-- Visuella Firefox-tester av storlek och clipboard/Firefox efter installation. Test med verklig bild från urklippet återstår.
-- Stationernas specialiserade verktyg, ljudförhandslyssning, grafikgalleri, QA-felrapporter och användarredigerbara snabbval.
-- Serverstyrd scheduler och agentisolerade Codex-worktrees.
+- Central och beständig scheduler med atomär reservation, jobbrecovery och körning oberoende av öppet GUI.
+- Samlad live-översikt och pausknapp med tydlig UX; synliga rollkläder och mer levande status.
+- Regressionstest i riktig Firefox, inklusive kön och automatisk fortsättning.
 
 ## LATER
-- Codex-arbetsledare via begränsade MCP-verktyg samt fler provider-adaptrar.
-
-## Ikonriktning
-- Rekommenderad fri uppsättning: [Pixelarticons](https://github.com/halfmage/pixelarticons), MIT-licens (fria baspaketet). Kan ersätta nuvarande interna ikonfunktion i ett senare steg.
-- Alternativ: Tabler Icons (MIT), men deras mjukare stroke-form passar mindre väl till kontorets rena pixelgrafik.
-
-## v0.11.1.1 GUI-hotfix
-- Stationsvalen är kompaktare: 3 kolumner, 9 val per sida, mindre ikoner och lägre knappar. Mobil: 2 kolumner.
-- Ingen ändring i arbetsordrar, körmotor eller projektdata.
-- Visuell Firefox-verifiering återstår.
+- Codex som arbetsledare genom säker MCP-adapter, tilldelningsverktyg och rapportgranskning.
+- Flera providers, agentisolerade worktrees och granskat integrationsflöde.

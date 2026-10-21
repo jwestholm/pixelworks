@@ -1,7 +1,13 @@
-# ROADMAP
+# Roadmap – Pixel Works
 
-NOW (v0.11.1): klickbaserade stationsuppdrag med ikoner, eget fält, inkluderade filer, kompakt arbetskö och färdig-historik.
+## NOW
+- v0.11.2: Servervaliderad arbetsfördelningsplan + explicit, webbläsarstyrt opt-in-autoarbete.
+- Roll/behörighetsprofiler och exklusiva stationer matchas mot verkliga väntande arbetsorder.
 
-NEXT: platsanpassade station-vyer; verklig bild/ljudpreview, kan spara egna val; browser-QA av uppladdning och clipboard; stabil serverstyrd scheduler, rollbaserad automatisk arbetsfördelning och isolerade arbetsytor.
+## NEXT
+- Serverstyrd beständig scheduler: atomiska reservationer, återskapad status vid omstart, administrativ paus och ansvarsfull körning utan flik.
+- Gemensam personal- och köstatus, särskilda yrkessprites, tydlig indikator på pausat automatläge.
+- Separata Git-worktrees för verkligt parallella Codex-processer och kontrollerad sammanfogning.
 
-LATER: AI-arbetsledare och MCP-server, separata leverantörsadaptrar och säkra parallella Codex-sessioner.
+## LATER
+- MCP-verktyg för riktig Codex-arbetsledare att delegera och granska; leverantörsadaptrar för andra modeller.

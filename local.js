@@ -31,7 +31,7 @@ style.textContent+=`.task-ref{display:flex!important;align-items:center;gap:9px;
 const btn=document.createElement('button');btn.className='pixel-button secondary';btn.textContent='⚙ Lokal studio';btn.id='localStudioBtn';$('#studioBtn')?.after(btn);
 const dialog=document.createElement('dialog');dialog.className='local-dialog';dialog.id='localStudioDialog';document.body.append(dialog);
 const safeSlug=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,48);
-function view(html){dialog.innerHTML=`<div class="local-shell-header"><h2>⚙ LOKAL STUDIO</h2><button type="button" id="localClose" class="alt" aria-label="Stäng">✕</button></div><small class="local-shell-info">Pixel Works v${info?.version||'okänd'} · inga uppdrag startas automatiskt</small><div class="local-shell-body">${html}</div>`;$('#localClose').onclick=()=>dialog.close();if(!dialog.open)dialog.showModal();}
+function view(html){dialog.innerHTML=`<div class="local-shell-header"><h2>⚙ LOKAL STUDIO</h2><button type="button" id="localClose" class="alt" aria-label="Stäng">✕</button></div><small class="local-shell-info">Pixel Works v${info?.version||'okänd'} · autoarbete kräver aktivering</small><div class="local-shell-body">${html}</div>`;$('#localClose').onclick=()=>dialog.close();if(!dialog.open)dialog.showModal();}
 async function api(path, payload){const r=await fetch(path,{method:payload?'POST':'GET',credentials:'same-origin',headers:{...(token?{'X-Pixelworks-Token':token}:{}),...(payload?{'Content-Type':'application/json'}:{})},...(payload?{body:JSON.stringify(payload)}:{})});const body=await r.json();if(!r.ok)throw Error(body.error||'HTTP '+r.status);return body;}
 async function init(){try{info=await api('/api/bootstrap');token=info.token;const data=await api('/api/projects');projects=data.projects;await refreshLiveRoster();return true}catch(e){view(`<p>Spelet körs utan den lokala projektmotorn.</p><p>Starta med: <code>python3 backend/server.py</code> och öppna <b>http://127.0.0.1:8765</b>.</p><p class="error">${esc(e.message)}</p>`);return false;}}
 async function refreshLiveRoster(){
@@ -69,7 +69,7 @@ window.pixelWorksSkillsLive=async function(slug,agentId){
 };
 
 // Arbetsorder: passiv projektkö, sorterad efter prioritet och manuell ordning.
-let activeOrderStation=null, queueRun=null;
+let activeOrderStation=null, queueRun=null, studioAuto=null;
 function sortedOrders(items,station){return items.filter(o=>o.station===station).sort((a,b)=>a.priority-b.priority||items.indexOf(a)-items.indexOf(b));}
 async function launchOrder(slug,order){
   const mandate=(await api('/api/projects/'+slug+'/mandate')).mandate;
@@ -90,6 +90,50 @@ async function startQueue(slug,station){
   announceLiveSpeech('Jag tar nästa arbetsorder!');
   return true;
 }
+// Opt-in dispatch while this browser tab remains open. The backend proposes a
+// specific authorized employee; each execution still passes normal API checks.
+async function stopStudioAuto(message='Autoarbete pausat'){
+ studioAuto=null;
+ const badge=document.querySelector('#studioAutoStatus');if(badge)badge.textContent='⏸ '+message;
+}
+async function runStudioAuto(slug){
+ if(!studioAuto||studioAuto.slug!==slug)return;
+ try{
+  const plan=await api('/api/projects/'+slug+'/dispatch');
+  if(!plan.next){await stopStudioAuto(plan.workspace_busy?'Arbetsytan upptagen':'Inga behöriga jobb');return;}
+  const next=plan.next;
+  // Server controls both station access and exclusive station ownership.
+  await api('/api/projects/'+slug+'/station',{agent_id:next.agent_id,station:next.station});
+  const result=await api('/api/jobs',{project:slug,station:next.station,agent_id:next.agent_id,
+    instruction:next.instruction,order_id:next.order_id,attachment_ids:next.attachment_ids,
+    approval:'PROJECT_MANDATE'});
+  jobId=result.job_id;
+  currentLiveJob={id:jobId,project:slug,agent_id:next.agent_id,agent_name:next.agent_name,
+   station:next.station,instruction:next.instruction,state:'queued',events:[]};
+  sessionStorage.setItem(LIVE_SESSION_KEY,jobId);lastJobState='';liveSpeechFresh=true;liveSpeechInitialized=false;
+  const badge=document.querySelector('#studioAutoStatus');if(badge)badge.textContent='▶ '+next.agent_name+' · '+next.station;
+  await refreshOrderBadges(slug);
+  await pollLiveJob();
+ }catch(error){await stopStudioAuto('Pausad: '+error.message);alert('Autoarbete pausat: '+error.message);}
+}
+async function studioAutoControls(slug){
+ try{
+  const plan=await api('/api/projects/'+slug+'/dispatch');
+  const running=studioAuto?.slug===slug;
+  const message=plan.next?'Nästa: '+plan.next.agent_name+' → '+plan.next.station+' (P'+plan.next.priority+')':
+   plan.workspace_busy?'Arbetsytan är upptagen':plan.waiting+' väntande · '+(plan.blocked[0]?.reason||'Inga tillgängliga uppdrag');
+  view(`<h3>🤖 STUDIO DISPATCH</h3><p>Välj <b>Självständig</b> eller <b>Specialist</b> på en anställd för att den ska kunna ta jobb. Stationsbehörigheter gäller alltid.</p><p class="state">${esc(message)}</p><p>Autoarbete körs endast medan den här webbläsarfliken är aktiv. Ett Codex-jobb per projekt; inga körningar återupptas automatiskt efter omstart.</p><p id="studioAutoStatus">${running?'▶ Autoarbete på':'⏸ Autoarbete av'}</p><button id="studioAutoToggle">${running?'⏸ Pausa nya jobb':'▶ Starta godkänd arbetskö'}</button><button id="studioAutoBack" class="alt">Till kontoret</button>`);
+  $('#studioAutoBack').onclick=()=>dialog.close();
+  $('#studioAutoToggle').onclick=async()=>{
+   if(studioAuto?.slug===slug){await stopStudioAuto();return studioAutoControls(slug);}
+   const mandate=(await api('/api/projects/'+slug+'/mandate')).mandate;
+   if(!mandate.enabled){alert('Ge först ett bestående projektmandat för Codex.');return;}
+   if(!confirm('Starta automatiskt godkända arbetsorder i '+slug+'?\nEtt jobb i taget. Stoppa nya starter med Pausa.'))return;
+   studioAuto={slug};dialog.close();await runStudioAuto(slug);
+  };
+ }catch(e){view('<p class="error">'+esc(e.message)+'</p>');}
+}
+window.pixelWorksStudioDispatch=studioAutoControls;
 // A station may eventually supply its own interface; shared work orders remain the only source of truth.
 const TASK_CATALOG={
  code:[['Ny funktion','tool','Implementera en ny funktion i det befintliga spelet.'],['Ändra funktion','edit','Förbättra en befintlig funktion utan att skapa om spelet.'],['Buggfix','bug','Undersök och åtgärda ett avgränsat kodfel.'],['Prestanda','speed','Förbättra spelets prestanda och verifiera mätbart.'],['Spelsystem','game','Utveckla ett nytt sammanhängande spelsystem.'],['Eget uppdrag','plus','']],
@@ -121,8 +165,8 @@ async function stationOrders(slug,station,placed=false){
    if(step==='choose'){
     const max=9,pages=Math.max(1,Math.ceil(presets.length/max));page=Math.max(0,Math.min(page,pages-1));
     const cards=presets.slice(page*max,page*max+max).map((p,i)=>`<button type="button" class="station-task-tile" data-preset="${page*max+i}">${taskIcon(p[1])}<span>${esc(p[0])}</span></button>`).join('');
-    shell(`<p class="station-help">Välj med ikoner – eller välj <b>Eget uppdrag</b> och skriv fritt.</p><div class="station-task-grid">${cards}</div><div class="local-pager"><button id="taskPrev" class="alt" ${page===0?'disabled':''}>◀ Fler val</button><span>${page+1} / ${pages}</span><button id="taskNext" class="alt" ${page===pages-1?'disabled':''}>Fler val ▶</button></div>`,`<button id="taskShowQueue" class="alt">📚 Arbetskö (${waiting.length})</button><button id="taskExit" class="alt">Stäng</button>`);
-    $('#taskPrev').onclick=()=>{page--;render()};$('#taskNext').onclick=()=>{page++;render()};$('#taskExit').onclick=()=>dialog.close();$('#taskShowQueue').onclick=()=>{step='queue';render()};
+    shell(`<p class="station-help">Välj med ikoner – eller välj <b>Eget uppdrag</b> och skriv fritt.</p><div class="station-task-grid">${cards}</div><div class="local-pager"><button id="taskPrev" class="alt" ${page===0?'disabled':''}>◀ Fler val</button><span>${page+1} / ${pages}</span><button id="taskNext" class="alt" ${page===pages-1?'disabled':''}>Fler val ▶</button></div>`,`<button id="taskShowQueue" class="alt">📚 Arbetskö (${waiting.length})</button><button id="taskAuto" class="alt">🤖 Autoarbete</button><button id="taskExit" class="alt">Stäng</button>`);
+    $('#taskPrev').onclick=()=>{page--;render()};$('#taskNext').onclick=()=>{page++;render()};$('#taskExit').onclick=()=>dialog.close();$('#taskAuto').onclick=()=>studioAutoControls(slug);$('#taskShowQueue').onclick=()=>{step='queue';render()};
     dialog.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{choice=presets[Number(b.dataset.preset)];draft=choice[2]||'';selected=new Set();step='details';render()});return;
    }
    if(step==='queue'){
@@ -332,6 +376,10 @@ async function pollLiveJob(){
   try{const result=await api('/api/jobs/'+jobId);renderLiveState(result);
     if(result.state==='done'||result.state==='failed'){
       updateDeskBadge();refreshOrderBadges(result.project);
+      if(studioAuto?.slug===result.project){
+        if(result.state==='done')setTimeout(()=>{if(studioAuto?.slug===result.project)runStudioAuto(result.project);},950);
+        else stopStudioAuto('Pausad efter fel – granska rapporten');
+      }
       if(queueRun?.slug===result.project && queueRun?.station===result.station){
         const resume=queueRun;queueRun=null;
         if(result.state==='done'){
