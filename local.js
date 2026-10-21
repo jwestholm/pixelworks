@@ -95,50 +95,69 @@ async function startQueue(slug,station){
   announceLiveSpeech('Jag tar nästa arbetsorder!');
   return true;
 }
-// Opt-in dispatch while this browser tab remains open. The backend proposes a
-// specific authorized employee; each execution still passes normal API checks.
+// Browser-owned opt-in dispatcher. Workers run in separate git worktrees and NEVER auto-merge.
+let dispatchTimer=null,dispatchTickBusy=false,dispatchSeen=new Set();
 async function stopStudioAuto(message='Autoarbete pausat'){
- studioAuto=null;
+ studioAuto=null;if(dispatchTimer){clearInterval(dispatchTimer);dispatchTimer=null;}
  dispatchOfficeStatus('⏸ '+message);
 }
 async function runStudioAuto(slug){
- if(!studioAuto||studioAuto.slug!==slug)return;
+ if(!studioAuto||studioAuto.slug!==slug||dispatchTickBusy)return;
+ dispatchTickBusy=true;
  try{
   const plan=await api('/api/projects/'+slug+'/dispatch');
-  if(!plan.next){const reason=plan.workspace_busy?'Väntar på ledig arbetsyta':plan.waiting===0?'Inga väntande arbetsorder':(plan.blocked[0]?.reason||'Ingen tillgänglig behörig agent');await stopStudioAuto(reason);return;}
-  const next=plan.next;
-  // Server controls both station access and exclusive station ownership.
-  await api('/api/projects/'+slug+'/station',{agent_id:next.agent_id,station:next.station});
-  const result=await api('/api/jobs',{project:slug,station:next.station,agent_id:next.agent_id,
+  const running=plan.active_jobs||[];
+  const tasks=plan.parallel_ready?(plan.assignments||[]):(plan.next?[plan.next]:[]);
+  for(const next of tasks.slice(0,4)){
+   if(!studioAuto||studioAuto.slug!==slug)break;
+   // A server-side check still prevents duplicate claims, unauthorized station moves and concurrent edits.
+   await api('/api/projects/'+slug+'/station',{agent_id:next.agent_id,station:next.station});
+   const result=await api('/api/jobs',{project:slug,station:next.station,agent_id:next.agent_id,
     instruction:next.instruction,order_id:next.order_id,attachment_ids:next.attachment_ids,
-    approval:'PROJECT_MANDATE'});
-  jobId=result.job_id;
-  currentLiveJob={id:jobId,project:slug,agent_id:next.agent_id,agent_name:next.agent_name,
-   station:next.station,instruction:next.instruction,state:'queued',events:[]};
-  sessionStorage.setItem(LIVE_SESSION_KEY,jobId);lastJobState='';liveSpeechFresh=true;liveSpeechInitialized=false;
-  dispatchOfficeStatus('🔴 '+next.agent_name+' arbetar vid '+next.station+' · session '+jobId);
-  await refreshOrderBadges(slug);
-  await pollLiveJob();
+    isolated:!!plan.parallel_ready,approval:'PROJECT_MANDATE'});
+   dispatchSeen.add(result.job_id);
+   dispatchOfficeStatus('🔴 '+next.agent_name+' → '+next.station+' · '+result.job_id+(plan.parallel_ready?' · egen arbetsyta':''));
+   await refreshOrderBadges(slug);
+  }
+  let reports=0;
+  for(const id of [...dispatchSeen]){
+   const j=await api('/api/jobs/'+id);
+   if(j.state==='failed'){await stopStudioAuto('Ett uppdrag misslyckades: '+(j.agent_name||id));return;}
+   if(j.state==='review'||j.state==='done'){dispatchSeen.delete(id);reports++;}
+  }
+  if(!tasks.length&&!running.length){
+   dispatchOfficeStatus('🟡 '+(plan.waiting?'Väntar: '+(plan.blocked[0]?.reason||'ingen ledig agent'):'Alla uppdrag färdiga / för granskning'));
+  }else if(running.length){
+   dispatchOfficeStatus('🔴 '+running.map(j=>j.agent_name+' ('+j.station+')').join(' · '));
+  }
  }catch(error){await stopStudioAuto('Pausad: '+error.message);alert('Autoarbete pausat: '+error.message);}
+ finally{dispatchTickBusy=false;}
 }
 async function studioAutoControls(slug){
  try{
   const plan=await api('/api/projects/'+slug+'/dispatch');
   const running=studioAuto?.slug===slug;
-  const live=jobId?currentLiveJob:null;
-  const jobMessage=live?.project===slug&&['queued','running'].includes(live.state)?`<p class="state">🔴 Verklig Codex-session: ${esc(live.agent_name||'Agent')} · ${esc(live.state)} · ${esc(live.id)}</p>`:'';
-  const message=plan.next?'Nästa: '+plan.next.agent_name+' → '+plan.next.station+' (P'+plan.next.priority+')':
-   plan.workspace_busy?'Arbetsytan är upptagen':plan.waiting+' väntande · '+(plan.blocked[0]?.reason||'Inga tillgängliga uppdrag');
-  view(`<h3>🤖 STUDIO DISPATCH</h3><p>Välj <b>Självständig</b> eller <b>Specialist</b> på en anställd för att den ska kunna ta jobb. Stationsbehörigheter gäller alltid.</p><p class="state">${esc(message)}</p><p>Autoarbete körs endast medan den här webbläsarfliken är aktiv. Ett Codex-jobb per projekt; inga körningar återupptas automatiskt efter omstart.</p>${jobMessage}<p id="studioAutoStatus">${running?'▶ Autoarbete på':'⏸ Autoarbete av'}</p><button id="studioAutoToggle">${running?'⏸ Pausa nya jobb':'▶ Starta godkänd arbetskö'}</button><button id="studioLead" class="alt">👔 Arbetsledaren</button><button id="studioAutoBack" class="alt">Till kontoret</button>`);
-  $('#studioAutoBack').onclick=()=>dialog.close();$('#studioLead').onclick=()=>leadStudio(slug);
+  const workers=(plan.active_jobs||[]).map(j=>'<p>🔴 '+esc(j.agent_name)+' · '+esc(j.station)+' · '+esc(j.id)+'</p>').join('');
+  const assignments=(plan.assignments||[]).map(a=>'<div class="line">📄 P'+a.priority+' · '+esc(a.agent_name)+' → '+esc(a.station)+(a.fallback_lead?' · 👔 ledaren rycker in':' · delegerat')+'</div>').join('');
+  const message=plan.parallel_ready?'✅ Isolerade Git-arbetsytor redo':'⚠ '+plan.parallel_reason;
+  view(`<h3>👔 STUDIO MANAGEMENT</h3><p>Arbetsledaren prioriterar behöriga arbetare. Om ingen kan ta jobbet kan arbetsledaren rycka in med rätt behörighet.</p><p class="state">${esc(message)}</p><p>Parallella Codex-körningar får <b>egna Git-worktrees</b> inom samma projekt. Resultaten hamnar i <b>granskning</b>; inga ändringar slås ihop automatiskt.</p><p>🩺 Gemini: sjukskriven tills nyckel är sparad och motorn aktiverats separat.</p>${workers}<h3>📋 Föreslagen delegering</h3>${assignments||'<p>Inga tilldelningsbara jobb just nu.</p>'}<p>Automatiken fortsätter bara medan denna webbläsarflik är öppen.</p><p id="studioAutoStatus">${running?'▶ Autoarbete på':'⏸ Autoarbete av'}</p><button id="studioAutoToggle">${running?'⏸ Pausa nya jobb':'▶ Starta delegering'}</button><button id="studioLead" class="alt">👔 Planera arbete</button><button id="studioProviders" class="alt">⚙️ AI-motorer</button><button id="studioAutoBack" class="alt">Till kontoret</button>`);
+  $('#studioAutoBack').onclick=()=>dialog.close();$('#studioLead').onclick=()=>leadStudio(slug);$('#studioProviders').onclick=()=>studioProviders(slug);
   $('#studioAutoToggle').onclick=async()=>{
    if(studioAuto?.slug===slug){await stopStudioAuto();return studioAutoControls(slug);}
    const mandate=(await api('/api/projects/'+slug+'/mandate')).mandate;
-   if(!mandate.enabled){alert('Ge först ett bestående projektmandat för Codex.');return;}
-   if(!confirm('Starta automatiskt godkända arbetsorder i '+slug+'?\nEtt jobb i taget. Stoppa nya starter med Pausa.'))return;
-   studioAuto={slug};dialog.close();dispatchOfficeStatus('⏳ söker behörig agent…');await runStudioAuto(slug);
+   if(!mandate.enabled){alert('Ge först ett bestående projektmandat.');return;}
+   if(!confirm('Starta delegering och riktiga Codex-sessioner? Parallella sessioner använder separata Git-worktrees och kräver granskning.'))return;
+   studioAuto={slug};dispatchSeen=new Set();dialog.close();dispatchOfficeStatus('⏳ letar arbetsuppgifter…');
+   await runStudioAuto(slug);
+   dispatchTimer=setInterval(()=>runStudioAuto(slug),3500);
   };
  }catch(e){view('<p class="error">'+esc(e.message)+'</p>');}
+}
+async function studioProviders(slug){
+ const data=(await api('/api/providers')).providers;
+ view(`<h3>⚙️ AI-MOTORER</h3><p>Yrke och AI-motor är två separata inställningar.</p><p>💻 Codex CLI: ${data.codex.configured?'Hittad':'Inte tillgänglig'} · kör lokalt.</p><p>☕ Google Gemini: ${data.gemini.configured?'Nyckel sparad':'Sjukskriven – saknar nyckel'}.</p><p>Gemini är ännu inte ansluten till arbetskön. Att spara en nyckel <b>startar inga molnanrop</b>.</p><label>Google API-nyckel <input id="geminiKey" type="password" autocomplete="off" placeholder="Klistra in API-nyckel"></label><p class="local-note">Sparas i ~/.pixelworks/secrets/gemini.key (endast lokalt). Visas inte igen.</p><p id="geminiMsg" role="status"></p><button id="geminiSave">💾 Spara nyckel</button><button id="geminiBack" class="alt">Tillbaka</button>`);
+ $('#geminiBack').onclick=()=>studioAutoControls(slug);
+ $('#geminiSave').onclick=async()=>{try{await api('/api/providers/gemini',{key:$('#geminiKey').value});$('#geminiKey').value='';$('#geminiMsg').textContent='✅ Nyckeln sparad. Gemini kör fortfarande inga uppdrag.';}catch(e){$('#geminiMsg').textContent='⚠ '+e.message;}};
 }
 
 // Codex-arbetsledaren only proposes tasks; accepting one creates an ordinary work order.
@@ -288,10 +307,10 @@ async function editStaffProfile(slug,id){
  const agents=(await api('/api/projects/'+slug+'/staff')).staff;const agent=agents.find(a=>a.id===id);if(!agent)return;
  const stationKeys=Object.keys(STATION_FOCUS),allowed=agent.allowed_stations||stationKeys;
  const roles=[['allround','🤖 Allroundare'],['programmer','💻 Programmerare'],['qa','🧪 QA-testare'],['artist','🎨 Grafiker'],['musician','🎵 Musiker'],['voice','🎙️ Röstproducent'],['writer','📖 Författare'],['research','🔬 Researcher'],['lead','👔 Arbetsledare']];
- view(`<section class="local-screen"><h3>⚙ REDIGERA ANSTÄLLNING · ${esc(agent.name)}</h3><div class="local-compact-form"><label>Namn<input id="profileName" maxlength="35" value="${esc(agent.name)}"></label><label>Anställd som<select id="profileRoleType">${roles.map(([id,label])=>`<option value="${id}" ${agent.role_type===id?'selected':''}>${label}</option>`).join('')}</select></label><label>Roll / titel<input id="profileRole" maxlength="60" value="${esc(agent.role||'Utvecklare')}"></label><label>Personlighet<input id="profilePersonality" maxlength="80" value="${esc(agent.personality||'Noggrann')}"></label><label>Arbetsbeteende<select id="profileMode"><option value="manual">Manuell</option><option value="specialist">Specialist (automation senare)</option><option value="autonomous">Självständig (automation senare)</option></select></label><label>Hemmabord<select id="profileHome">${stationKeys.map(st=>`<option value="${esc(st)}">${esc(STATION_FOCUS[st].name)}</option>`).join('')}</select></label></div><label>Egna arbetsinstruktioner<textarea id="profileInstructions" rows="2" maxlength="2000" placeholder="Exempel: Skriv tester för alla buggfixar.">${esc(agent.work_instructions||'')}</textarea></label><h3>🏢 Får arbeta vid</h3><div class="local-station-grid">${stationKeys.map(st=>`<label class="task-ref"><input type="checkbox" data-allowed="${esc(st)}" ${allowed.includes(st)?'checked':''}>${esc(STATION_FOCUS[st].name)}</label>`).join('')}</div><div class="local-note">Skillnivå är inte behörighet. Ändringar gäller nya arbetspass. Automatiska arbetslägen är ännu inte aktiverade.</div><div class="local-actions"><button id="profileSave">💾 Spara anställning</button><button id="profileSkills">★ Skills</button><button class="alt" id="profileBack">◀ Personal</button><span id="profileError" class="local-error" role="status"></span></div></section>`);
- $('#profileMode').value=agent.work_mode||'manual';$('#profileHome').value=agent.home_station||'code';$('#profileRoleType').value=agent.role_type||'allround';
+ view(`<section class="local-screen"><h3>⚙ REDIGERA ANSTÄLLNING · ${esc(agent.name)}</h3><div class="local-compact-form"><label>Namn<input id="profileName" maxlength="35" value="${esc(agent.name)}"></label><label>Anställd som<select id="profileRoleType">${roles.map(([id,label])=>`<option value="${id}" ${agent.role_type===id?'selected':''}>${label}</option>`).join('')}</select></label><label>AI-motor<select id="profileProvider"><option value="codex">💻 Codex CLI (aktiv)</option><option value="gemini">☕ Google Gemini (sjukskriven)</option></select></label><label>Roll / titel<input id="profileRole" maxlength="60" value="${esc(agent.role||'Utvecklare')}"></label><label>Personlighet<input id="profilePersonality" maxlength="80" value="${esc(agent.personality||'Noggrann')}"></label><label>Arbetsbeteende<select id="profileMode"><option value="manual">Manuell</option><option value="specialist">Specialist (automation senare)</option><option value="autonomous">Självständig (automation senare)</option></select></label><label>Hemmabord<select id="profileHome">${stationKeys.map(st=>`<option value="${esc(st)}">${esc(STATION_FOCUS[st].name)}</option>`).join('')}</select></label></div><label>Egna arbetsinstruktioner<textarea id="profileInstructions" rows="2" maxlength="2000" placeholder="Exempel: Skriv tester för alla buggfixar.">${esc(agent.work_instructions||'')}</textarea></label><h3>🏢 Får arbeta vid</h3><div class="local-station-grid">${stationKeys.map(st=>`<label class="task-ref"><input type="checkbox" data-allowed="${esc(st)}" ${allowed.includes(st)?'checked':''}>${esc(STATION_FOCUS[st].name)}</label>`).join('')}</div><div class="local-note">Skillnivå är inte behörighet. Ändringar gäller nya arbetspass. Automatiska arbetslägen är ännu inte aktiverade.</div><div class="local-actions"><button id="profileSave">💾 Spara anställning</button><button id="profileSkills">★ Skills</button><button class="alt" id="profileBack">◀ Personal</button><span id="profileError" class="local-error" role="status"></span></div></section>`);
+ $('#profileProvider').value=agent.provider||'codex';$('#profileMode').value=agent.work_mode||'manual';$('#profileHome').value=agent.home_station||'code';$('#profileRoleType').value=agent.role_type||'allround';
  $('#profileBack').onclick=()=>hireScreen(slug);$('#profileSkills').onclick=()=>window.pixelWorksSkillsLive(slug,id);
- $('#profileSave').onclick=async()=>{try{await api('/api/projects/'+slug+'/staff/profile',{agent_id:id,name:$('#profileName').value,role:$('#profileRole').value,role_type:$('#profileRoleType').value,personality:$('#profilePersonality').value,work_instructions:$('#profileInstructions').value,home_station:$('#profileHome').value,work_mode:$('#profileMode').value,allowed_stations:[...dialog.querySelectorAll('[data-allowed]:checked')].map(n=>n.dataset.allowed)});await refreshLiveRoster();await hireScreen(slug);}catch(e){$('#profileError').textContent=e.message}};
+ $('#profileSave').onclick=async()=>{try{await api('/api/projects/'+slug+'/staff/profile',{agent_id:id,provider:$('#profileProvider').value,name:$('#profileName').value,role:$('#profileRole').value,role_type:$('#profileRoleType').value,personality:$('#profilePersonality').value,work_instructions:$('#profileInstructions').value,home_station:$('#profileHome').value,work_mode:$('#profileMode').value,allowed_stations:[...dialog.querySelectorAll('[data-allowed]:checked')].map(n=>n.dataset.allowed)});await refreshLiveRoster();await hireScreen(slug);}catch(e){$('#profileError').textContent=e.message}};
 }
 async function stationAssignments(slug){
  const agents=(await api('/api/projects/'+slug+'/staff')).staff;
@@ -415,12 +434,9 @@ function renderLiveState(result){
 async function pollLiveJob(){
   if(!jobId)return;
   try{const result=await api('/api/jobs/'+jobId);renderLiveState(result);
-    if(result.state==='done'||result.state==='failed'){
+    if(result.state==='done'||result.state==='failed'||result.state==='review'){
       updateDeskBadge();refreshOrderBadges(result.project);
-      if(studioAuto?.slug===result.project){
-        if(result.state==='done')setTimeout(()=>{if(studioAuto?.slug===result.project)runStudioAuto(result.project);},950);
-        else stopStudioAuto('Pausad efter fel – granska rapporten');
-      }
+      // Studio Dispatch polls all active workers independently.
       if(queueRun?.slug===result.project && queueRun?.station===result.station){
         const resume=queueRun;queueRun=null;
         if(result.state==='done'){

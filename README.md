@@ -25,3 +25,13 @@ Separata Codex-processer som skriver samtidigt i samma projekt är **inte** akti
 Öppna **🤖 Autoarbete → 👔 Arbetsledaren** eller välj en agent med yrke **Arbetsledare** och **Planera arbete**. En explicit bekräftelse låter Codex CLI föreslå högst åtta arbetsorder, med projektets Game Bible som kontext. Codex körs i `read-only` och får inte ändra spelkoden under planeringen. Varje förslag godkänns eller avvisas separat; först efter godkännande läggs det till i den vanliga kön. **Google Gemini/Gemma är ännu inte inkopplade** och inga molnkvoter påstås vara verifierade.
 
 **Autoarbete är fortfarande webbläsarstyrt.** Efter att du tryckt på Starta godkänd arbetskö visas status i kontorets informationsrad: söker agent, arbetar med namngiven verklig Codex-session, väntar på arbetsyta eller pausad med förklaring. Om inget händer, kontrollera först att det finns väntande arbetsorder, aktivt projektmandat och en anställd med beteende Självständig eller Specialist vid tillåtet hemmabord. En redan färdig eller manuellt markerad order startas inte igen.
+
+## v0.11.4: Samtidiga Codex-arbetare / AI-motorer
+
+Arbetsledaren prioriterar behöriga anställda och kan rycka in själv om ingen tillgänglig arbetare är lämpad för arbetsordern. `🤖 Autoarbete` tar upp till fyra förslag per omgång och kan starta flera verkliga Codex-processer **bara när Git-arbetsytan är säker**. Varje process använder en *egen worktree* under `management/worktrees/job-<jobb-id>`. Detta tillhör samma projekt men inte samma fysiska arbetskatalog.
+
+**Förbered första gången:** kontrollera att `~/.pixelworks/projects/<projekt-id>/work` har sitt eget Git-repo, minst en commit och inga ocommittade ändringar. Exempel från den mappen: `git add . && git -c user.name='Studio' -c user.email='studio@localhost' commit -m 'Baseline för parallellt arbete'`. Kontrollera gärna innehållet innan `git add .`; projektet ska inte innehålla hemligheter eller oväntade filer. Pixel Works gör inte denna commit åt dig. Om preflight inte är godkänd körs högst ett jobb åt gången.
+
+**Efter jobb:** `review` betyder att jobbet kördes färdigt i agentens worktree, **inte** att ändringarna har förts in i spelet. Inspektera ändringar manuellt via `git -C <worktree> status` / `git -C <worktree> diff` och integrera först efter granskning. Ingen automatiserad merge finns i denna version. Radera inte worktrees som ännu innehåller arbete.
+
+**Gemini:** `Autoarbete → ⚙️ AI-motorer` låter dig lagra API-nyckeln lokalt i `~/.pixelworks/secrets/gemini.key`, inte i spelprojektets Git. I agentprofilen kan du välja motor Google Gemini, men adaptern är medvetet avstängd tills separat integration och tydligt godkännande finns. Lägg aldrig in API-nycklar i Game Bible eller uppdrag.
