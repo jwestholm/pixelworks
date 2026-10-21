@@ -1,5 +1,10 @@
 # Pixel Works v0.11.4 – Studio Management / Parallel Workers
 
+## NOW – v0.11.4.1 hotfix
+- **Starta delegering** gör automatiskt en *lokal* Git-baseline/ögonblicksbild i work/ om den saknas eller är smutsig. Ingen push, reset eller merge. Detta kräver det befintliga projektmandatet och startgodkännandet.
+- Den här Git-förberedelsen vägrar ta med misstänkta hemliga filer och startar inte när ett direkt Codex-jobb skriver i work/.
+- Parallella worktrees och granskningskö fungerar därefter enligt v0.11.4.
+
 ## NOW – implementerat
 - Personalprofilen skiljer **provider** (Codex/Gemini) från yrkesroll, beteende och stationsbehörighet. Gemini står som otillgänglig/”sjukskriven” även om nyckel sparas.
 - Studio Dispatch föreslår flera olika behöriga agenter vid väntande arbetsorder (när isolerad drift är redo). Företräde ges till vanliga arbetare; ledaren kan rycka in om ingen sådan är ledig.
@@ -17,5 +22,5 @@
 
 ## Säkerhetsgränser
 - Samtidighet är inte samma fysiska mapp: parallella processer skriver i **olika** Git-worktrees i **samma logiska Pixel Works-projekt**. Detta förhindrar direkta filkollisioner men kräver efterföljande integration.
-- För att aktivera isolerat läge krävs Git, lokal commit på `work/`, ren arbetskopia, projektmandat och ett uttryckligt klick på Autoarbete. Utan dessa spärras parallell körning.
+- För att aktivera isolerat läge krävs Git, projektmandat och ett uttryckligt klick på Autoarbete. Lokal commit/ren arbetskopia skapas automatiskt vid godkänd start om säkert; misstänkta nyckelfiler eller pågående direktskrivning blockerar förberedelsen.
 - En webbläsarflik måste vara öppen för att nya jobb ska schemaläggas. Pågående processer fortsätter i backend.

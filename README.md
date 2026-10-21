@@ -35,3 +35,6 @@ Arbetsledaren prioriterar behöriga anställda och kan rycka in själv om ingen 
 **Efter jobb:** `review` betyder att jobbet kördes färdigt i agentens worktree, **inte** att ändringarna har förts in i spelet. Inspektera ändringar manuellt via `git -C <worktree> status` / `git -C <worktree> diff` och integrera först efter granskning. Ingen automatiserad merge finns i denna version. Radera inte worktrees som ännu innehåller arbete.
 
 **Gemini:** `Autoarbete → ⚙️ AI-motorer` låter dig lagra API-nyckeln lokalt i `~/.pixelworks/secrets/gemini.key`, inte i spelprojektets Git. I agentprofilen kan du välja motor Google Gemini, men adaptern är medvetet avstängd tills separat integration och tydligt godkännande finns. Lägg aldrig in API-nycklar i Game Bible eller uppdrag.
+
+### v0.11.4.1 – automatisk lokal Git-baseline
+Vid **Starta delegering** skapar Pixel Works automatiskt en Git-commit i projektets `work/` om det behövs för parallella worktrees. Ingen GitHub-push görs. Misstänkta hemliga filer och pågående direktjobb ger ett tydligt fel i stället för en osäker snapshot.

@@ -139,7 +139,7 @@ async function studioAutoControls(slug){
   const running=studioAuto?.slug===slug;
   const workers=(plan.active_jobs||[]).map(j=>'<p>🔴 '+esc(j.agent_name)+' · '+esc(j.station)+' · '+esc(j.id)+'</p>').join('');
   const assignments=(plan.assignments||[]).map(a=>'<div class="line">📄 P'+a.priority+' · '+esc(a.agent_name)+' → '+esc(a.station)+(a.fallback_lead?' · 👔 ledaren rycker in':' · delegerat')+'</div>').join('');
-  const message=plan.parallel_ready?'✅ Isolerade Git-arbetsytor redo':'⚠ '+plan.parallel_reason;
+  const message=plan.parallel_ready?'✅ Isolerade Git-arbetsytor redo':'🛠 Git förbereds automatiskt när du startar delegering: '+plan.parallel_reason;
   view(`<h3>👔 STUDIO MANAGEMENT</h3><p>Arbetsledaren prioriterar behöriga arbetare. Om ingen kan ta jobbet kan arbetsledaren rycka in med rätt behörighet.</p><p class="state">${esc(message)}</p><p>Parallella Codex-körningar får <b>egna Git-worktrees</b> inom samma projekt. Resultaten hamnar i <b>granskning</b>; inga ändringar slås ihop automatiskt.</p><p>🩺 Gemini: sjukskriven tills nyckel är sparad och motorn aktiverats separat.</p>${workers}<h3>📋 Föreslagen delegering</h3>${assignments||'<p>Inga tilldelningsbara jobb just nu.</p>'}<p>Automatiken fortsätter bara medan denna webbläsarflik är öppen.</p><p id="studioAutoStatus">${running?'▶ Autoarbete på':'⏸ Autoarbete av'}</p><button id="studioAutoToggle">${running?'⏸ Pausa nya jobb':'▶ Starta delegering'}</button><button id="studioLead" class="alt">👔 Planera arbete</button><button id="studioProviders" class="alt">⚙️ AI-motorer</button><button id="studioAutoBack" class="alt">Till kontoret</button>`);
   $('#studioAutoBack').onclick=()=>dialog.close();$('#studioLead').onclick=()=>leadStudio(slug);$('#studioProviders').onclick=()=>studioProviders(slug);
   $('#studioAutoToggle').onclick=async()=>{
@@ -147,6 +147,9 @@ async function studioAutoControls(slug){
    const mandate=(await api('/api/projects/'+slug+'/mandate')).mandate;
    if(!mandate.enabled){alert('Ge först ett bestående projektmandat.');return;}
    if(!confirm('Starta delegering och riktiga Codex-sessioner? Parallella sessioner använder separata Git-worktrees och kräver granskning.'))return;
+   try{const prep=await api('/api/projects/'+slug+'/dispatch/prepare',{approval:'PREPARE_PARALLEL_WORK'});
+    dispatchOfficeStatus(prep.committed?'📸 Lokal Git-ögonblicksbild skapad':'✅ Git-arbetsytan är redo');
+   }catch(error){alert('Kunde inte förbereda parallella arbetsytor: '+error.message);return;}
    studioAuto={slug};dispatchSeen=new Set();dialog.close();dispatchOfficeStatus('⏳ letar arbetsuppgifter…');
    await runStudioAuto(slug);
    dispatchTimer=setInterval(()=>runStudioAuto(slug),3500);

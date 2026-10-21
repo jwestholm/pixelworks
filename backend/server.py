@@ -566,6 +566,43 @@ def isolated_ready(slug):
     if dirty.returncode or dirty.stdout.strip():return False,'Committa eller städa ändringar i work/ först'
     return True,'Redo: isolerade Git-worktrees; ingen automatisk merge'
 
+def prepare_parallel_git(slug):
+    """Local-only baseline/snapshot for an explicitly started auto-work session.
+
+    Never pushes, resets, overwrites or touches the management directory.
+    Refuses suspicious filenames rather than accidentally recording API keys.
+    """
+    work=path_for(slug)/'work'
+    if not shutil.which('git'):raise ValueError('Git saknas; kan inte skapa isolerade arbetsytor')
+    if not work.is_dir() or work.is_symlink():raise ValueError('Osäker eller saknad work-katalog')
+    inside=git_result(work,'rev-parse','--show-toplevel')
+    if inside.returncode or Path(inside.stdout.strip()).resolve()!=work.resolve():
+        raise ValueError('work/ måste vara en egen Git-repositoryrot. Automatisk initiering av främmande mappar är inte tillåten.')
+    with LOCK:
+        direct=[j for j in JOBS.values() if j.get('project')==slug and j.get('state') in ('queued','running') and not j.get('worktree')]
+    if direct:raise ValueError('Ett direktjobb skriver redan i work/. Förbered Git efter att det är klart.')
+    state=git_result(work,'status','--porcelain','--untracked-files=all')
+    if state.returncode:raise ValueError('Kunde inte läsa Git-status: '+state.stderr[-180:])
+    head=git_result(work,'rev-parse','--verify','HEAD')
+    if head.returncode==0 and not state.stdout.strip():return {'ready':True,'committed':False,'reason':'Redan redo'}
+    # Prevent accidental snapshotting of secrets. Obey existing .gitignore.
+    changed=git_result(work,'ls-files','--cached','--others','--exclude-standard','-z')
+    if changed.returncode:raise ValueError('Kunde inte granska Git-filer')
+    import fnmatch
+    risky=('*.env','*.env.*','*.pem','*.key','*.p12','*.pfx','*credentials*','*secret*','*token*','id_rsa*','id_ed25519*')
+    unsafe=[name for name in changed.stdout.split('\0') if name and any(fnmatch.fnmatch(part.lower(),pat) for part in name.split('/') for pat in risky)]
+    if unsafe:raise ValueError('Git-förberedelse stoppad: möjlig hemlighet i work/: '+', '.join(unsafe[:3]))
+    staged=git_result(work,'add','-A',timeout=30)
+    if staged.returncode:raise ValueError('Git kunde inte förbereda arbetskopian: '+staged.stderr[-180:])
+    message='Pixel Works: automatisk grundversion' if head.returncode else 'Pixel Works: automatisk lokal ögonblicksbild'
+    committed=subprocess.run(['git','-C',str(work),'-c','user.name=Pixel Works',
+      '-c','user.email=pixelworks@localhost','commit','--allow-empty','-m',message],
+      capture_output=True,text=True,timeout=45)
+    if committed.returncode:raise ValueError('Automatisk lokal commit misslyckades: '+committed.stderr[-250:])
+    ok,reason=isolated_ready(slug)
+    if not ok:raise ValueError('Git-förberedelse slutförd men arbetsytan inte redo: '+reason)
+    return {'ready':True,'committed':True,'reason':'Lokal ögonblicksbild skapad; ingenting pushat'}
+
 def create_worker_tree(slug,job_id):
     ok,reason=isolated_ready(slug)
     if not ok:raise ValueError('Parallellt läge ej redo: '+reason)
@@ -968,6 +1005,11 @@ class Handler(SimpleHTTPRequestHandler):
                 if action=='accept':return self.reply(201,{'order':accept_lead_task(slug,payload)})
                 if action=='reject':return self.reply(200,{'task':reject_lead_task(slug,payload)})
                 raise ValueError('Okänd arbetsledaråtgärd')
+            if re.fullmatch(r'/api/projects/[a-z0-9-]+/dispatch/prepare',route):
+                slug=route.split('/')[3]
+                if payload.get('approval')!='PREPARE_PARALLEL_WORK':raise ValueError('Godkännande för lokal Git-förberedelse saknas')
+                if not project_mandate(slug).get('enabled'):raise ValueError('Projektmandat saknas')
+                return self.reply(200,prepare_parallel_git(slug))
             if re.fullmatch(r'/api/projects/[a-z0-9-]+/orders',route):
                 return self.reply(200,order_action(route.split('/')[3],payload))
             if re.fullmatch(r'/api/projects/[a-z0-9-]+/assets',route):
@@ -1017,6 +1059,8 @@ class Handler(SimpleHTTPRequestHandler):
                     if instruction!=order['instruction']:raise ValueError('Instruktionen matchar inte arbetsordern')
                 desired=payload.get('station')
                 if desired is not None and desired!=station: raise ValueError('Agenten står vid en annan station')
+                if payload.get('isolated') is True:
+                    prepare_parallel_git(slug)
                 with LOCK:
                     active=[j for j in JOBS.values() if j['state'] in ('queued','running') and j['project']==slug]
                     if any(j.get('agent_id')==agent['id'] for j in active):raise ValueError('Agenten arbetar redan')
@@ -1027,6 +1071,7 @@ class Handler(SimpleHTTPRequestHandler):
                 # Explicit opt-in for isolated worktrees. Active concurrent tasks must use isolation.
                 if payload.get('isolated') is True:
                     try:
+                        prepare_parallel_git(slug)
                         tree,branch=create_worker_tree(slug,jid)
                         with LOCK:JOBS[jid].update(worktree=str(tree),branch=branch)
                     except Exception:
