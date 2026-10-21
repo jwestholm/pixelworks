@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const source=fs.readFileSync(new URL('./local.js',import.meta.url),'utf8');
+const watch=source.slice(source.indexOf('async function watchServerJobs(){'),source.indexOf('setInterval(watchServerJobs,3000);'));
+assert.ok(watch.includes('Promise.allSettled'), 'Health failure must not discard job responses');
+assert.ok(watch.includes("jobsResult.status==='rejected'"), 'Job feed errors visible separately');
+assert.ok(watch.includes('renderLiveState(full)'), 'Continue rendering real Codex events');
+assert.ok(!watch.includes("pane.querySelector('#realJobEvents').textContent=error.message"), 'Never erase log with fetch errors');
+assert.ok(!source.includes('setTimeout(pollLiveJob,1800)'), 'No competing panel timer');
+assert.ok(!source.includes('if(saved){jobId=saved;pollLiveJob();}'), 'No stale session polling on refresh');
+console.log('Stable job panel regression: PASS');

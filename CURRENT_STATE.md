@@ -1,26 +1,9 @@
-# Pixel Works v0.11.4 – Studio Management / Parallel Workers
+# Aktuellt läge: Pixel Works v0.11.6.1
 
-## NOW – v0.11.4.1 hotfix
-- **Starta delegering** gör automatiskt en *lokal* Git-baseline/ögonblicksbild i work/ om den saknas eller är smutsig. Ingen push, reset eller merge. Detta kräver det befintliga projektmandatet och startgodkännandet.
-- Den här Git-förberedelsen vägrar ta med misstänkta hemliga filer och startar inte när ett direkt Codex-jobb skriver i work/.
-- Parallella worktrees och granskningskö fungerar därefter enligt v0.11.4.
-
-## NOW – implementerat
-- Personalprofilen skiljer **provider** (Codex/Gemini) från yrkesroll, beteende och stationsbehörighet. Gemini står som otillgänglig/”sjukskriven” även om nyckel sparas.
-- Studio Dispatch föreslår flera olika behöriga agenter vid väntande arbetsorder (när isolerad drift är redo). Företräde ges till vanliga arbetare; ledaren kan rycka in om ingen sådan är ledig.
-- Opt-in autoarbete i aktiv webbläsarflik startar flera Codex-jobb mot separata Git-worktrees när `work/` är ren och har commit. Nytt arbete initieras periodiskt; existerande backend-säkerhetskontroller tillämpas.
-- Varje isolerat Codex-jobb får en egen arbetsyta under `management/worktrees/job-<id>` och branch `pixelworks/job-<id>`, med Game Bible som textkontext. Färdiga jobb markeras `review`. **Ingen automatisk merge eller radering.**
-- Gemini-nyckel kan sparas via AI-motorer-vyn till `~/.pixelworks/secrets/gemini.key` med filrättighet 0600. Ingen API-körning, gratisstatus eller extern kvot påstås.
-
-## NEXT – viktigt
-- Granskningsvy: faktisk diff, tester, konflikter och godkänd integrering i spelprojektets work/.
-- Serverägd persistent scheduler, säkert parallellt jobbtak, arbetsledarens granskning av resultat och omdelegering.
-- Gemini-provider-adapter som genomför godkända, budgetbegränsade read-only-jobb, med kvot-/rate-limit-policy.
-
-## LATER
-- Creative Director med förslag Ja/Nej/Berätta mer/Vänta; självständig QA-/designer-loop; specialiserade stationsgränssnitt.
-
-## Säkerhetsgränser
-- Samtidighet är inte samma fysiska mapp: parallella processer skriver i **olika** Git-worktrees i **samma logiska Pixel Works-projekt**. Detta förhindrar direkta filkollisioner men kräver efterföljande integration.
-- För att aktivera isolerat läge krävs Git, projektmandat och ett uttryckligt klick på Autoarbete. Lokal commit/ren arbetskopia skapas automatiskt vid godkänd start om säkert; misstänkta nyckelfiler eller pågående direktskrivning blockerar förberedelsen.
-- En webbläsarflik måste vara öppen för att nya jobb ska schemaläggas. Pågående processer fortsätter i backend.
+- Isolerade Codex-arbetare kör i egna Git-worktrees under samma lokala spelprojekt.
+- Efter ett lyckat Codex-jobb försöker backend integrera resultatet direkt i `work/` när det är en säker fast-forward. Ingen användarlapp behövs.
+- Om arbetsgrenen skiljer sig från huvudprojektets historia och en arbetsledare är aktiv vid chefsbordet görs en vanlig automatisk **konfliktfri** Git-merge. Vid konflikt avbryts sammanfogningen.
+- Blockeringar skapar en kvarvarande granskningsrapport på användarens skrivbord. Lyckade integrationer dokumenteras men arkiveras tyst.
+- Vid serverstart sker en engångsgenomgång av äldre granskningsrapporter med kvarvarande worktree, aktivt mandat och utan pågående jobb.
+- Rapporten från Codex är inte oberoende speltestad. Merge-framgång betyder inte funktionellt godkänd kod.
+- Tester: 117 backendtester OK; JS-syntax OK. Inga riktiga Codex-körningar eller Firefox-test genomförda.

@@ -30,7 +30,7 @@ export class GameModel {
     if(!project)return;
     project.agents=staff.map((a,i)=>{
       const st=this.getStation(a.station)||this.getStation('cafe');
-      return {...a,initials:a.name.slice(0,2).toUpperCase(),color:'#68dcd1',hair:'#2a4057',x:this.getStation('cafe').x-9+i*5,y:this.getStation('cafe').y+8,activity:'cafe',status:available?'idle':'blocked',currentTask:null,engineAvailable:available};
+      return {...a,initials:a.name.slice(0,2).toUpperCase(),color:'#68dcd1',hair:'#2a4057',x:st.x+((i%3)-1)*6,y:st.y+8+Math.floor(i/3)*5,activity:st.type,status:available?'idle':'blocked',currentTask:null,engineAvailable:available};
     });
     project.providers.codex.engineState=available?'HITTAD · INLOGGNING OKÄND':'SJUKSKRIVEN · CLI EJ NÅBAR';
     project.leadId=project.agents[0]?.id||null;

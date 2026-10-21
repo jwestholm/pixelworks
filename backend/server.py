@@ -23,12 +23,14 @@ from urllib.parse import urlparse, unquote
 from mimetypes import guess_type
 
 APP = Path(__file__).resolve().parent.parent
-APP_VERSION = '0.11.4'
+APP_VERSION = '0.11.6.1'
 ROOT = Path(os.environ.get('PIXEL_WORKS_HOME', '~/.pixelworks')).expanduser().resolve()
 PROJECTS = ROOT / 'projects'
 TOKEN = secrets.token_urlsafe(32)
 JOBS = {}
+DISPATCH_ERRORS = {}
 LOCK = threading.Lock()
+INTEGRATION_LOCK = threading.Lock()
 SLUG = re.compile(r'^[a-z0-9][a-z0-9-]{1,49}$')
 MAX_BODY = 7 * 1024 * 1024
 
@@ -251,13 +253,36 @@ def hire_codex(slug, payload):
     if payload.get('approval')!='HIRE_CODEX_FOR_PROJECT': raise ValueError('Anställningen måste godkännas')
     name=str(payload.get('name') or 'Codex').strip()[:35]
     if not name: raise ValueError('Agenten behöver namn')
-    entry={'id':('codex-1' if not any(a['id']=='codex-1' for a in agents) else 'codex-'+secrets.token_hex(4)),'name':name,'role':'Utvecklare','role_type':'allround','home_station':'code','work_instructions':'','provider':'codex','station':'cafe','focus':'Första spelbara versionen','skills':{'coding':5,'testing':3,'documentation':2},'allowed_stations':(list(ALLOWED_STATIONS) if not agents else ['code','qa','docs']),'work_mode':'manual','personality':'Noggrann','hired_at':datetime.now(timezone.utc).isoformat()}
+    entry={'id':('codex-1' if not any(a['id']=='codex-1' for a in agents) else 'codex-'+secrets.token_hex(4)),'name':name,'role':'Allroundare','role_type':'allround','home_station':'code','work_instructions':'','provider':'codex','station':'cafe','focus':'Första spelbara versionen','skills':{'coding':5,'testing':3,'documentation':2},'allowed_stations':(list(ALLOWED_STATIONS) if not agents else ['code','qa','docs']),'work_mode':'manual','personality':'Noggrann','hired_at':datetime.now(timezone.utc).isoformat()}
     agents.append(entry); staff_write(slug,agents)
     return entry
 
 ALLOWED_STATIONS = set(SKILL_STATIONS) if 'SKILL_STATIONS' in globals() else {'lead','code','research','qa','meeting','docs','music','voice','art'}
 WORK_MODES={'manual','specialist','autonomous'}
-ROLE_PRESETS = {'allround':'Allroundare','programmer':'Programmerare','qa':'QA-testare','artist':'Grafiker','musician':'Musiker','voice':'Röstproducent','writer':'Författare','research':'Researcher','lead':'Arbetsledare'}
+ROLE_PRESETS = {'writer':'Creative Director / Storywriter','allround':'Allroundare','programmer':'Programmerare','qa':'QA-testare','artist':'Grafiker','musician':'Musiker','voice':'Röstproducent','research':'Researcher','lead':'Arbetsledare'}
+# Default permissions and competence are role-driven, not tied to a manually chosen home desk.
+ROLE_STATIONS = {
+ 'allround':['code','qa','docs','research','meeting'],
+ 'programmer':['code','qa','docs'], 'qa':['qa','code','docs'],
+ 'artist':['art','code','qa'], 'musician':['music','qa'],
+ 'voice':['voice','music','docs'], 'writer':['docs','research','meeting'],
+ 'research':['research','docs','meeting'], 'lead':['lead','meeting','code','qa','docs','research','music','art','voice'],
+}
+ROLE_SKILLS = {
+ 'allround':{'coding':3,'testing':3,'documentation':3},
+ 'programmer':{'coding':5,'testing':3,'documentation':2},
+ 'qa':{'testing':5,'coding':4,'documentation':3,'art':1},
+ 'artist':{'art':5,'coding':3,'testing':2},
+ 'musician':{'music':5,'voice':3,'testing':2},
+ 'voice':{'voice':5,'music':3,'documentation':2},
+ 'writer':{'planning':4,'documentation':5,'research':4},
+ 'research':{'research':5,'documentation':4},
+ 'lead':{'planning':5,'review':5,'meeting':4,'coding':2},
+}
+def role_defaults(role):
+ if role not in ROLE_PRESETS: raise ValueError('Ogiltigt yrke')
+ stations=list(ROLE_STATIONS[role])
+ return {'role':ROLE_PRESETS[role], 'home_station':stations[0], 'allowed_stations':stations, 'skills':dict(ROLE_SKILLS[role])}
 
 def update_staff_profile(slug,payload):
     agents=staff_read(slug)
@@ -270,8 +295,10 @@ def update_staff_profile(slug,payload):
     personality=payload.get('personality',agent.get('personality','Noggrann'))
     instructions=payload.get('work_instructions',agent.get('work_instructions',''))
     mode=payload.get('work_mode',agent.get('work_mode','manual'))
-    stations=payload.get('allowed_stations',agent.get('allowed_stations',['code','qa','docs']))
-    home=payload.get('home_station',agent.get('home_station','code'))
+    presets=role_defaults(role_type)
+    role=payload.get('role',presets['role']) if 'role_type' not in payload else presets['role']
+    stations=payload.get('allowed_stations',presets['allowed_stations'] if 'role_type' in payload else agent.get('allowed_stations',presets['allowed_stations']))
+    home=payload.get('home_station',presets['home_station'] if 'role_type' in payload else agent.get('home_station',presets['home_station']))
     if 'home_station' not in payload and home not in stations and isinstance(stations,list) and stations:
         home=stations[0]
     if not isinstance(name,str) or not 1<=len(name.strip())<=35: raise ValueError('Ogiltigt namn')
@@ -290,8 +317,53 @@ def update_staff_profile(slug,payload):
         if agent.get('station') not in ('cafe',None) and agent['station'] not in stations:
             agent['station']='cafe'
         agent.update(provider=provider,name=name.strip(),role=role.strip(),role_type=role_type,personality=personality.strip(),work_instructions=instructions.strip(),home_station=home,work_mode=mode,allowed_stations=list(dict.fromkeys(stations)))
+        if payload.get('apply_role_skills') and role_type!=agent.get('_role_preset_applied'):
+            agent['skills']=dict(presets['skills'])
+            agent['_role_preset_applied']=role_type
         staff_write(slug,agents)
+        if payload.get('apply_role_skills'):
+            f=skill_settings_file(slug)
+            data=json.loads(f.read_text(encoding='utf-8')) if f.exists() else {}
+            entry=data.setdefault(agent['id'],{})
+            for skill,level in presets['skills'].items():
+                old=entry.get(skill,{})
+                entry[skill]={**old,'level':level}
+            tmp=f.with_suffix('.tmp')
+            tmp.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+            tmp.replace(f)
     return agent
+
+def dismiss_staff(slug, payload):
+    """Explicitly dismiss an idle employee without erasing historical work."""
+    if payload.get('approval') != 'DISMISS_STAFF':
+        raise ValueError('Bekräftelse krävs för att avsluta anställningen')
+    ident=payload.get('agent_id')
+    with LOCK:
+        agents=staff_read(slug)
+        person=next((a for a in agents if a.get('id')==ident),None)
+        if person is None: raise ValueError('Den anställde finns inte')
+        if any(j.get('agent_id')==ident and j.get('project')==slug and j.get('state') in ('queued','running') for j in JOBS.values()):
+            raise ValueError('Agenten har ett pågående jobb. Vänta tills det är klart.')
+        # Also check persisted work order assignments that are actually running.
+        pending=order_read(slug) if 'order_read' in globals() else []
+        if isinstance(pending,list) and any(o.get('agent_id')==ident and o.get('status') in ('running','in_progress') for o in pending):
+            raise ValueError('Agenten har en aktiv arbetsorder')
+        staff_write(slug,[a for a in agents if a.get('id')!=ident])
+        # Remove stale station-specific ownership. Leave reports/orders intact.
+        rules=assignments_read(slug)
+        updated=False
+        for rule in rules.values():
+            if isinstance(rule,dict) and ident in rule.get('agent_ids',[]):
+                rule['agent_ids']=[a for a in rule['agent_ids'] if a!=ident]
+                if rule.get('mode')=='exclusive' and not rule['agent_ids']:
+                    rule['mode']='open'  # Prevent an ownerless exclusive station.
+                updated=True
+        if updated:
+            assignment_file=assignments_file(slug)
+            tmp=assignment_file.with_suffix('.tmp')
+            tmp.write_text(json.dumps(rules,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+            tmp.replace(assignment_file)
+    return {'dismissed':ident,'name':person.get('name'),'history_preserved':True}
 
 def assignments_file(slug):
     return path_for(slug)/'management'/'STATION_ASSIGNMENTS.json'
@@ -616,41 +688,111 @@ def create_worker_tree(slug,job_id):
     if result.returncode:raise ValueError('Kunde inte skapa isolerad arbetsyta: '+result.stderr[-280:])
     return tree,branch
 
+def chief_block_report(slug, health):
+    """Leave one persistent desk report per distinct blocked situation; no AI execution.
+
+    Use a deterministic report ID to avoid filling the desk every four seconds.
+    A changed obstacle gets a new report; older reports remain reviewable.
+    """
+    if not health.get('leader_active') or not health.get('waiting') or health.get('active_jobs'):
+        return None
+    if health.get('state') not in ('blocked','mandate_required','codex_unavailable','error'):
+        return None
+    reason=str(health.get('reason') or 'Orsak okänd')[:450]
+    blocked=health.get('blocked') or []
+    order_ids=sorted(str(b.get('order_id','')) for b in blocked)
+    import hashlib as _hashlib
+    fingerprint=json.dumps([health['state'],reason,order_ids],ensure_ascii=False)
+    rid=_hashlib.sha256(fingerprint.encode('utf-8')).hexdigest()[:12]
+    path=report_path(slug,rid)
+    if path.exists():return None
+    detail='\n'.join('• '+str(b.get('station','?'))+' ('+str(b.get('order_id','?'))+'): '+str(b.get('reason','Okänt hinder')) for b in blocked[:8])
+    entry={'id':rid,'project':slug,'source':'studio-dispatch','state':'blocked',
+           'created_at':datetime.now(timezone.utc).isoformat(),'agent_id':None,
+           'agent_name':'Arbetsledaren','station':'lead','order_id':None,
+           'title':'👔 Arbetsledaren behöver hjälp',
+           'summary':('Jag kunde inte fördela '+str(health['waiting'])+' väntande arbetsorder.\n'
+                      +'Orsak: '+reason+('\n\nBerörda uppdrag:\n'+detail if detail else '')
+                      +'\n\nKontrollera mandat, Codex, behörigheter och ledig personal.'),
+           'exit_code':None,'verified':False,'read':False,'archived':False}
+    try:
+        with path.open('x',encoding='utf-8') as out:json.dump(entry,out,ensure_ascii=False,indent=2)
+    except FileExistsError:return None
+    return entry
+
+def dispatch_health(slug):
+    """Read-only observable reasons why the hired chief is not dispatching."""
+    plan=dispatch_plan(slug)
+    mandate=bool(project_mandate(slug).get('enabled'))
+    codex=bool(status().get('execution_enabled'))
+    if not plan['leader_active']:
+        state='no_chief';reason='Ingen aktiv chef. Manuell körning: dra en behörig anställd till bordet med en väntande arbetsorder. Anställ en arbetsledare för automatisk delegering.'
+    elif not mandate:
+        state='mandate_required';reason='Projektmandat saknas. Godkänn skrivning innan chefen får starta Codex.'
+    elif not codex:
+        state='codex_unavailable';reason='Codex CLI är inte körbar på lokalservern.'
+    elif plan['active_jobs']:
+        state='working';reason='Codex-jobb pågår; resultat i granskningskön kan kräva åtgärd.'
+    elif not plan['waiting']:
+        state='idle';reason='Inga väntande arbetsorder.'
+    elif DISPATCH_ERRORS.get(slug):
+        state='error';reason='Kunde inte starta: '+DISPATCH_ERRORS[slug]
+    elif not plan['assignments']:
+        state='blocked';reason=plan['blocked'][0]['reason'] if plan['blocked'] else 'Ingen möjlig tilldelning.'
+    else:
+        state='ready';reason='Chefen har hittat ett jobb och försöker tilldela det.'
+    return {'state':state,'reason':reason,'mandate_enabled':mandate,
+            'leader_active':plan['leader_active'],'waiting':plan['waiting'],
+            'assignments':plan['assignments'],'active_jobs':plan['active_jobs'],
+            'blocked':plan['blocked']}
+
 def dispatch_plan(slug):
+    """One deterministic queue planner. Only a chief at the lead desk enables delegation.
+
+    Planning does not start AI; the separate background scheduler enforces mandate.
+    """
     staff=staff_read(slug)
+    chiefs=[a for a in staff if a.get('role_type')=='lead' and a.get('station')=='lead'
+            and a.get('provider')=='codex' and agent_authorized(slug,a,'lead')]
     waiting=sorted((o for o in orders_read(slug) if o.get('status')=='waiting'),
                    key=lambda o:(o.get('priority',2),o.get('created_at',''),o.get('id','')))
     with LOCK:
         jobs=[j for j in JOBS.values() if j.get('project')==slug and j.get('state') in ('queued','running')]
     working={j.get('agent_id') for j in jobs}
     parallel,reason=isolated_ready(slug)
+    skills=get_skill_settings(slug)
     planned=[];blocked=[]
     for o in waiting:
-        station=o.get('station')
-        workers=[a for a in staff if a.get('provider')=='codex' and a.get('role_type')!='lead'
-                 and a.get('id') not in working and agent_authorized(slug,a,station)
-                 and a.get('work_mode') in ('autonomous','specialist')
-                 and (a.get('work_mode')!='specialist' or a.get('home_station')==station)]
-        workers.sort(key=lambda a:(a.get('home_station')!=station,a.get('name',''),a.get('id','')))
-        # Fallback manager works only if there are no available workers for the order.
+        station=o.get('station');skill=SKILL_STATIONS.get(station)
+        if not chiefs:
+            blocked.append({'order_id':o['id'],'station':station,'reason':'Ingen arbetsledare vid chefsbordet; dra själv en anställd till stationen.'})
+            continue
+        workers=[a for a in staff if a.get('provider')=='codex' and a.get('role_type') not in ('lead','writer','creative')
+                 and a['id'] not in working and agent_authorized(slug,a,station)]
+        # Higher skill first; prefer a specialist's home station at equal level.
+        def rank(a):
+            level=skills.get(a['id'],{}).get(skill,{}).get('level',0)
+            return (-level,a.get('home_station')!=station,a.get('name',''),a['id'])
+        workers.sort(key=rank)
+        # The leader only takes a task if nobody else can. Leader is then busy and no longer delegates.
         if not workers:
-            workers=[a for a in staff if a.get('provider')=='codex' and a.get('role_type')=='lead'
-                     and a.get('id') not in working and agent_authorized(slug,a,station)
-                     and a.get('work_mode') in ('autonomous','specialist')
-                     and (a.get('work_mode')!='specialist' or a.get('home_station')==station)]
+            workers=[a for a in chiefs if a['id'] not in working and agent_authorized(slug,a,station)]
+            workers.sort(key=rank)
         if workers and (parallel or not jobs+planned):
             a=workers[0];working.add(a['id'])
             planned.append({'order_id':o['id'],'station':station,'priority':o.get('priority',2),
                             'agent_id':a['id'],'agent_name':a['name'],'provider':a['provider'],
-                            'delegated_by':'arbetsledare' if any(x.get('role_type')=='lead' for x in staff) else 'dispatch',
-                            'fallback_lead':a.get('role_type')=='lead',
+                            'delegated_by':chiefs[0]['name'], 'fallback_lead':a.get('role_type')=='lead',
                             'instruction':o['instruction'],'attachment_ids':o.get('attachment_ids',[])})
+            if a.get('role_type')=='lead':
+                chiefs=[]  # Manager can't delegate while personally doing the task.
         else:
             blocked.append({'order_id':o['id'],'station':station,
-                            'reason':'Isolerad arbetsyta krävs för samtidiga jobb: '+reason if jobs+planned and not parallel
-                            else 'Ingen ledig behörig Codex-anställd (Gemini är inte aktiv)'})
+                            'reason':'Isolerad arbetsyta krävs: '+reason if jobs+planned and not parallel
+                            else 'Ingen ledig behörig Codex-anställd; andra motorer är inte aktiverade'})
     return {'project':slug,'next':planned[0] if planned else None,'assignments':planned,
             'blocked':blocked,'waiting':len(waiting),'workspace_busy':bool(jobs),
+            'leader_active':bool([a for a in staff if a.get('role_type')=='lead' and a.get('station')=='lead']),
             'parallel_ready':parallel,'parallel_reason':reason,
             'active_jobs':[{'id':j.get('id','okänd'),'agent_name':j.get('agent_name'),'station':j.get('station'),'state':j['state']} for j in jobs]}
 
@@ -786,6 +928,83 @@ def status():
     return {'connected':bool(cmd),'codex_path':cmd,'codex_version':version,'authenticated':'ej kontrollerat','provider':'codex','quota':'okänt','execution_enabled':bool(cmd and version)}
 
 
+def integrate_worker_result(job):
+    """Integrate a completed isolated Codex job locally, never push or overwrite.
+
+    Uncontested fast-forwards need no chief. Divergent branches require an
+    active chief for an automatic conflict-free merge. Anything else is a
+    review task for the owner, not a forced merge.
+    """
+    slug=validate_slug(job['project'])
+    tree=Path(job.get('worktree') or '')
+    project=path_for(slug);work=project/'work'
+    if not job.get('worktree') or not tree.is_dir() or tree.is_symlink():
+        return False,'Agentens arbetsyta saknas; ingen ändring har införts.'
+    if tree.resolve().parent != (project/'management'/'worktrees').resolve():
+        return False,'Agentens arbetsyta är inte godkänd.'
+    if not INTEGRATION_LOCK.acquire(timeout=20):
+        return False,'Integrationen är upptagen; prova igen senare.'
+    try:
+        # Don't integrate while a direct Codex worker may be writing in work/.
+        with LOCK:
+            direct=any(j.get('project')==slug and j.get('state') in ('running','queued')
+                       and not j.get('worktree') for j in JOBS.values())
+        if direct:return False,'Ett arbete pågår i spelets huvudmapp.'
+        if not work.is_dir() or work.is_symlink():return False,'Spelets arbetsmapp är osäker.'
+        work_top=git_result(work,'rev-parse','--show-toplevel')
+        tree_top=git_result(tree,'rev-parse','--show-toplevel')
+        if work_top.returncode or tree_top.returncode or Path(work_top.stdout.strip()).resolve()!=work.resolve() or Path(tree_top.stdout.strip()).resolve()!=tree.resolve():
+            return False,'Git-arbetsytorna kunde inte verifieras.'
+        # Reject unsafe files. Git itself follows ignores; never auto-commit secrets.
+        tracked=git_result(tree,'ls-files','--cached','--others','--exclude-standard','-z')
+        import fnmatch
+        risky=('*.env','*.env.*','*.pem','*.key','*.p12','*.pfx','*credentials*','*secret*','*token*','id_rsa*','id_ed25519*')
+        if tracked.returncode:return False,'Kunde inte kontrollera agentens filer.'
+        files=[n for n in tracked.stdout.split('\0') if n]
+        if any(any(fnmatch.fnmatch(part.lower(),pat) for part in name.split('/') for pat in risky) for name in files):
+            return False,'Arbetet innehåller en fil som kan vara hemlig. Granskning krävs.'
+        if any((tree/name).is_symlink() for name in files):
+            return False,'Arbetet innehåller symlänkar som måste granskas.'
+        if git_result(tree,'add','-A',timeout=30).returncode:return False,'Kunde inte förbereda arbetets ändringar.'
+        check=git_result(tree,'diff','--cached','--check')
+        if check.returncode:return False,'Git hittade formateringsfel. Skicka tillbaka till arbetaren.'
+        staged=git_result(tree,'diff','--cached','--quiet')
+        if staged.returncode==1:
+            commit=subprocess.run(['git','-C',str(tree),'-c','user.name=Pixel Works',
+                '-c','user.email=pixelworks@localhost','commit','-m','Pixel Works: agentresultat '+job['id']],
+                capture_output=True,text=True,timeout=45)
+            if commit.returncode:return False,'Kunde inte spara agentens arbete: '+commit.stderr[-170:]
+        elif staged.returncode != 0:return False,'Kunde inte kontrollera agentens ändringar.'
+        # A concurrent worker may have edited work/: never mix uncommitted changes.
+        dirty=git_result(work,'status','--porcelain','--untracked-files=all')
+        if dirty.returncode or dirty.stdout.strip():return False,'Spelets huvudmapp innehåller ändringar. Arbetsledaren behöver granska.'
+        main=git_result(work,'rev-parse','HEAD')
+        child=git_result(tree,'rev-parse','HEAD')
+        if main.returncode or child.returncode:return False,'Git-historiken kunde inte läsas.'
+        if main.stdout.strip()==child.stdout.strip():return True,'Inga nya filer att införa.'
+        branch=job.get('branch','')
+        if not re.fullmatch(r'pixelworks/job-[a-f0-9]{12}',branch):
+            return False,'Agentens arbetsgren kunde inte verifieras.'
+        # No manager required to integrate when the base is untouched.
+        base=git_result(work,'merge-base','--is-ancestor',main.stdout.strip(),child.stdout.strip())
+        if base.returncode==0:
+            merged=git_result(work,'merge','--ff-only',branch,timeout=45)
+            if merged.returncode:return False,'Git kunde inte införa arbetet utan konflikt: '+merged.stderr[-150:]
+            return True,'Ändringen infördes direkt i spelet.'
+        chiefs=[a for a in staff_read(slug) if a.get('role_type')=='lead' and a.get('station')=='lead']
+        if not chiefs:return False,'Spelet har förändrats sedan arbetet började. En arbetsledare behövs för att sammanföra resultatet.'
+        # Manager's rule-based review: conflict-free merges only; no AI-generated resolution.
+        merged=subprocess.run(['git','-C',str(work),'-c','user.name=Pixel Works',
+            '-c','user.email=pixelworks@localhost','merge','--no-ff','--no-edit',branch],
+            capture_output=True,text=True,timeout=45)
+        if merged.returncode:
+            git_result(work,'merge','--abort',timeout=20)
+            return False,'Arbetet krockar med andra ändringar. Arbetsledaren kunde inte lösa konflikten säkert.'
+        return True,'Arbetsledaren sammanförde resultatet utan filkonflikter.'
+    except (OSError,subprocess.TimeoutExpired,ValueError) as exc:
+        return False,'Integrationen kunde inte slutföras: '+str(exc)[:160]
+    finally:INTEGRATION_LOCK.release()
+
 def run_codex(job_id, slug, instruction):
     job = JOBS[job_id]
     try:
@@ -826,7 +1045,14 @@ def run_codex(job_id, slug, instruction):
                 raise RuntimeError('Sessionen nådde maxgränsen 10 minuter; granska work innan återstart')
             time.sleep(.3)
         th.join(timeout=2)
-        with LOCK: job.update(state=('review' if job.get('worktree') and process.returncode==0 else 'done' if process.returncode==0 else 'failed'),exit_code=process.returncode,finished_at=datetime.now(timezone.utc).isoformat())
+        if process.returncode==0 and job.get('worktree'):
+            integrated,reason=integrate_worker_result(job)
+            with LOCK: job.update(state=('done' if integrated else 'review'),integration_note=reason,
+                                  integrated=integrated,exit_code=process.returncode,
+                                  finished_at=datetime.now(timezone.utc).isoformat())
+        else:
+            with LOCK: job.update(state=('done' if process.returncode==0 else 'failed'),
+                                  exit_code=process.returncode,finished_at=datetime.now(timezone.utc).isoformat())
     except Exception as ex:
         with LOCK: job.update(state='failed',error=str(ex)[:500],finished_at=datetime.now(timezone.utc).isoformat())
     if job.get('order_id'):
@@ -836,6 +1062,15 @@ def run_codex(job_id, slug, instruction):
                 if item['id']==job['order_id']:item['status']='review' if job['state']=='review' else 'done' if job['state']=='done' else 'failed'
             orders_write(slug,items)
         except Exception as ex: print('ORDERFEL: '+str(ex),file=sys.stderr,flush=True)
+    # After completed/failed shift, staff go to break; manager returns to own desk.
+    try:
+        people=staff_read(slug)
+        for person in people:
+            if person.get('id')==job.get('agent_id'):
+                person['station']='lead' if person.get('role_type')=='lead' else 'cafe'
+        staff_write(slug,people)
+    except Exception as exc:
+        print('PERSONALFEL: '+str(exc),file=sys.stderr,flush=True)
     try: make_report(job)
     except Exception as ex: print('RAPPORTFEL: '+str(ex),file=sys.stderr,flush=True)
 
@@ -872,8 +1107,10 @@ def make_report(job):
             'agent_id':job.get('agent_id'),'agent_name':job.get('agent_name','Okänd anställd'),
             'station':job.get('station'),'order_id':job.get('order_id'),
             'title':(job.get('agent_name') or 'Codex')+(' – klar för granskning' if job['state']=='review' else ' avslutade sitt arbetspass' if job['state']=='done' else ' – arbetspasset misslyckades'),
-            'summary':(last[-1] if last else 'Ingen avslutande agentrapport hittades. Granska arbetsmappen och råloggen.'),
-            'exit_code':job.get('exit_code'),'verified':False,'read':False,'archived':False}
+            'summary':(last[-1] if last else 'Ingen avslutande agentrapport hittades. Granska arbetsmappen och råloggen.') + ('\n\n⚠ '+job['integration_note'] if job.get('state')=='review' and job.get('integration_note') else ''),
+            'exit_code':job.get('exit_code'),'verified':False,'read':bool(job.get('integrated')),
+            'archived':bool(job.get('integrated')),'integrated':bool(job.get('integrated')),
+            'integration_note':job.get('integration_note','')}
     # Exclusive creation guarantees one report per session, even with duplicate polling.
     try:
         with path.open('x',encoding='utf-8') as out:json.dump(report,out,ensure_ascii=False,indent=2)
@@ -888,6 +1125,47 @@ def list_reports(slug):
         try:result.append(json.loads(path.read_text(encoding='utf-8')))
         except (OSError,ValueError):continue
     return sorted(result,key=lambda x:x.get('created_at',''),reverse=True)
+
+def recover_completed_reviews(slug):
+    """One safe reconciliation pass for completed worktrees left by older releases.
+
+    Never re-run Codex, never touch failed reports, and never auto-merge when
+    a direct writer is active. A conflict stays visible on the owner's desk.
+    """
+    if not project_mandate(slug).get('enabled'):return []
+    with LOCK:
+        if any(j.get('project')==slug and j.get('state') in ('queued','running') for j in JOBS.values()):return []
+    results=[]
+    for report in list_reports(slug):
+        if report.get('source')!='codex-cli' or report.get('state')!='review' or report.get('archived'):
+            continue
+        jid=report.get('id','')
+        if not re.fullmatch(r'[a-f0-9]{12}',jid):continue
+        tree=path_for(slug)/'management'/'worktrees'/('job-'+jid)
+        if not tree.is_dir() or tree.is_symlink():continue
+        job={'id':jid,'project':slug,'worktree':str(tree),'branch':'pixelworks/job-'+jid}
+        ok,note=integrate_worker_result(job)
+        file=report_path(slug,jid)
+        if not file.is_file() or file.is_symlink():continue
+        saved=json.loads(file.read_text(encoding='utf-8'))
+        saved.update(integration_note=note,integrated=ok)
+        if ok:saved.update(state='done',read=True,archived=True,title=(saved.get('agent_name') or 'Arbetare')+' – infört i spelet')
+        else:
+            base=saved.get('summary','').split('\n\n⚠ Integration:')[0]
+            saved['summary']=base+'\n\n⚠ Integration: '+note
+        tmp=file.with_suffix('.integration-tmp')
+        if tmp.exists() or tmp.is_symlink():continue
+        with tmp.open('x',encoding='utf-8') as f:json.dump(saved,f,ensure_ascii=False,indent=2)
+        tmp.replace(file)
+        if ok and report.get('order_id'):
+            try:
+                orders=orders_read(slug)
+                for order in orders:
+                    if order.get('id')==report['order_id']:order['status']='done'
+                orders_write(slug,orders)
+            except (ValueError,OSError):pass
+        results.append((jid,ok,note))
+    return results
 
 def update_report(slug,rid,action):
     if action not in ('read','archive'):raise ValueError('Ogiltig rapportåtgärd')
@@ -926,6 +1204,11 @@ class Handler(SimpleHTTPRequestHandler):
         if re.fullmatch(r'/api/projects/[a-z0-9-]+/preview',route):
             slug=route.split('/')[3]
             try:
+                # A new project has a valid work/ directory but no playable entry yet.
+                # Keep this distinct from a missing or unsafe directory.
+                work=path_for(slug)/'work'
+                if work.is_dir() and not work.is_symlink() and not (work/'index.html').is_file():
+                    return self.reply(200,{'ready':False,'reason':'Spelet är ännu inte byggt: index.html saknas i work/. Projektmappen finns och är redo för utveckling.'})
                 file=preview_file(slug,'index.html')
                 return self.reply(200,{'ready':True,'kind':'web-static','url':'http://127.0.0.1:'+str(getattr(self.server,'preview_port',self.server.server_port+1))+'/preview/'+slug+'/','entry':'index.html'})
             except (ValueError,OSError) as ex:
@@ -947,6 +1230,9 @@ class Handler(SimpleHTTPRequestHandler):
         if re.fullmatch(r'/api/projects/[a-z0-9-]+/lead',route):
             try:return self.reply(200,{'plans':lead_read(route.split('/')[3])})
             except (ValueError,OSError) as ex:return self.reply(400,{'error':str(ex)})
+        if re.fullmatch(r'/api/projects/[a-z0-9-]+/dispatch/health',route):
+            try:return self.reply(200,dispatch_health(route.split('/')[3]))
+            except (ValueError,OSError) as ex:return self.reply(400,{'error':str(ex)})
         if re.fullmatch(r'/api/projects/[a-z0-9-]+/dispatch',route):
             try:return self.reply(200,dispatch_plan(route.split('/')[3]))
             except (ValueError,OSError) as ex:return self.reply(400,{'error':str(ex)})
@@ -959,6 +1245,13 @@ class Handler(SimpleHTTPRequestHandler):
         if re.fullmatch(r'/api/projects/[a-z0-9-]+/staff',route):
             try: return self.reply(200,{'staff':staff_read(route.split('/')[3])})
             except (ValueError,OSError,RuntimeError) as ex: return self.reply(404,{'error':str(ex)})
+        if re.fullmatch(r'/api/projects/[a-z0-9-]+/jobs',route):
+            if not self.auth(): return self.reply(403,{'error':'Ogiltig session'})
+            slug=route.split('/')[3]
+            try: validate_slug(slug); path_for(slug)
+            except (ValueError,OSError) as ex:return self.reply(404,{'error':str(ex)})
+            with LOCK: entries=[dict(j) for j in JOBS.values() if j['project']==slug]
+            return self.reply(200,{'jobs':sorted(entries,key=lambda j:j['created_at'],reverse=True)[:30]})
         if route.startswith('/api/projects/'):
             try: return self.reply(200,verify_project(route.split('/')[-1]))
             except (ValueError,OSError,RuntimeError) as ex: return self.reply(404,{'error':str(ex),'verified':False})
@@ -970,13 +1263,6 @@ class Handler(SimpleHTTPRequestHandler):
                         try: arr.append(json.loads((p/'project.json').read_text(encoding='utf-8')))
                         except (ValueError,OSError): pass
             return self.reply(200,{'projects':arr})
-        if re.fullmatch(r'/api/projects/[a-z0-9-]+/jobs',route):
-            if not self.auth(): return self.reply(403,{'error':'Ogiltig session'})
-            slug=route.split('/')[3]
-            try: validate_slug(slug); path_for(slug)
-            except (ValueError,OSError) as ex:return self.reply(404,{'error':str(ex)})
-            with LOCK: entries=[dict(j) for j in JOBS.values() if j['project']==slug]
-            return self.reply(200,{'jobs':sorted(entries,key=lambda j:j['created_at'],reverse=True)[:30]})
         if route.startswith('/api/jobs/'):
             if not self.auth(): return self.reply(403,{'error':'Ogiltig session'})
             job=route.split('/')[-1]
@@ -1028,6 +1314,8 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.reply(200,{'skill':save_skill_setting(route.split('/')[3],payload)})
             if re.fullmatch(r'/api/projects/[a-z0-9-]+/staff/profile',route):
                 return self.reply(200,{'agent':update_staff_profile(route.split('/')[3],payload)})
+            if re.fullmatch(r'/api/projects/[a-z0-9-]+/staff/dismiss',route):
+                return self.reply(200,dismiss_staff(route.split('/')[3],payload))
             if re.fullmatch(r'/api/projects/[a-z0-9-]+/assignments',route):
                 return self.reply(200,{'assignment':assignment_save(route.split('/')[3],payload)})
             if re.fullmatch(r'/api/projects/[a-z0-9-]+/hire',route):
@@ -1065,13 +1353,15 @@ class Handler(SimpleHTTPRequestHandler):
                     active=[j for j in JOBS.values() if j['state'] in ('queued','running') and j['project']==slug]
                     if any(j.get('agent_id')==agent['id'] for j in active):raise ValueError('Agenten arbetar redan')
                     parallel,reason=isolated_ready(slug)
+                    if active and payload.get('isolated') is not True:
+                        raise ValueError('Samtidiga jobb kräver isolerad arbetsyta. Använd Autoarbete eller välj isolerad körning.')
                     if active and not parallel:raise ValueError('Ett jobb körs redan; parallell körning kräver '+reason)
                     jid=uuid.uuid4().hex[:12]
                     JOBS[jid]={'id':jid,'project':slug,'agent_id':agent['id'],'agent_name':agent['name'],'station':station,'instruction':instruction[:4000],'order_id':payload.get('order_id'),'state':'queued','events':[],'provider':'codex','created_at':datetime.now(timezone.utc).isoformat()}
-                # Explicit opt-in for isolated worktrees. Active concurrent tasks must use isolation.
+                # Git was prepared before registering the queued job. Repeating preparation
+                # here misclassifies this very job as a direct writer and fails with HTTP 400.
                 if payload.get('isolated') is True:
                     try:
-                        prepare_parallel_git(slug)
                         tree,branch=create_worker_tree(slug,jid)
                         with LOCK:JOBS[jid].update(worktree=str(tree),branch=branch)
                     except Exception:
@@ -1079,7 +1369,7 @@ class Handler(SimpleHTTPRequestHandler):
                         raise
                 elif active:
                     with LOCK:JOBS.pop(jid,None)
-                    raise ValueError('Samtidiga jobb måste använda isolerad=true')
+                    raise ValueError('Samtidiga jobb kräver isolerad arbetsyta')
                 # Explicit attachment selection; never trust filenames or paths from the request.
                 ids=payload.get('attachment_ids',[])
                 if not isinstance(ids,list) or len(ids)>16 or any(not isinstance(i,str) or not re.fullmatch(r'[a-f0-9]{16}',i) for i in ids):
@@ -1191,6 +1481,74 @@ def read_control(port):
     except (OSError,KeyError,ValueError):
         return None
 
+# Automatic office scheduler is a LOCAL server feature; no "start auto" button.
+# An actual hired chief seated at 'lead' and prior project write mandate are both required.
+def office_scheduler(port, stop_event):
+    from urllib.request import Request, urlopen
+    from urllib.error import HTTPError
+    retry_after={}
+    reconciled=set()
+    while not stop_event.wait(4):
+        if not PROJECTS.is_dir():continue
+        for folder in list(PROJECTS.iterdir()):
+            if stop_event.is_set():return
+            if not folder.is_dir() or folder.is_symlink() or not (folder/'project.json').is_file():continue
+            slug=folder.name
+            try:
+                if slug not in reconciled and project_mandate(slug).get('enabled'):
+                    if not any(j.get('project')==slug and j.get('state') in ('queued','running') for j in JOBS.values()):
+                        recover_completed_reviews(slug)
+                        reconciled.add(slug)
+                health=dispatch_health(slug)
+                chief_block_report(slug,health)
+                if health['state'] in ('mandate_required','codex_unavailable','no_chief','idle'):
+                    continue
+                plan=dispatch_plan(slug)
+                for task in plan['assignments'][:4]:
+                    if time.monotonic() < retry_after.get((slug,task['order_id']),0):continue
+                    # A chief executing a fallback task is no longer available to delegate more.
+                    if not dispatch_plan(slug)['leader_active']:break
+                    agent=next((a for a in staff_read(slug) if a['id']==task['agent_id']),None)
+                    if not agent:continue
+                    old_station=agent.get('station','cafe')
+                    try:
+                        move_staff(slug,{'agent_id':agent['id'],'station':task['station']})
+                    except Exception as exc:
+                        DISPATCH_ERRORS[slug]='Kunde inte flytta '+agent['name']+': '+str(exc)[:170]
+                        chief_block_report(slug,dispatch_health(slug))
+                        break
+                    payload={'project':slug,'station':task['station'],'agent_id':agent['id'],
+                             'instruction':task['instruction'],'order_id':task['order_id'],
+                             'attachment_ids':task['attachment_ids'],'isolated':True,'approval':'PROJECT_MANDATE'}
+                    req=Request('http://127.0.0.1:%d/api/jobs'%port,
+                                data=json.dumps(payload).encode(),method='POST',headers={
+                                 'Content-Type':'application/json','Origin':'http://127.0.0.1:%d'%port,
+                                 'X-Pixelworks-Token':TOKEN})
+                    try:
+                        with urlopen(req,timeout=8) as response:response.read()
+                        DISPATCH_ERRORS.pop(slug,None)
+                        retry_after.pop((slug,task['order_id']),None)
+                    except Exception as exc:
+                        detail=str(exc)
+                        if isinstance(exc,HTTPError):
+                            try:
+                                data=json.loads(exc.read().decode('utf-8'))
+                                detail=str(data.get('error') or detail)
+                            except (ValueError, UnicodeError, OSError):pass
+                        # Avoid a retry storm while preserving the actionable backend error.
+                        retry_after[(slug,task['order_id'])]=time.monotonic()+60
+                        DISPATCH_ERRORS[slug]=detail[:240]
+                        try:move_staff(slug,{'agent_id':agent['id'],'station':old_station})
+                        except (ValueError,OSError):pass
+                        chief_block_report(slug,dispatch_health(slug))
+                        print('Studio scheduler: '+slug+': '+detail,file=sys.stderr,flush=True)
+                        break
+            except Exception as exc:
+                DISPATCH_ERRORS[slug]=str(exc)[:240]
+                try:chief_block_report(slug,dispatch_health(slug))
+                except Exception:pass
+                print('Studio scheduler: '+slug+': '+str(exc),file=sys.stderr,flush=True)
+
 def run_server(port):
     existing=read_control(port)
     if existing:
@@ -1217,6 +1575,8 @@ def run_server(port):
         raise KeyboardInterrupt
     signal.signal(signal.SIGTERM,handle_signal)
     threading.Thread(target=preview.serve_forever,daemon=True).start()
+    scheduler_stop=threading.Event()
+    threading.Thread(target=office_scheduler,args=(port,scheduler_stop),daemon=True).start()
     print(f'Preview: http://127.0.0.1:{preview.server_port}/preview/<projekt-id>/',flush=True)
     print(f'Pixel Works v{APP_VERSION}: http://127.0.0.1:{port} | arbetsrot {ROOT}',flush=True)
     print(f'Stoppa från denna katalog: python3 backend/server.py stop',flush=True)
@@ -1225,7 +1585,7 @@ def run_server(port):
     except KeyboardInterrupt:
         pass
     finally:
-        server.server_close();preview.shutdown();preview.server_close()
+        scheduler_stop.set();server.server_close();preview.shutdown();preview.server_close()
         try:
             if json.loads(path.read_text()).get('pid')==os.getpid(): path.unlink()
         except (OSError,ValueError): pass

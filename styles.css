@@ -364,3 +364,5 @@ body.live-project .right-rail .real-job-events{flex:1;overflow-y:auto;min-height
 body.live-project .rail-resize{display:none}
 
 body.live-project .office-hint-right{display:none}
+
+.local-dialog .profile-scroll{min-height:0;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding:4px 2px;scrollbar-gutter:stable}

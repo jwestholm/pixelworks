@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const source=fs.readFileSync(new URL('./local.js',import.meta.url),'utf8');
+assert.match(source,/async function watchServerJobs\(/);
+assert.match(source,/api\('\/api\/projects\/'\+slug\+'\/jobs'\)/);
+assert.match(source,/api\('\/api\/projects\/'\+slug\+'\/dispatch\/health'\)/);
+assert.match(source,/setInterval\(watchServerJobs,3000\)/);
+assert.match(source,/renderLiveState\(full\)/);
+assert.match(source,/Aktiva arbetare/);
+console.log('PASS: Server-started job discovery and right-rail diagnostics');

@@ -31,7 +31,7 @@ style.textContent+=`.task-ref{display:flex!important;align-items:center;gap:9px;
 const btn=document.createElement('button');btn.className='pixel-button secondary';btn.textContent='⚙ Lokal studio';btn.id='localStudioBtn';$('#studioBtn')?.after(btn);
 const dialog=document.createElement('dialog');dialog.className='local-dialog';dialog.id='localStudioDialog';document.body.append(dialog);
 const safeSlug=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,48);
-function view(html){dialog.innerHTML=`<div class="local-shell-header"><h2>⚙ LOKAL STUDIO</h2><button type="button" id="localClose" class="alt" aria-label="Stäng">✕</button></div><small class="local-shell-info">Pixel Works v${info?.version||'okänd'} · autoarbete kräver aktivering</small><div class="local-shell-body">${html}</div>`;$('#localClose').onclick=()=>dialog.close();if(!dialog.open)dialog.showModal();}
+function view(html){dialog.innerHTML=`<div class="local-shell-header"><h2>⚙ LOKAL STUDIO</h2><button type="button" id="localClose" class="alt" aria-label="Stäng">✕</button></div><small class="local-shell-info">Pixel Works v${info?.version||'okänd'} · chefen delegerar från sitt skrivbord</small><div class="local-shell-body">${html}</div>`;$('#localClose').onclick=()=>dialog.close();if(!dialog.open)dialog.showModal();}
 async function api(path, payload){const r=await fetch(path,{method:payload?'POST':'GET',credentials:'same-origin',headers:{...(token?{'X-Pixelworks-Token':token}:{}),...(payload?{'Content-Type':'application/json'}:{})},...(payload?{body:JSON.stringify(payload)}:{})});const body=await r.json();if(!r.ok)throw Error(body.error||'HTTP '+r.status);return body;}
 async function init(){try{info=await api('/api/bootstrap');token=info.token;const data=await api('/api/projects');projects=data.projects;await refreshLiveRoster();return true}catch(e){view(`<p>Spelet körs utan den lokala projektmotorn.</p><p>Starta med: <code>python3 backend/server.py</code> och öppna <b>http://127.0.0.1:8765</b>.</p><p class="error">${esc(e.message)}</p>`);return false;}}
 async function refreshLiveRoster(){
@@ -42,7 +42,13 @@ async function refreshLiveRoster(){
 }
 window.pixelWorksMoveLive=async function(slug,agentId,station){
   await api('/api/projects/'+slug+'/station',{agent_id:agentId,station});
-  if(station!=='cafe'){requestedStation=station;await stationOrders(slug,station,true);}
+  if(station!=='cafe' && station!=='lead'){
+    const team=(await api('/api/projects/'+slug+'/staff')).staff;
+    const chiefHere=team.some(a=>a.role_type==='lead'&&a.station==='lead');
+    if(!chiefHere){const pending=(await api('/api/projects/'+slug+'/orders')).orders.some(o=>o.station===station&&o.status==='waiting');
+      if(pending){requestedStation=station;await startQueue(slug,station);}
+    }
+  }
 };
 window.pixelWorksSkillsLive=async function(slug,agentId){
   try{
@@ -71,19 +77,44 @@ window.pixelWorksSkillsLive=async function(slug,agentId){
 // Arbetsorder: passiv projektkö, sorterad efter prioritet och manuell ordning.
 let activeOrderStation=null, queueRun=null, studioAuto=null;
 function dispatchOfficeStatus(message){
- const hint=document.querySelector('.office-hint-right');if(hint)hint.textContent='🤖 Autoarbete: '+message;
+ const hint=document.querySelector('.office-hint-right');if(hint)hint.textContent='👔 Chef: '+message;
  const badge=document.querySelector('#studioAutoStatus');if(badge)badge.textContent=message;
 }
 
 function sortedOrders(items,station){return items.filter(o=>o.station===station).sort((a,b)=>a.priority-b.priority||items.indexOf(a)-items.indexOf(b));}
 async function launchOrder(slug,order){
   const mandate=(await api('/api/projects/'+slug+'/mandate')).mandate;
-  if(!mandate.enabled)throw Error('Godkänn projektmandatet i uppdragsfönstret innan du kör en hel kö.');
+  if(!mandate.enabled){
+    // A written order already exists. Consent here concerns Codex writing to this project's files.
+    if(!confirm('🔒 Första arbetspasset i detta spel\n\nArbetsordern är redan skapad. Codex behöver ditt tillstånd att ändra filer i spelets arbetsmapp (work/).\n\nGodkänn lokalt skrivmandat för detta spel? Ingen GitHub-push görs.')){
+      throw Error('Arbetsordern väntar. Projektmandatet har inte godkänts. Dra hit programmeraren igen när du vill starta.');
+    }
+    await api('/api/projects/'+slug+'/mandate',{enabled:true,approval:'ALLOW_CODEX_WORKSPACE_WRITE'});
+  }
   const agents=(await api('/api/projects/'+slug+'/staff')).staff;
-  const eligible=agents.filter(a=>a.provider==='codex'&&a.station===order.station&&(a.allowed_stations||Object.keys(STATION_FOCUS)).includes(order.station));
-  if(eligible.length!==1)throw Error('Placera exakt en behörig Codex-agent vid stationen för köstart.');
-  const r=await api('/api/jobs',{project:slug,station:order.station,instruction:order.instruction,attachment_ids:order.attachment_ids||[],order_id:order.id,agent_id:eligible[0].id,approval:'PROJECT_MANDATE'});
-  jobId=r.job_id;currentLiveJob={id:jobId,project:slug,agent_id:eligible[0].id,agent_name:eligible[0].name,state:'queued',instruction:order.instruction,station:order.station,events:[]};
+  const placed=agents.filter(a=>a.provider==='codex'&&a.station===order.station&&(a.allowed_stations||Object.keys(STATION_FOCUS)).includes(order.station)&&a.role_type!=='writer');
+  let chosen=null;
+  if(placed.length===1){chosen=placed[0];}
+  else {
+    throw Error('Välj en behörig anställd och dra honom till bordet, eller placera chefen vid chefsbordet.');
+    /*
+    // The same server-owned dispatch plan selects the employee for a station order;
+    // dragging employees is not required, and manual queue start must not invent authorization.
+    const plan=await api('/api/projects/'+slug+'/dispatch');
+    const assigned=(plan.assignments||[]).find(a=>a.order_id===order.id);
+    if(!assigned){
+      const blocked=(plan.blocked||[]).find(a=>a.order_id===order.id);
+      throw Error('Ingen ledig, behörig agent för arbetsordern. '+(blocked?.reason||'Kontrollera arbetsläge och stationsbehörigheter i personalprofilen.')+' Öppna Autoarbete för att se tilldelningarna.');
+    }
+    chosen=agents.find(a=>a.id===assigned.agent_id);
+    if(!chosen)throw Error('Tilldelad agent saknas. Öppna Autoarbete och försök igen.');
+    await api('/api/projects/'+slug+'/station',{agent_id:chosen.id,station:order.station});
+    */
+  }
+  // An isolated worktree is always requested, even if another agent starts simultaneously.
+  // No automatic merge is performed after completion.
+  const r=await api('/api/jobs',{project:slug,station:order.station,instruction:order.instruction,attachment_ids:order.attachment_ids||[],order_id:order.id,agent_id:chosen.id,isolated:true,approval:'PROJECT_MANDATE'});
+  jobId=r.job_id;currentLiveJob={id:jobId,project:slug,agent_id:chosen.id,agent_name:chosen.name,state:'queued',instruction:order.instruction,station:order.station,events:[]};
   sessionStorage.setItem(LIVE_SESSION_KEY,jobId);lastJobState='';liveSpeechFresh=true;liveSpeechInitialized=false;await pollLiveJob();await refreshOrderBadges(slug);
 }
 async function startQueue(slug,station){
@@ -107,14 +138,16 @@ async function runStudioAuto(slug){
  try{
   const plan=await api('/api/projects/'+slug+'/dispatch');
   const running=plan.active_jobs||[];
-  const tasks=plan.parallel_ready?(plan.assignments||[]):(plan.next?[plan.next]:[]);
+  // Autoarbete is opt-in for isolated execution. Never dispatch direct-writing jobs.
+  if(!plan.parallel_ready){await stopStudioAuto('Isolerade arbetsytor inte redo: '+plan.parallel_reason);return;}
+  const tasks=plan.assignments||[];
   for(const next of tasks.slice(0,4)){
    if(!studioAuto||studioAuto.slug!==slug)break;
    // A server-side check still prevents duplicate claims, unauthorized station moves and concurrent edits.
    await api('/api/projects/'+slug+'/station',{agent_id:next.agent_id,station:next.station});
    const result=await api('/api/jobs',{project:slug,station:next.station,agent_id:next.agent_id,
     instruction:next.instruction,order_id:next.order_id,attachment_ids:next.attachment_ids,
-    isolated:!!plan.parallel_ready,approval:'PROJECT_MANDATE'});
+    isolated:true,approval:'PROJECT_MANDATE'});
    dispatchSeen.add(result.job_id);
    dispatchOfficeStatus('🔴 '+next.agent_name+' → '+next.station+' · '+result.job_id+(plan.parallel_ready?' · egen arbetsyta':''));
    await refreshOrderBadges(slug);
@@ -140,9 +173,9 @@ async function studioAutoControls(slug){
   const workers=(plan.active_jobs||[]).map(j=>'<p>🔴 '+esc(j.agent_name)+' · '+esc(j.station)+' · '+esc(j.id)+'</p>').join('');
   const assignments=(plan.assignments||[]).map(a=>'<div class="line">📄 P'+a.priority+' · '+esc(a.agent_name)+' → '+esc(a.station)+(a.fallback_lead?' · 👔 ledaren rycker in':' · delegerat')+'</div>').join('');
   const message=plan.parallel_ready?'✅ Isolerade Git-arbetsytor redo':'🛠 Git förbereds automatiskt när du startar delegering: '+plan.parallel_reason;
-  view(`<h3>👔 STUDIO MANAGEMENT</h3><p>Arbetsledaren prioriterar behöriga arbetare. Om ingen kan ta jobbet kan arbetsledaren rycka in med rätt behörighet.</p><p class="state">${esc(message)}</p><p>Parallella Codex-körningar får <b>egna Git-worktrees</b> inom samma projekt. Resultaten hamnar i <b>granskning</b>; inga ändringar slås ihop automatiskt.</p><p>🩺 Gemini: sjukskriven tills nyckel är sparad och motorn aktiverats separat.</p>${workers}<h3>📋 Föreslagen delegering</h3>${assignments||'<p>Inga tilldelningsbara jobb just nu.</p>'}<p>Automatiken fortsätter bara medan denna webbläsarflik är öppen.</p><p id="studioAutoStatus">${running?'▶ Autoarbete på':'⏸ Autoarbete av'}</p><button id="studioAutoToggle">${running?'⏸ Pausa nya jobb':'▶ Starta delegering'}</button><button id="studioLead" class="alt">👔 Planera arbete</button><button id="studioProviders" class="alt">⚙️ AI-motorer</button><button id="studioAutoBack" class="alt">Till kontoret</button>`);
+  view(`<h3>👔 STUDIO MANAGEMENT</h3><p>Arbetsledaren prioriterar behöriga arbetare. Om ingen kan ta jobbet kan arbetsledaren rycka in med rätt behörighet.</p><p class="state">${esc(message)}</p><p>Parallella Codex-körningar får <b>egna Git-worktrees</b> inom samma projekt. Resultaten hamnar i <b>granskning</b>; inga ändringar slås ihop automatiskt.</p><p>🩺 Gemini: sjukskriven tills nyckel är sparad och motorn aktiverats separat.</p>${workers}<h3>📋 Föreslagen delegering</h3>${assignments||'<p>Inga tilldelningsbara jobb just nu.</p>'}<p>Arbetsledaren delegerar automatiskt från lokalservern när han sitter vid chefsbordet. Flytta honom till fikabordet för paus.</p><p>Delegering styrs av chefens placering, inte av en startknapp.</p><button id="studioLead" class="alt">👔 Planera arbete</button><button id="studioProviders" class="alt">⚙️ AI-motorer</button><button id="studioAutoBack" class="alt">Till kontoret</button>`);
   $('#studioAutoBack').onclick=()=>dialog.close();$('#studioLead').onclick=()=>leadStudio(slug);$('#studioProviders').onclick=()=>studioProviders(slug);
-  $('#studioAutoToggle').onclick=async()=>{
+  if(false) $('#studioAutoToggle').onclick=async()=>{
    if(studioAuto?.slug===slug){await stopStudioAuto();return studioAutoControls(slug);}
    const mandate=(await api('/api/projects/'+slug+'/mandate')).mandate;
    if(!mandate.enabled){alert('Ge först ett bestående projektmandat.');return;}
@@ -227,8 +260,8 @@ async function stationOrders(slug,station,placed=false){
    if(step==='choose'){
     const max=9,pages=Math.max(1,Math.ceil(presets.length/max));page=Math.max(0,Math.min(page,pages-1));
     const cards=presets.slice(page*max,page*max+max).map((p,i)=>`<button type="button" class="station-task-tile" data-preset="${page*max+i}">${taskIcon(p[1])}<span>${esc(p[0])}</span></button>`).join('');
-    shell(`<p class="station-help">Välj med ikoner – eller välj <b>Eget uppdrag</b> och skriv fritt.</p><div class="station-task-grid">${cards}</div><div class="local-pager"><button id="taskPrev" class="alt" ${page===0?'disabled':''}>◀ Fler val</button><span>${page+1} / ${pages}</span><button id="taskNext" class="alt" ${page===pages-1?'disabled':''}>Fler val ▶</button></div>`,`<button id="taskShowQueue" class="alt">📚 Arbetskö (${waiting.length})</button><button id="taskAuto" class="alt">🤖 Autoarbete</button><button id="taskExit" class="alt">Stäng</button>`);
-    $('#taskPrev').onclick=()=>{page--;render()};$('#taskNext').onclick=()=>{page++;render()};$('#taskExit').onclick=()=>dialog.close();$('#taskAuto').onclick=()=>studioAutoControls(slug);$('#taskShowQueue').onclick=()=>{step='queue';render()};
+    shell(`<p class="station-help">Välj med ikoner – eller välj <b>Eget uppdrag</b> och skriv fritt.</p><div class="station-task-grid">${cards}</div><div class="local-pager"><button id="taskPrev" class="alt" ${page===0?'disabled':''}>◀ Fler val</button><span>${page+1} / ${pages}</span><button id="taskNext" class="alt" ${page===pages-1?'disabled':''}>Fler val ▶</button></div>`,`<button id="taskShowQueue" class="alt">📚 Arbetskö (${waiting.length})</button><button id="taskExit" class="alt">Stäng</button>`);
+    $('#taskPrev').onclick=()=>{page--;render()};$('#taskNext').onclick=()=>{page++;render()};$('#taskExit').onclick=()=>dialog.close();$('#taskShowQueue').onclick=()=>{step='queue';render()};
     dialog.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{choice=presets[Number(b.dataset.preset)];draft=choice[2]||'';selected=new Set();step='details';render()});return;
    }
    if(step==='queue'){
@@ -279,9 +312,10 @@ async function talkLive(slug,agentId){
       <div class="state"><b>Senaste egna uppdrag</b><p>${esc(record?.instruction||'Den här anställda har ingen registrerad Codex-session i den aktiva serverprocessen.')}</p></div>
       <h3>📡 Faktiska sessionshändelser · ${esc(name)}</h3><div class="log">${events.length?events.slice(-15).reverse().map(e=>esc(e.label+' – '+e.detail)).join('\n\n'):'Inga verifierade händelser för den här agenten.'}</div>
       <p class="local-note">Detta är en statusvy, inte en realtidschatt. Historiska sessioner från före serverstart syns via rapporterna.</p>
-      <div class="local-actions"><button id="talkRefresh">↻ Uppdatera</button><button id="talkRaw" ${record?'':'disabled'}>Teknisk logg</button><button id="talkQueue">📄 Arbetsorder</button>${agent?.role_type==='lead'?'<button id="talkLead">👔 Planera arbete</button>':''}<button id="talkClose" class="alt">Stäng</button></div>`);
+      <div class="local-actions"><button id="talkRefresh">↻ Uppdatera</button><button id="talkRaw" ${record?'':'disabled'}>Teknisk logg</button><button id="talkQueue">📄 Arbetsorder</button><button id="talkProfile">⚙ Profil</button>${agent?.role_type==='lead'?'<button id="talkLead">👔 Planera arbete</button>':''}<button id="talkClose" class="alt">Stäng</button></div>`);
     $('#talkRefresh').onclick=render;
     $('#talkRaw').onclick=()=>{if(record){jobId=record.id;showJob();}};
+    $('#talkProfile').onclick=()=>editStaffProfile(slug,agentId);
     $('#talkQueue').onclick=()=>stationOrders(slug,agent?.station==='cafe'?'code':agent?.station||'code');
     $('#talkLead')?.addEventListener('click',()=>leadStudio(slug));
     $('#talkClose').onclick=()=>dialog.close();
@@ -297,24 +331,63 @@ async function hireScreen(slug,page=0){
   if(!info)await init();
   const roster=(await api('/api/projects/'+slug+'/staff')).staff;
   const pages=Math.max(1,Math.ceil(roster.length/4));page=Math.max(0,Math.min(page,pages-1));
-  const cards=roster.slice(page*4,page*4+4).map(a=>`<div class="local-card"><div><b>👤 ${esc(a.name)}</b><br><small>${esc(a.role||'Utvecklare')} · ${esc(a.provider)} · ${esc(a.work_mode||'manual')}</small></div><div class="local-card-actions"><button data-edit-agent="${esc(a.id)}">⚙ Profil</button><button data-skill-agent="${esc(a.id)}">★ Skills</button></div></div>`).join('');
-  view(`<section class="local-screen"><h3>👥 PERSONAL · ${esc(slug)}</h3><div class="local-identity"><label for="hireLiveName">Ny Codex-anställd</label><input id="hireLiveName" maxlength="35" value="Codex ${roster.length+1}" aria-label="Namn på ny agent"><button id="hireLiveYes">➕ Anställ agent</button></div><div class="local-note">${roster.length} anställda · samma lokala Codex CLI, separata roller. Högst ett skrivande uppdrag per projekt.</div><div class="local-cards">${cards||'<p>Ingen anställd ännu.</p>'}</div><div class="local-pager"><button class="alt" id="hirePrev" ${page===0?'disabled':''}>◀ Föregående</button><span>Sida ${page+1} / ${pages}</span><button class="alt" id="hireNext" ${page>=pages-1?'disabled':''}>Nästa ▶</button></div><div class="local-actions"><button id="hireAssignments">🔒 Stationsansvar</button><button class="alt" id="hireLiveBack">Stäng</button><span class="local-error" id="hireLiveError" role="status"></span></div></section>`);
+  const cards=roster.slice(page*4,page*4+4).map(a=>`<div class="local-card"><div><b>👤 ${esc(a.name)}</b><br><small>${esc(({allround:'Allroundare',programmer:'Programmerare',qa:'QA-testare',artist:'Grafiker',musician:'Musiker',voice:'Röstproducent',writer:'Creative Director',research:'Researcher',lead:'Arbetsledare'})[a.role_type]||a.role||'Allroundare')} · ${esc(a.provider)}</small></div><div class="local-card-actions"><button data-edit-agent="${esc(a.id)}">⚙ Profil</button><button data-skill-agent="${esc(a.id)}">★ Kompetenser</button><button class="alt" data-dismiss-agent="${esc(a.id)}">🚪 Avskeda</button></div></div>`).join('');
+  view(`<section class="local-screen"><h3>👥 PERSONAL · ${esc(slug)}</h3><div class="local-identity"><label for="hireLiveName">Ny Codex-anställd</label><input id="hireLiveName" maxlength="35" value="Codex ${roster.length+1}" aria-label="Namn på ny agent"><button id="hireLiveYes">➕ Anställ agent</button></div><div class="local-note">${roster.length} anställda · samma lokala Codex CLI, separata roller. Parallella Codex-uppdrag körs i separata Git-arbetsytor.</div><div class="local-cards">${cards||'<p>Ingen anställd ännu.</p>'}</div><div class="local-pager"><button class="alt" id="hirePrev" ${page===0?'disabled':''}>◀ Föregående</button><span>Sida ${page+1} / ${pages}</span><button class="alt" id="hireNext" ${page>=pages-1?'disabled':''}>Nästa ▶</button></div><div class="local-actions"><button id="hireAssignments">🔒 Stationsansvar</button><button class="alt" id="hireLiveBack">Stäng</button><span class="local-error" id="hireLiveError" role="status"></span></div></section>`);
   $('#hireLiveBack').onclick=()=>dialog.close();
   $('#hirePrev').onclick=()=>hireScreen(slug,page-1);$('#hireNext').onclick=()=>hireScreen(slug,page+1);
   $('#hireLiveYes').onclick=async()=>{try{const name=$('#hireLiveName').value.trim();if(!name)throw Error('Ange ett namn.');await api('/api/projects/'+slug+'/hire',{name,approval:'HIRE_CODEX_FOR_PROJECT'});await refreshLiveRoster();await hireScreen(slug,Math.floor(roster.length/4));}catch(e){$('#hireLiveError').textContent=e.message}};
   $('#hireAssignments').onclick=()=>stationAssignments(slug);
   dialog.querySelectorAll('[data-edit-agent]').forEach(b=>b.onclick=()=>editStaffProfile(slug,b.dataset.editAgent));
   dialog.querySelectorAll('[data-skill-agent]').forEach(b=>b.onclick=()=>window.pixelWorksSkillsLive(slug,b.dataset.skillAgent));
+  dialog.querySelectorAll('[data-dismiss-agent]').forEach(b=>b.onclick=async()=>{const a=roster.find(x=>x.id===b.dataset.dismissAgent);if(!a)return;if(!confirm(`Avsluta anställningen för ${a.name}? Historiska rapporter behålls. Detta går inte att ångra.`))return;try{await api('/api/projects/'+slug+'/staff/dismiss',{agent_id:a.id,approval:'DISMISS_STAFF'});await refreshLiveRoster();await hireScreen(slug,Math.min(page,Math.ceil((roster.length-1)/4)-1));}catch(e){$('#hireLiveError').textContent=e.message;}});
 }
 async function editStaffProfile(slug,id){
- const agents=(await api('/api/projects/'+slug+'/staff')).staff;const agent=agents.find(a=>a.id===id);if(!agent)return;
- const stationKeys=Object.keys(STATION_FOCUS),allowed=agent.allowed_stations||stationKeys;
- const roles=[['allround','🤖 Allroundare'],['programmer','💻 Programmerare'],['qa','🧪 QA-testare'],['artist','🎨 Grafiker'],['musician','🎵 Musiker'],['voice','🎙️ Röstproducent'],['writer','📖 Författare'],['research','🔬 Researcher'],['lead','👔 Arbetsledare']];
- view(`<section class="local-screen"><h3>⚙ REDIGERA ANSTÄLLNING · ${esc(agent.name)}</h3><div class="local-compact-form"><label>Namn<input id="profileName" maxlength="35" value="${esc(agent.name)}"></label><label>Anställd som<select id="profileRoleType">${roles.map(([id,label])=>`<option value="${id}" ${agent.role_type===id?'selected':''}>${label}</option>`).join('')}</select></label><label>AI-motor<select id="profileProvider"><option value="codex">💻 Codex CLI (aktiv)</option><option value="gemini">☕ Google Gemini (sjukskriven)</option></select></label><label>Roll / titel<input id="profileRole" maxlength="60" value="${esc(agent.role||'Utvecklare')}"></label><label>Personlighet<input id="profilePersonality" maxlength="80" value="${esc(agent.personality||'Noggrann')}"></label><label>Arbetsbeteende<select id="profileMode"><option value="manual">Manuell</option><option value="specialist">Specialist (automation senare)</option><option value="autonomous">Självständig (automation senare)</option></select></label><label>Hemmabord<select id="profileHome">${stationKeys.map(st=>`<option value="${esc(st)}">${esc(STATION_FOCUS[st].name)}</option>`).join('')}</select></label></div><label>Egna arbetsinstruktioner<textarea id="profileInstructions" rows="2" maxlength="2000" placeholder="Exempel: Skriv tester för alla buggfixar.">${esc(agent.work_instructions||'')}</textarea></label><h3>🏢 Får arbeta vid</h3><div class="local-station-grid">${stationKeys.map(st=>`<label class="task-ref"><input type="checkbox" data-allowed="${esc(st)}" ${allowed.includes(st)?'checked':''}>${esc(STATION_FOCUS[st].name)}</label>`).join('')}</div><div class="local-note">Skillnivå är inte behörighet. Ändringar gäller nya arbetspass. Automatiska arbetslägen är ännu inte aktiverade.</div><div class="local-actions"><button id="profileSave">💾 Spara anställning</button><button id="profileSkills">★ Skills</button><button class="alt" id="profileBack">◀ Personal</button><span id="profileError" class="local-error" role="status"></span></div></section>`);
- $('#profileProvider').value=agent.provider||'codex';$('#profileMode').value=agent.work_mode||'manual';$('#profileHome').value=agent.home_station||'code';$('#profileRoleType').value=agent.role_type||'allround';
- $('#profileBack').onclick=()=>hireScreen(slug);$('#profileSkills').onclick=()=>window.pixelWorksSkillsLive(slug,id);
- $('#profileSave').onclick=async()=>{try{await api('/api/projects/'+slug+'/staff/profile',{agent_id:id,provider:$('#profileProvider').value,name:$('#profileName').value,role:$('#profileRole').value,role_type:$('#profileRoleType').value,personality:$('#profilePersonality').value,work_instructions:$('#profileInstructions').value,home_station:$('#profileHome').value,work_mode:$('#profileMode').value,allowed_stations:[...dialog.querySelectorAll('[data-allowed]:checked')].map(n=>n.dataset.allowed)});await refreshLiveRoster();await hireScreen(slug);}catch(e){$('#profileError').textContent=e.message}};
+ const agents=(await api('/api/projects/'+slug+'/staff')).staff;
+ const agent=agents.find(a=>a.id===id);if(!agent)return;
+ const stationKeys=Object.keys(STATION_FOCUS);
+ const presets={
+ allround:['code','qa','docs','research','meeting'],programmer:['code','qa','docs'],
+ qa:['qa','code','docs'],artist:['art','code','qa'],musician:['music','qa'],
+ voice:['voice','music','docs'],writer:['docs','research','meeting'],
+ research:['research','docs','meeting'],lead:['lead','meeting','code','qa','docs','research','music','art','voice']};
+ const roleNames={allround:'Allroundare',programmer:'Programmerare',qa:'QA-testare',artist:'Grafiker',musician:'Musiker',voice:'Röstproducent',writer:'Creative Director',research:'Researcher',lead:'Arbetsledare'};
+ const roles=[['allround','🤖 Allroundare'],['programmer','💻 Programmerare'],['qa','🧪 QA-testare'],['artist','🎨 Grafiker'],['musician','🎵 Musiker'],['voice','🎙️ Röstproducent'],['writer','💡 Creative Director'],['research','🔬 Researcher'],['lead','👔 Arbetsledare']];
+ const allowed=agent.allowed_stations||presets[agent.role_type]||presets.allround;
+ view(`<section class="local-screen"><h3>⚙ PERSONALPROFIL · ${esc(agent.name)}</h3>
+ <div class="local-actions" style="position:sticky;top:0;z-index:3;background:#142336;padding:7px 0"><button id="profileSave">💾 Spara ändringar</button><button class="alt" id="profileBack">◀ Till personal</button><span id="profileError" class="local-error" role="status"></span></div>
+ <div class="profile-scroll"><div class="local-compact-form"><label>Namn<input id="profileName" maxlength="35" value="${esc(agent.name)}"></label>
+ <label>Anställd som<select id="profileRoleType">${roles.map(([key,label])=>`<option value="${key}" ${agent.role_type===key?'selected':''}>${label}</option>`).join('')}</select></label>
+ <label>AI-motor<select id="profileProvider"><option value="codex">💻 Codex CLI</option><option value="gemini">☕ Gemini (ännu ej aktiv)</option></select></label>
+ <label>Personlighet<input id="profilePersonality" maxlength="80" value="${esc(agent.personality||'Noggrann')}"></label></div>
+ <p class="local-note">Yrket bestämmer standardkompetenser och vilka bord agenten får använda. Du kan sedan justera dessa själv.</p>
+ <label>Egna arbetsinstruktioner<textarea id="profileInstructions" rows="2" maxlength="2000">${esc(agent.work_instructions||'')}</textarea></label>
+ <h3>🏢 Får arbeta vid</h3><div class="local-station-grid">${stationKeys.map(st=>`<label class="task-ref"><input type="checkbox" data-allowed="${esc(st)}" ${allowed.includes(st)?'checked':''}>${esc(STATION_FOCUS[st].name)}</label>`).join('')}</div>
+ <p class="local-note" id="roleHint">Justeringar sparas först med Spara ändringar. En ledare måste få arbeta vid chefsbordet.</p></div>
+ <div class="local-actions"><button id="profileSkills">★ Finjustera kompetenser</button><button id="profileSaveBottom">💾 Spara ändringar</button></div></section>`);
+ $('#profileProvider').value=agent.provider||'codex';
+ $('#profileBack').onclick=()=>hireScreen(slug);
+ $('#profileSkills').onclick=()=>window.pixelWorksSkillsLive(slug,id);
+ let changedRole=false;
+ $('#profileRoleType').onchange=()=>{
+    changedRole=true;const role=$('#profileRoleType').value;
+    const list=presets[role]||presets.allround;
+    dialog.querySelectorAll('[data-allowed]').forEach(el=>el.checked=list.includes(el.dataset.allowed));
+    $('#roleHint').textContent=`${roleNames[role]}: förvalda arbetsbord markerade. Grundkompetenser sätts vid Spara; finjustera därefter med ★ Skills.`;
+ };
+ const save=async()=>{try{
+   $('#profileError').textContent='Sparar…';
+   const chosen=[...dialog.querySelectorAll('[data-allowed]:checked')].map(n=>n.dataset.allowed);
+   if(!chosen.length)throw Error('Välj minst ett tillåtet bord.');
+   await api('/api/projects/'+slug+'/staff/profile',{
+       agent_id:id,provider:$('#profileProvider').value,name:$('#profileName').value,
+       role_type:$('#profileRoleType').value,personality:$('#profilePersonality').value,
+       work_instructions:$('#profileInstructions').value,allowed_stations:chosen,
+       apply_role_skills:changedRole});
+   await refreshLiveRoster();await hireScreen(slug);
+ }catch(e){$('#profileError').textContent=e.message;}};
+ $('#profileSave').onclick=save;$('#profileSaveBottom').onclick=save;
 }
+
 async function stationAssignments(slug){
  const agents=(await api('/api/projects/'+slug+'/staff')).staff;
  const assignment=(await api('/api/projects/'+slug+'/assignments')).assignments;
@@ -324,7 +397,7 @@ async function stationAssignments(slug){
  $('#ownerSave').onclick=async()=>{try{const st=$('#ownerStation').value;await api('/api/projects/'+slug+'/assignments',{station:st,mode:$('#ownerMode').value,agent_ids:[...dialog.querySelectorAll('[data-owner]:checked')].map(n=>n.dataset.owner)});await stationAssignments(slug)}catch(e){$('#ownerError').textContent=e.message}};
 }
 
-async function home(){if(!await init())return;view(`<p class="state">Lagring: <b>${info.storage.verified?'SKARPT · VERIFIERAD':'EJ INITIERAD / EJ VERIFIERAD'}</b><br>Arbetsrot: <b>${esc(info.root)}</b><br>Codex CLI: <b>${info.codex.connected?esc(info.codex.codex_version||'hittad'):'ej installerad/hittad'}</b><br>Inloggning: ej kontrollerad · verklig kvot: okänt · inga uppdrag startas av att placera agenten</p><button id="setupRoot">📁 Skapa/verifiera ~/.pixelworks</button><button id="createLocal">✦ Skapa verklig projektmapp</button><h3>PROJEKT PÅ DISKEN</h3>${projects.length?projects.map(p=>`<div class="line"><b>${esc(p.name)}</b><br><small>${esc(p.id)} · ${esc(p.platform)} · ${esc(p.status)}</small><br><button class="hireLocal" data-id="${esc(p.id)}">♟ Anställ Codex</button><button class="openLocal" data-id="${esc(p.id)}">▶ Uppdrag / Codex</button></div>`).join(''):'<p>Inga lokala produktioner skapade än.</p>'}<small>Kontoret visar projekt från disken. Inga påhittade anställda visas när lokal backend är aktiv.</small>`);$('#setupRoot').onclick=async()=>{if(!confirm('Skapa och verifiera lokal projektrot: '+info.root+' ?'))return;try{await api('/api/setup',{approval:'CREATE_PIXELWORKS_HOME'});await home();}catch(e){view('<p class=\"error\">Lagring misslyckades: '+esc(e.message)+'</p><button id=\"retryLocal\">Tillbaka</button>');$('#retryLocal').onclick=home;}};$('#createLocal').onclick=createForm;document.querySelectorAll('.hireLocal').forEach(b=>b.onclick=()=>hireScreen(b.dataset.id));document.querySelectorAll('.openLocal').forEach(b=>b.onclick=()=>jobForm(b.dataset.id));}
+async function home(){if(!await init())return;view(`<p class="state">Lagring: <b>${info.storage.verified?'SKARPT · VERIFIERAD':'EJ INITIERAD / EJ VERIFIERAD'}</b><br>Arbetsrot: <b>${esc(info.root)}</b><br>Codex CLI: <b>${info.codex.connected?esc(info.codex.codex_version||'hittad'):'ej installerad/hittad'}</b><br>Inloggning: ej kontrollerad · verklig kvot: okänt · inga uppdrag startas av att placera agenten</p><button id="setupRoot">📁 Skapa/verifiera ~/.pixelworks</button><button id="createLocal">✦ Skapa verklig projektmapp</button><h3>PROJEKT PÅ DISKEN</h3>${projects.length?projects.map(p=>`<div class="line"><b>${esc(p.name)}</b><br><small>${esc(p.id)} · ${esc(p.platform)} · ${esc(p.status)}</small><br><button class="hireLocal" data-id="${esc(p.id)}">👥 Personal</button><button class="openLocal" data-id="${esc(p.id)}">▶ Uppdrag / Codex</button></div>`).join(''):'<p>Inga lokala produktioner skapade än.</p>'}<small>Kontoret visar projekt från disken. Inga påhittade anställda visas när lokal backend är aktiv.</small>`);$('#setupRoot').onclick=async()=>{if(!confirm('Skapa och verifiera lokal projektrot: '+info.root+' ?'))return;try{await api('/api/setup',{approval:'CREATE_PIXELWORKS_HOME'});await home();}catch(e){view('<p class=\"error\">Lagring misslyckades: '+esc(e.message)+'</p><button id=\"retryLocal\">Tillbaka</button>');$('#retryLocal').onclick=home;}};$('#createLocal').onclick=createForm;document.querySelectorAll('.hireLocal').forEach(b=>b.onclick=()=>hireScreen(b.dataset.id));document.querySelectorAll('.openLocal').forEach(b=>b.onclick=()=>jobForm(b.dataset.id));}
 function createForm(){view(`<h3>NY VERKLIG PRODUKTION</h3><p>Detta skapar mappar, dokument och ett lokalt Git-repository under den valda arbetsroten. Ingen AI körs.</p><label>Projektnamn<input id="localName" maxlength="90" placeholder="Rosa Grisens Äventyr"></label><label>Projekt-ID<input id="localSlug" maxlength="50" placeholder="rosa-grisens-aventyr"></label><label>Spelidé<textarea id="localIdea" rows="4" maxlength="3000" placeholder="Ett 2D-plattformsspel där en rosa gris samlar äpplen..."></textarea></label><label>Genre<input id="localGenre" value="Plattformsspel"></label><label>Plattform<select id="localPlatform"><option>Webbläsare</option><option>PC</option><option>Mobil</option></select></label><label>Prioritet<select id="localPriority"><option>Spelkänsla</option><option>Stabilitet</option><option>Grafik</option><option>Snabb leverans</option></select></label><label><input type="checkbox" id="localConsent" style="width:auto"> Jag godkänner att projektmappar och ett Git-repository skapas lokalt.</label><p id="localError" class="error"></p><button id="localCreate">Skapa projektmapp</button><button class="alt" id="localBack">Tillbaka</button>`);$('#localName').oninput=e=>{if(!$('#localSlug').dataset.edited)$('#localSlug').value=safeSlug(e.target.value)};$('#localSlug').oninput=e=>{e.target.dataset.edited='1'};$('#localBack').onclick=home;$('#localCreate').onclick=async()=>{if(!$('#localConsent').checked){$('#localError').textContent='Godkännande krävs.';return;}try{const r=await api('/api/projects',{slug:$('#localSlug').value,name:$('#localName').value,idea:$('#localIdea').value,genre:$('#localGenre').value,platform:$('#localPlatform').value,priority:$('#localPriority').value,approval:'CREATE_PROJECT_ON_DISK'});view(`<h3>Projektmappen är skapad ✓</h3><p><code>${esc(r.work)}</code></p><p>Git: ${r.git_initialized?'initierat':'git ej hittat'}</p><button id="nextLocal">Förbered Codex-uppdrag</button><button class="alt" id="homeLocal">Projektlistan</button>`);$('#nextLocal').textContent='Anställ Codex';$('#nextLocal').onclick=async()=>{await init();hireScreen(r.project.id);};$('#homeLocal').onclick=home;}catch(e){$('#localError').textContent=e.message;}};}
 const STATION_FOCUS={
  code:{name:'Programmering',intro:'Fortsätt utveckla kodbasen och förbättra funktionaliteten.',prompt:'Fortsätt på det befintliga projektet i work/. Läs först README, befintlig kod och projektets GAME_BIBLE.md. Förbättra eller färdigställ nästa rimliga programmeringsuppgift utan att skapa ett nytt projekt. Testa det som går och rapportera kvarstående problem.'},
@@ -334,8 +407,8 @@ const STATION_FOCUS={
  qa:{name:'QA-labb',intro:'Testa spelet och prioritera fel innan nya funktioner.',prompt:'Granska det befintliga spelet i work/. Kör säkra lokala tester som finns tillgängliga, hitta fel och dokumentera hur de återskapas. Rätta tydliga avgränsade buggar, men rapportera vad som inte kunde verifieras och föreslå nästa QA-steg.'},
  docs:{name:'Dokumentation',intro:'Förtydliga manualer och spelinstruktioner.',prompt:'Läs befintlig kod och Studio Bible. Uppdatera README, instruktioner, teknisk dokumentation och projektstatus för spelet som redan finns i work/. Skilj på implementerat, rapporterat och faktiskt testat.'},
  research:{name:'Research',intro:'Undersök alternativ och föreslå nästa utvecklingssteg.',prompt:'Undersök den befintliga kodbasen och projektets mål, föreslå förbättringar, risker och prioriteringar. Dokumentera fynd lokalt och gör inga nätverksanrop utan godkännande.'},
- meeting:{name:'Samordning',intro:'Se över integrationer och hur systemdelarna samarbetar.',prompt:'Fortsätt på projektet i work/. Granska hur dess befintliga moduler fungerar ihop, identifiera integrationsproblem och prioritera säkra förbättringar. Skapa inte en ny app; sammanfatta beslut, testresultat och nästa steg.'},
- lead:{name:'Planering',intro:'Planera det fortsatta arbetet i befintligt projekt.',prompt:'Läs Studio Bible och befintlig kodbas i work/. Skriv en konkret, prioriterad plan för nästa utvecklingssteg. Gör endast begränsade och välmotiverade kodändringar.'}
+ meeting:{name:'Mötesbord',intro:'Se över integrationer och hur systemdelarna samarbetar.',prompt:'Fortsätt på projektet i work/. Granska hur dess befintliga moduler fungerar ihop, identifiera integrationsproblem och prioritera säkra förbättringar. Skapa inte en ny app; sammanfatta beslut, testresultat och nästa steg.'},
+ lead:{name:'Chefsbord',intro:'Planera det fortsatta arbetet i befintligt projekt.',prompt:'Läs Studio Bible och befintlig kodbas i work/. Skriv en konkret, prioriterad plan för nästa utvecklingssteg. Gör endast begränsade och välmotiverade kodändringar.'}
 };
 async function jobForm(slug,station=requestedStation){
   current=projects.find(p=>p.id===slug)||{id:slug};requestedStation=STATION_FOCUS[station]?station:'code';
@@ -353,7 +426,7 @@ async function jobForm(slug,station=requestedStation){
   zone.ondragover=e=>{e.preventDefault();zone.classList.add('active')};zone.ondragleave=()=>zone.classList.remove('active');zone.ondrop=e=>{e.preventDefault();zone.classList.remove('active');addFiles(e.dataTransfer.files)};
   dialog.onpaste=e=>{if(!dialog.open)return;const files=[...(e.clipboardData?.files||[])].filter(f=>f.type.startsWith('image/'));if(files.length){e.preventDefault();addFiles(files)}};
   if(!mandate.enabled)$('#saveMandate').onclick=async()=>{try{await api('/api/projects/'+slug+'/mandate',{enabled:true,approval:'ALLOW_CODEX_WORKSPACE_WRITE'});await jobForm(slug,station);}catch(e){$('#runError').textContent=e.message}};
-  $('#runNow').onclick=async()=>{if(!mandate.enabled&&!$('#runApprove').checked){$('#runError').textContent='Godkänn skrivning för detta arbetspass först.';return;}try{const selected=[...dialog.querySelectorAll('[data-asset]:checked')].map(el=>el.dataset.asset);const comment=$('#taskComment').value.trim();for(const file of pending){const encoded=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=reject;reader.readAsDataURL(file)});const uploaded=await api('/api/projects/'+slug+'/assets',{kind:'file',name:file.name,station:requestedStation,comment,data:encoded});selected.push(uploaded.asset.id)}const staffRun=(await api('/api/projects/'+slug+'/staff')).staff.filter(a=>a.provider==='codex'&&a.station===requestedStation);if(staffRun.length!==1)throw Error('Placera exakt en Codex-agent vid '+requestedStation+' först.');const result=await api('/api/jobs',{project:slug,station:requestedStation,agent_id:staffRun[0].id,instruction:$('#codexTask').value,attachment_ids:selected,attachment_comment:comment,approval:mandate.enabled?'PROJECT_MANDATE':'STARTA_CODEX_I_WORK'});jobId=result.job_id;sessionStorage.setItem(LIVE_SESSION_KEY,jobId);lastEventCount=0;lastJobState='';liveSpeechFresh=true;liveSpeechInitialized=false;dialog.close();await pollLiveJob();}catch(e){$('#runError').textContent=e.message;}};
+  $('#runNow').onclick=async()=>{if(!mandate.enabled&&!$('#runApprove').checked){$('#runError').textContent='Godkänn skrivning för detta arbetspass först.';return;}try{const selected=[...dialog.querySelectorAll('[data-asset]:checked')].map(el=>el.dataset.asset);const comment=$('#taskComment').value.trim();for(const file of pending){const encoded=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=reject;reader.readAsDataURL(file)});const uploaded=await api('/api/projects/'+slug+'/assets',{kind:'file',name:file.name,station:requestedStation,comment,data:encoded});selected.push(uploaded.asset.id)}const staffRun=(await api('/api/projects/'+slug+'/staff')).staff.filter(a=>a.provider==='codex'&&a.station===requestedStation);if(staffRun.length!==1)throw Error('Placera exakt en Codex-agent vid '+requestedStation+' först.');const result=await api('/api/jobs',{project:slug,station:requestedStation,agent_id:staffRun[0].id,instruction:$('#codexTask').value,attachment_ids:selected,attachment_comment:comment,isolated:true,approval:mandate.enabled?'PROJECT_MANDATE':'STARTA_CODEX_I_WORK'});jobId=result.job_id;sessionStorage.setItem(LIVE_SESSION_KEY,jobId);lastEventCount=0;lastJobState='';liveSpeechFresh=true;liveSpeechInitialized=false;dialog.close();await pollLiveJob();}catch(e){$('#runError').textContent=e.message;}};
 }
 function humanEvent(line){
   try{
@@ -444,11 +517,14 @@ async function pollLiveJob(){
         const resume=queueRun;queueRun=null;
         if(result.state==='done'){
           // A new queued job is started only in this active browser session following placement.
-          setTimeout(()=>startQueue(resume.slug,resume.station).catch(e=>{announceLiveSpeech('Kön pausad: '+e.message,'failed');}),900);
+          // Scheduler or new manual placement handles subsequent tasks.
         }else announceLiveSpeech('Arbetskön pausad efter fel. Granska rapporten.','failed');
       }
     }
-    if(result.state==='running'||result.state==='queued'){clearTimeout(livePollTimer);livePollTimer=setTimeout(pollLiveJob,1800);}else{sessionStorage.removeItem(LIVE_SESSION_KEY);liveSpeechFresh=false;}
+    // Högerspaltens enda kontinuerliga uppdaterare är watchServerJobs.
+    // Start från UI gör en engångshämtning; äldre timers får inte skriva över panelen.
+    clearTimeout(livePollTimer);livePollTimer=null;
+    if(result.state!=='running'&&result.state!=='queued'){sessionStorage.removeItem(LIVE_SESSION_KEY);liveSpeechFresh=false;}
   }catch(e){const p=ensureLivePanel();p.querySelector('#realJobState').textContent='Session ej tillgänglig';p.querySelector('#realJobEvents').textContent='Kan inte hämta sessionen: '+e.message+' (backend-sessioner sparas ännu inte över serveromstart).';}
 }
 async function playProject(slug){
@@ -518,7 +594,65 @@ async function refreshStorageBadge(){const badge=document.querySelector('#storag
 refreshStorageBadge();
 
 async function autoloadLive(){try{info=await api('/api/bootstrap');token=info.token;projects=(await api('/api/projects')).projects;await refreshLiveRoster();await updateDeskBadge();if(projects.length)await refreshOrderBadges(window.__PIXEL_WORKS_DEMO__?.model.activeProjectId||projects[0].id);}catch(e){console.info('Lokal studio offline. DEMO-världar visas.',e.message);}}
-setTimeout(async()=>{await autoloadLive();const saved=sessionStorage.getItem(LIVE_SESSION_KEY);if(saved){jobId=saved;pollLiveJob();}},0);
+// Server-owned scheduler can start jobs without this browser creating their job IDs.
+// Discover and follow those sessions. Do not claim Codex is working unless backend says so.
+let serverJobWatchBusy=false,serverJobWatchSelected=null;
+async function watchServerJobs(){
+ if(serverJobWatchBusy||!token||!document.body.classList.contains('live-project'))return;
+ serverJobWatchBusy=true;
+ const pane=ensureLivePanel();
+ try{
+  const slug=await activeSlug();if(!slug)return;
+  // Fetch independently. A failed health/verification request must never hide
+  // successfully fetched Codex sessions or replace their real event history.
+  const [jobsResult,healthResult]=await Promise.allSettled([
+   api('/api/projects/'+slug+'/jobs'),
+   api('/api/projects/'+slug+'/dispatch/health')
+  ]);
+  let overview=pane.querySelector('#realWorkerOverview');
+  if(!overview){overview=document.createElement('div');overview.id='realWorkerOverview';overview.setAttribute('role','status');pane.querySelector('#realJobProject').before(overview);}
+  const health=healthResult.status==='fulfilled'?healthResult.value:null;
+  const healthError=healthResult.status==='rejected'?healthResult.reason.message:null;
+  if(jobsResult.status==='rejected'){
+   // Keep previous real event stream visible and show diagnostics separately.
+   overview.textContent='⚠ Kunde inte läsa projektets jobb: '+jobsResult.reason.message;
+   return;
+  }
+  const jobs=jobsResult.value.jobs||[];
+  const active=jobs.filter(j=>['queued','running'].includes(j.state));
+  // An active session always has precedence over historical sessions.
+  const chosen=active.find(j=>j.id===serverJobWatchSelected)||active[0]||jobs.find(j=>j.id===serverJobWatchSelected)||jobs[0];
+  const statusText=healthError?'⚠ Projektstatus: '+healthError:
+   '👔 '+(health?.reason||'Ingen chefstatus tillgänglig');
+  overview.textContent=active.length?
+   '🔴 Aktiva arbetare ('+active.length+'): '+active.map(j=>(j.agent_name||'Agent')+' · '+(j.station||'?')+' · '+j.state).join(' | ')+(healthError?' · '+statusText:''):
+   statusText;
+  if(chosen){
+   if(chosen.id!==serverJobWatchSelected){
+    serverJobWatchSelected=chosen.id;jobId=chosen.id;
+    lastJobState='';liveSpeechFresh=false;liveSpeechInitialized=false;
+   }
+   try{
+    const full=await api('/api/jobs/'+chosen.id);
+    renderLiveState(full);
+   }catch(error){
+    overview.textContent+=' · ⚠ Kunde inte läsa session '+chosen.id+': '+error.message;
+   }
+  }else{
+   serverJobWatchSelected=null;jobId=null;
+   pane.querySelector('#realJobState').textContent='Väntar på arbete';
+   pane.querySelector('#realJobProject').textContent='Ingen Codex-session har startats';
+   pane.querySelector('#realJobEvents').textContent='Arbetslogg visas när en riktig session startar.';
+  }
+ }catch(error){
+  // Never clobber an existing session log when the status feed is interrupted.
+  let overview=pane.querySelector('#realWorkerOverview');
+  if(!overview){overview=document.createElement('div');overview.id='realWorkerOverview';pane.querySelector('#realJobProject').before(overview);}
+  overview.textContent='⚠ Statuskontroll: '+error.message;
+ }finally{serverJobWatchBusy=false;}
+}
+setTimeout(async()=>{await autoloadLive();const saved=sessionStorage.getItem(LIVE_SESSION_KEY);if(saved)jobId=saved;await watchServerJobs();},0);
+setInterval(watchServerJobs,3000);
 
 window.pixelWorksRefreshLive=async()=>{await init();};
 window.pixelWorksEditStaffLive=async (slug,id)=>{if(!info)await init();await editStaffProfile(slug,id)};
@@ -544,7 +678,7 @@ async function showLiveReport(slug,rid){
     const found=(await api('/api/projects/'+slug+'/reports')).reports.find(r=>r.id===rid);
     if(!found)throw Error('Rapporten finns inte längre');
     await api('/api/projects/'+slug+'/reports/'+rid,{action:'read'});
-    view('<h3>📄 '+esc(found.title)+'</h3><div class="state"><small>'+esc(found.created_at)+' · session '+esc(rid)+'</small><p>'+esc(found.summary)+'</p></div><p>Status: '+esc(found.state)+' · Exitkod: '+esc(found.exit_code??'okänd')+'</p><p><b>Verifiering: NEJ.</b> Codex rapport har ännu inte oberoende testats.</p><button id="fromReportPlay">🎮 Spela och granska</button><button id="fromReportArchive">Arkivera rapport</button><button class="alt" id="fromReportBack">Till rapporter</button>');
+    view('<h3>📄 '+esc(found.title)+'</h3><div class="state"><small>'+esc(found.created_at)+(found.source==='studio-dispatch'?' · chefsrapport':' · session '+esc(rid))+'</small><p style="white-space:pre-wrap">'+esc(found.summary)+'</p></div>'+(found.source==='studio-dispatch'?'<p>Detta är en regelbaserad chefsrapport. Ingen AI har anropats för rapporten.</p>':'<p>Status: '+esc(found.state)+' · Exitkod: '+esc(found.exit_code??'okänd')+'</p><p><b>Verifiering: NEJ.</b> Codex rapport har ännu inte oberoende testats.</p>')+'<button id="fromReportPlay">🎮 Spela och granska</button><button id="fromReportArchive">Arkivera rapport</button><button class="alt" id="fromReportBack">Till rapporter</button>');
     $('#fromReportPlay').onclick=()=>playProject(slug);
     $('#fromReportArchive').onclick=async()=>{await api('/api/projects/'+slug+'/reports/'+rid,{action:'archive'});await liveInbox();};
     $('#fromReportBack').onclick=liveInbox;
@@ -588,3 +722,54 @@ bibleButton.onclick=async()=>{try{const slug=await activeSlug();if(slug)await bi
 const office=document.querySelector('#stationLayer');if(office){office.addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('Files'))e.preventDefault()});office.addEventListener('drop',async e=>{if(!e.dataTransfer.files?.length)return;e.preventDefault();const st=e.target.closest('.station');if(!st)return;try{const slug=await activeSlug();await bibleView(slug,st.dataset.id);const fileInput=$('#bibleFiles');fileInput.files=e.dataTransfer.files;fileInput.dispatchEvent(new Event('change'));}catch(error){view('<p class="error">'+esc(error.message)+'</p>')}})}
 
 const orderBadgeStyle=document.createElement("style");orderBadgeStyle.textContent=`.station{overflow:visible!important}.station-order-badge{position:absolute;z-index:30;right:-8px;top:-24px;min-width:35px;padding:3px 5px;background:#ffe6a1;border:2px solid #623c49;color:#3a2439;box-shadow:2px 2px 0 #2b203f;font-size:11px;font-weight:900;white-space:nowrap;pointer-events:none}`;document.head.append(orderBadgeStyle);
+
+// Synkronisera kontorets figurer med serverns faktiska placeringar och sessioner.
+let officeSyncBusy=false;
+setInterval(async()=>{
+ if(!token||!document.body.classList.contains('live-project')||officeSyncBusy)return;
+ officeSyncBusy=true;
+ try{
+  const slug=await activeSlug();
+  const people=(await api('/api/projects/'+slug+'/staff')).staff;
+  const jobs=(await api('/api/projects/'+slug+'/jobs')).jobs;
+  const active=new Set(jobs.filter(j=>j.state==='running'||j.state==='queued').map(j=>j.agent_id));
+  const model=window.__PIXEL_WORKS_DEMO__?.model,ui=window.__PIXEL_WORKS_DEMO__?.ui;
+  if(model&&ui){
+   let changed=false;
+   for(const record of people){
+    const agent=model.project.agents.find(a=>a.id===record.id);if(!agent)continue;
+    const station=record.station||'cafe';
+    if(agent.station!==station){agent.station=station;const st=model.getStation(station);if(st){agent.x=st.x;agent.y=st.y+8;}changed=true;}
+    const desired=active.has(record.id)?'working':'idle';if(agent.status!==desired){agent.status=desired;changed=true;}
+   }
+   if(changed)ui.renderAgents();
+  }
+ }catch(_error){/* Kontoret visar senast verifierad status vid tillfälligt anslutningsfel. */}
+ finally{officeSyncBusy=false;}
+},5000);
+
+// v0.11.5.3: Show verified local manager state. No silent mandate grants.
+(function(){
+ const panel=document.createElement('div');panel.id='chiefDispatchHealth';
+ panel.style.cssText='position:fixed;bottom:10px;left:10px;z-index:70;max-width:min(520px,calc(100vw - 20px));background:#243448;color:#f9edcf;border:3px solid #ad9065;padding:7px 10px;font:12px monospace;box-shadow:3px 3px #172337;display:none';
+ document.body.appendChild(panel);
+ async function refreshChiefHealth(){
+  try{
+   if(!token||!document.body.classList.contains('live-project')){panel.style.display='none';return;}
+   const slug=await activeSlug();if(!slug)return;
+   const state=await api('/api/projects/'+slug+'/dispatch/health');
+   panel.style.display='block';panel.replaceChildren();
+   const caption=document.createElement('span');caption.textContent='👔 CHEF · '+state.reason;panel.append(caption);
+   if(state.state==='mandate_required'){
+    const button=document.createElement('button');button.type='button';button.textContent='✓ Godkänn projektmandat';
+    button.style.cssText='margin-left:8px;padding:4px 8px;cursor:pointer';
+    button.onclick=async()=>{
+     if(!confirm('Tillåt arbetsledaren att automatiskt starta Codex med skrivåtkomst till detta spelprojekts isolerade arbetsytor?'))return;
+     try{await api('/api/projects/'+slug+'/mandate',{enabled:true,approval:'ALLOW_CODEX_WORKSPACE_WRITE'});refreshChiefHealth();}
+     catch(error){caption.textContent='⚠ '+error.message;}
+    };panel.append(button);
+   }
+  }catch(error){panel.style.display='block';panel.textContent='👔 Chefstatus kunde inte läsas: '+error.message;}
+ }
+ setInterval(refreshChiefHealth,4000);setTimeout(refreshChiefHealth,1200);
+})();
