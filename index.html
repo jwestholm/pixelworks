@@ -21,7 +21,7 @@
 
       <nav class="game-actions"><button class="pixel-button" id="newProjectBtn">✦ Ny produktion</button><button class="pixel-button secondary" id="hireBtn">👥 Personal</button><button class="pixel-button secondary" id="deskBtn">✉ Mitt skrivbord <b id="mailCount">0</b></button><button class="pixel-button secondary" id="studioBtn">▤ Studio</button></nav><div class="project-switcher">
         <label for="projectSelect">PROJEKT</label>
-        <select id="projectSelect" aria-label="Välj projekt"></select>
+        <select id="projectSelect" aria-label="Välj projekt"></select><button type="button" id="removeProjectBtn" class="pixel-button secondary" title="Ta bort valt projekt">🗑 Ta bort</button>
       </div>
 
       <div class="top-statuses"><div class="status-pill credit-pill">🪙 <strong id="creditBalance">48 000</strong> <span class="tiny-label">PK</span> <span id="creditBurn">−0/h</span></div>
@@ -68,18 +68,6 @@
       </section>
 
       <aside class="right-rail">
-        <section class="pixel-panel mission-panel">
-          <div class="panel-heading">
-            <div>
-              <span class="eyebrow">UPPDRAG</span>
-              <h2>Mission Board</h2>
-            </div>
-            <button id="newTaskBtn" class="pixel-button compact" type="button">+ Nytt</button>
-          </div>
-          <div class="lead-strip" id="leadStrip"></div>
-          <div id="taskList" class="task-list"></div>
-        </section>
-
         <section class="pixel-panel event-panel">
           <div class="panel-heading">
             <div>

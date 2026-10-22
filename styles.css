@@ -371,3 +371,38 @@ body.live-project .office-hint-right{display:none}
 .book-prop{position:absolute;top:14%;left:45%;z-index:10;background:#735047;color:#fff0bb;border:3px solid #302437;padding:8px 12px;cursor:pointer;box-shadow:3px 4px #201725;font-size:17px}.book-prop small{display:block;font:800 8px monospace}.pw-book{font-size:13px}.pw-book-top,.pw-book-actions{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.pw-book-chapters{display:flex;gap:5px;overflow-x:auto;padding:9px 0}.pw-book-chapters button{flex:none;font-size:11px;padding:7px}.pw-book-chapters [aria-current=page]{background:#ffe59c}.pw-book-spread{display:grid;grid-template-columns:1fr 1fr;background:#634336;padding:8px;gap:8px;border:3px solid #302437}.pw-book-page{background:#fff3cc;padding:14px;min-width:0;min-height:290px;max-height:50vh;overflow:auto;box-shadow:inset -5px 0 #e6d09d}.pw-book-page textarea{width:100%;min-height:240px;font:13px/1.5 monospace;resize:vertical}.pw-book-asset{border-bottom:1px dotted #8d7557;padding:6px}.pw-book-asset small{display:block}.pw-book-actions{margin-top:12px}@media(max-width:600px){.pw-book-spread{grid-template-columns:1fr}.pw-book-page{min-height:140px;max-height:29vh}}
 
 .pw-help-indicator{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);min-width:115px;max-width:160px;background:#fff3ca;color:#6d2424;border:2px solid #862f38;box-shadow:2px 2px #332031;padding:4px;font:900 10px/1.25 monospace;text-align:center;pointer-events:none;z-index:90}
+
+/* v0.11.7.2: legible and navigable Game Bible */
+.book-prop{top:9%;left:46%;font-size:19px;min-width:135px;text-align:center;background:#fff0b9;color:#252038;border:4px solid #382840;box-shadow:4px 5px #17172a}.book-prop small{font-size:10px;color:#252038}
+.local-dialog:has(.pw-book){width:min(1020px,calc(100vw - 20px));height:min(780px,calc(100dvh - 18px))}
+.local-dialog .local-shell-body:has(>.pw-book){overflow:hidden}
+.pw-book{display:flex;flex-direction:column;flex:1;min-height:0;color:#f6ecd0}
+.pw-book-top{flex:none}.pw-book-chapters{flex:none;flex-wrap:nowrap;overflow-x:auto;scrollbar-gutter:stable;padding:7px 0 11px}
+.pw-book-chapters button{white-space:nowrap;max-width:175px;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.pw-book-spread{flex:1;min-height:0;overflow:hidden;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.pw-book-page{min-height:0;max-height:none;overflow:auto;color:#302735;background:#fff2c4;padding:15px}
+.pw-book-page h3{color:#3d293f!important;font-size:17px;margin:0 0 8px}
+.pw-book-page p,.pw-book-page small{color:#4f3e42!important;opacity:1!important}
+.pw-book-page .pw-book-hint{font-size:12px;line-height:1.55}
+.local-dialog .pw-book-page textarea{background:#fffae8;color:#272333;border:2px solid #806744;outline-offset:2px;min-height:160px;height:calc(100% - 88px);resize:none;font:14px/1.55 system-ui,sans-serif}
+.pw-book-reference-list{max-height:65%;overflow:auto}.pw-book-asset{color:#372f37}
+.pw-book-actions{flex:none;gap:5px}.pw-book-actions button{white-space:nowrap}.pw-book #pwBookMessage{flex:none;font-size:12px;color:#ffe4a3;margin:0;min-height:19px}
+@media(max-width:650px){.pw-book-spread{grid-template-columns:1fr;overflow-y:auto}.pw-book-page{min-height:200px;max-height:none}.local-dialog .pw-book-page textarea{height:180px}.pw-book-actions{justify-content:center}}
+
+/* v0.11.7.3: ren arbetslogg, ingen äldre demo-uppdragstavla. */
+.right-rail .event-panel{display:none!important}
+body.live-project .right-rail:has(.real-session-panel){display:flex;flex-direction:column;gap:0;min-height:0}
+body.live-project .right-rail .real-session-panel{order:1;flex:1 1 auto;min-height:0;max-height:none;margin:0;overflow:hidden}
+body.live-project .right-rail .real-job-events{flex:1;min-height:0;overflow-y:auto}
+
+#removeProjectBtn{font-size:10px;padding:6px 8px;white-space:nowrap;align-self:end} .project-switcher{display:flex;flex-wrap:wrap;align-items:center;gap:6px} .project-switcher select{min-width:120px;flex:1}
+
+/* Pixel Works native project removal confirmation */
+.pw-delete-dialog{border:3px solid #23213d;background:#fff0be;color:#22203a;max-width:min(520px,calc(100% - 30px));padding:0;box-shadow:7px 7px 0 #23213d;}
+.pw-delete-dialog::backdrop{background:rgba(15,14,31,.75)}
+.pw-delete-box{padding:20px;display:grid;gap:12px;font-size:15px}
+.pw-delete-box h2{margin:0;color:#24213a}.pw-delete-warning{line-height:1.5;margin:0}
+.pw-delete-box label{display:grid;gap:8px}.pw-delete-box input{padding:10px;width:100%;font-size:17px;box-sizing:border-box}
+.pw-delete-actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.pw-delete-actions button{min-height:42px;padding:8px 15px;cursor:pointer}
+#pwRemoveError{color:#9e263b;margin:0;min-height:1em}

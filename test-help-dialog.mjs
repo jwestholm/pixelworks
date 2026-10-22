@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const js=readFileSync(new URL('./local.js',import.meta.url),'utf8');
+const python=readFileSync(new URL('./backend/server.py',import.meta.url),'utf8');
+assert.match(js,/window\.pixelWorksHelpLive=openAgentHelp/);
+assert.match(js,/if\(!node\|\|node\.dataset\.wasDragged==='1'/,'dragging should stay manual');
+assert.match(js,/event\.stopImmediatePropagation\(\)/,'help click supersedes normal card');
+assert.match(js,/\/api\/projects\/'\+slug\+'\/help'/,'help actions must hit protected API');
+assert.match(js,/✍ Skicka önskemål/);
+assert.match(js,/✅ Låt studion försöka igen/);
+assert.match(js,/execute\('resolve'\)/, 'the studio must own technical resolution');
+assert.match(js,/🔎 Mer information \(valfritt\)/, 'technical details should be optional');
+assert.match(js,/const needsHelp=new Set\(\(await refreshHelpCases\(slug\)\)\.keys\(\)\)/);
+assert.match(python,/def list_help_cases\(slug\)/);
+assert.match(python,/def respond_to_help\(slug,payload\)/);
+assert.match(python,/if item\.get\('status'\)=='superseded':continue/);
+console.log('PASS: help bubble, response UI and backend feed contract');

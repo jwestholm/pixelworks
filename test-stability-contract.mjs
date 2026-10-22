@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const js = readFileSync(new URL('./local.js', import.meta.url), 'utf8');
+assert.match(js, /result\.event_seq/, 'follow monotonically increasing backend events');
+assert.match(js, /eventSeq-rawEvents\.length/, 'compute event window start');
+assert.match(js, /result\.integrated\?'Arbetet är infört i spelet/, 'speak verified integration status');
+assert.match(js, /refreshHelpCases\(slug\)/, 'backend owns help-case status');
+assert.match(js, /const needsHelp=new Set\(\(await refreshHelpCases\(slug\)\)\.keys\(\)\)/, 'help bubbles use the same cases as help dialog');
+assert.doesNotMatch(js, /Resultaten hamnar i <b>granskning<\/b>; inga ändringar slås ihop automatiskt/, 'no obsolete merge text');
+console.log('PASS: bounded live event feed, accurate completion text, resolved help markers');

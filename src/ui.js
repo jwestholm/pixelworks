@@ -27,7 +27,7 @@ export class GameUI {
   bind(callbacks) {
     this.callbacks = callbacks;
     this.nodes.projectSelect.addEventListener('change', e => callbacks.onProjectChange?.(e.target.value));
-    document.querySelector('#newTaskBtn').addEventListener('click', () => this.openTaskDialog());
+    document.querySelector('#newTaskBtn')?.addEventListener('click', () => this.openTaskDialog());
     document.querySelector('#closeDrawerBtn').addEventListener('click', () => this.closeDrawer());
     document.querySelector('#clearEventsBtn').addEventListener('click', () => callbacks.onClearEvents?.());
     this.nodes.pauseBtn.addEventListener('click', () => callbacks.onToggleSimulation?.());
@@ -188,6 +188,7 @@ export class GameUI {
   }
 
   renderLead() {
+    if (!this.nodes.leadStrip) return;
     const lead=this.model.getLead();
     if(!lead){this.nodes.leadStrip.innerHTML=`<div class="lead-card"><div><div class="lead-name">INGEN ANSTÄLLD</div><div class="lead-meta">Anställ Codex i ⚙ Lokal studio, sedan dra honom till en station.</div></div></div>`;return;}
     this.nodes.leadStrip.innerHTML=`<div class="lead-card"><div class="lead-avatar">${lead.initials}</div><div><div class="lead-name">${lead.name} · ${lead.role}</div><div class="lead-meta">planering ${lead.skills.planning||0}/5 · ${STATUS_LABELS[lead.status]}</div></div><div class="lead-actions"><button id="delegateBtn" class="pixel-button compact">Auto-delegera</button></div></div>`;
@@ -195,6 +196,7 @@ export class GameUI {
   }
 
   renderTasks() {
+    if (!this.nodes.taskList) return;
     this.nodes.taskList.innerHTML=this.model.project.tasks.map(task=>{
       const agent=task.assignee?this.model.getAgent(task.assignee):null;
       return `<article class="task-card priority-${task.priority}" data-task="${task.id}"><div class="task-title">${escapeHTML(task.title)}</div><div class="task-details">${escapeHTML(task.details)}</div><div class="task-meta"><span class="chip ${agent?'':'status-todo'}">${agent?agent.name:'OTILLDELAD'}</span><span class="chip">${skillName[task.requiredSkill]||task.requiredSkill}</span><span class="chip sim">DEMO</span><select class="task-state-select" data-task-status="${task.id}" aria-label="Status för ${escapeHTML(task.title)}">${['todo','working','review','done'].map(s=>`<option value="${s}" ${s===task.status?'selected':''}>${taskStatusLabel[s]}</option>`).join('')}</select></div></article>`;

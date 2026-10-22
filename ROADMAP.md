@@ -1,3 +1,25 @@
+# Uppdatering 2026-10-22 – v0.11.8.4
+
+## UI-regel: Inga tekniska åtgärder krävs av spelaren
+- [x] Klick på en arbetare med aktiv ❗-bubbla öppnar en hjälpdialog med begriplig förklaring och ursprungligt uppdrag.
+- [x] Spelaren kan låta studion försöka lösa felet, skriva egna önskemål eller vänta. Åtgärder köas som vanliga arbetsorder, utan konsol och utan tvångsintegration.
+- [x] En säker integrationsomprövning görs innan en konflikt leder till nytt arbetspass. Verkliga konflikter skapar ett separat nytt arbete på aktuell spelversion, aldrig blind överskrivning.
+- [x] Tekniska detaljer är frivilliga i en expanderbar sektion.
+- [ ] Egna Pixel Works-dialoger i alla gamla flöden som ännu använder alert/confirm/prompt.
+- [ ] Serverstyrd automatisk, testad konfliktlösning utan onödiga användarfrågor och med begränsad retry-policy.
+- [ ] Browserbaserade funktionstester av dragningsbeteende, bubbla, dialog och felrapportering i Firefox.
+- [ ] Permanent arbetsmotor, integrationstest för körbart spel och beständig återhämtning efter omstart.
+
+# Uppdatering 2026-10-22 – v0.11.8.3
+
+**NOW:** Säker återhämtning av gamla rapporter, live-loggens senaste händelser, samtidiga rapportknappar, korrigerade hjälpstatusar och sanningsenliga avslutsmeddelanden – levererat och testat lokalt.
+
+**NEXT:** Beständig arbetsmotor/jobbjournal, transaktioner för ordertilldelning, kontroll av levande processer efter serveromstart, säkra preview-tester och incidenthantering.
+
+**LATER:** Game Bible med rika sidor och AI-redaktion, fikarum/inspiration, XP/levels, modellunderbyggda kandidater.
+
+---
+
 # Roadmap – Pixel Works
 
 ## NOW
@@ -53,3 +75,20 @@ LATER: Gemini-adapter med konfigurerbara kostnads-/takregler och kontoverifierad
 - [x] Rättad hänvisning till Game Bible för nya projekt + instruktion för äldre worktrees.
 - [x] Skilj Codex eget påstående från faktiskt integrerad status i samtal.
 - [ ] Lösa verkliga konflikter genom kontrollerad arbetsledargranskning och automatiska tester.
+
+
+## v0.11.7.1 — Game Bible som central designkälla (2026-10-22)
+- NOW: Codex-uppdrag och planeraren använder originalsida och redigerbara kapitel. Efter lyckad integration läggs verifierat nyinnehåll till utan att AI kan skriva över visionen.
+- NEXT: Förslag på stora designändringar till ägaren, synliga sidnotiser; förbättrad bild-/matrisredigering och agenternas designmöte.
+- LATER: Redaktionell versionering, strukturerade relationer, spårbar källa för varje faktapåstående och konflikthantering mellan agentskrivna bokposter.
+
+
+## v0.11.8.0: Projektborttagning och stabiliseringsspår
+Två bekräftelser för projektborttagning, lokal papperskorg, skydd mot samtidiga jobb. Kommande prioritet: enda källa för jobb/rapporter/notiser samt end-to-end-verify av preview. Se `CURRENT_STATE.md` och `TEST_REPORT.md`.
+
+## UI-beslut och fortsatta stabilitetsfixar (2026-10-22)
+- [ ] Ersätt webbläsarens `alert`, `confirm` och `prompt` med egna Pixel Works-modaler, i synnerhet för projektborttagning och andra viktiga beslut. Dessa dialoger kan blockeras eller döljas av webbläsaren. Säkerhetskontroller på servern behålls.
+- [x] Skapa rapport innan ett färdigt jobb får ändra arbetsorderns synliga status.
+- [x] Koppla arbetsorder till rätt sessions-ID och hindra gammalt jobb från att skriva över en nyare tilldelning.
+- [ ] Återhämtning av ej kvitterade jobb/rapporter efter serveromstart och persistent schemaläggning.
+- [ ] Fullständigt end-to-end-test med verklig Codex CLI och webbläsarpreview.

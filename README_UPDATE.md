@@ -1,12 +1,12 @@
-# Uppdatering till v0.11.7.0
+# Uppdatering till v0.11.7.1
 
-Packa upp i en ny programkatalog eller kopiera källfilerna över en existerande Git-arbetskatalog **utan att radera `.git/`**. Stoppa äldre Python-server innan start. Projektdata under `~/.pixelworks/projects/` påverkas inte när ZIP-filen packas upp.
+Stoppa äldre Pixel Works-server. Packa upp programfiler utan att ta bort `.git` i din lokala källkodskatalog. Projektens data under `~/.pixelworks/projects/` bevaras.
 
-## Prova
-1. Välj ett befintligt spelprojekt.
-2. Klicka **📖 GAME BIBLE** på väggen bredvid Projektstatus (eller knappen `📖 Game Bible`).
-3. Bläddra bland kapitlen. Den ursprungliga Game Bible är skrivskyddad.
-4. Välj t.ex. **Spelvärlden och platser**, skriv om kaféet och fotolabbet och klicka **💾 Spara sida**.
-5. Öppna kapitlet igen och kontrollera att texten finns kvar.
+### Game Bible styr AI-arbetet
+- Öppna 📖 GAME BIBLE i kontoret och skriv dina övergripande designval i bokens kapitel.
+- Codex-arbetare och Codex-planeraren får både den gamla originalsidan och de nya boksidorna som referens.
+- Efter en **lyckad lokal integration** kan Codex lämna en strukturerad bokuppdatering (till exempel en ny plats, en karaktär eller en spelmekanik). Uppdateringen läggs till i rätt kapitel utan att tidigare text försvinner.
+- Visionen förblir under din kontroll; AI kan inte uppdatera Vision-kapitlet via denna funktion.
+- Om arbetet inte integrerats läggs inte heller nya spelpåståenden in som färdiga fakta.
 
-Bokkapitlen sparas i `studio-bible/book/*.json` och är inte ännu automatiskt AI-synkroniserade. Referensfiler hanteras fortsatt via **📎 Material**. Befintlig `GAME_BIBLE.md` ändras inte.
+Test: skapa en arbetsorder om en ny plats och låt en Codex-arbetare slutföra den. Öppna Game Bible → Spelvärlden och platser när ändringen införts. Om agenten inte genererar den strukturerade bokfilen finns ingen ny automatiskt införd notering; funktionen gissar aldrig vad som gjorts.

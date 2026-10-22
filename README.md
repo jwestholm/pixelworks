@@ -1,3 +1,13 @@
+> **Version 0.11.8.4:** Klicka på en agent som säger *Jag behöver hjälp* för en enkel dialog. Spelaren behöver aldrig utföra Git-/terminalåtgärder. Läs `CURRENT_STATE.md` om begränsningarna.
+
+# Pixel Works v0.11.8.4 – hela paketet
+
+Detta ZIP är en **fullständig version** ovanpå v0.11.8.2. Läs `CURRENT_STATE.md` och `TEST_REPORT.md` för aktuellt läge, korrigerade fel och begränsningar. Historiska versionsanteckningar längre ned är inte instruktioner för nuvarande beteende.
+
+Uppdatera Pixel Works-källkoden i din lokala Git-arbetsmapp **utan att radera `.git`**. Stoppa den äldre serverprocessen först. Rör inte spelprojekten i `~/.pixelworks/projects/`.
+
+---
+
 # Pixel Works v0.10.9 – Agentidentitet & aktivitetslogg
 
 Uppdatering ovanpå v0.10.8.1. Lägg installationen i **egen katalog**; användarens projekt under `~/.pixelworks/projects` ska inte flyttas, raderas eller kopieras över.
@@ -38,3 +48,7 @@ Arbetsledaren prioriterar behöriga anställda och kan rycka in själv om ingen 
 
 ### v0.11.4.1 – automatisk lokal Git-baseline
 Vid **Starta delegering** skapar Pixel Works automatiskt en Git-commit i projektets `work/` om det behövs för parallella worktrees. Ingen GitHub-push görs. Misstänkta hemliga filer och pågående direktjobb ger ett tydligt fel i stället för en osäker snapshot.
+
+
+## v0.11.8.0: Projektborttagning och stabiliseringsspår
+Två bekräftelser för projektborttagning, lokal papperskorg, skydd mot samtidiga jobb. Kommande prioritet: enda källa för jobb/rapporter/notiser samt end-to-end-verify av preview. Se `CURRENT_STATE.md` och `TEST_REPORT.md`.
