@@ -1,9 +1,25 @@
-# Aktuellt läge: Pixel Works v0.11.6.1
+# Pixel Works v0.11.7.0 — Aktuellt läge
 
-- Isolerade Codex-arbetare kör i egna Git-worktrees under samma lokala spelprojekt.
-- Efter ett lyckat Codex-jobb försöker backend integrera resultatet direkt i `work/` när det är en säker fast-forward. Ingen användarlapp behövs.
-- Om arbetsgrenen skiljer sig från huvudprojektets historia och en arbetsledare är aktiv vid chefsbordet görs en vanlig automatisk **konfliktfri** Git-merge. Vid konflikt avbryts sammanfogningen.
-- Blockeringar skapar en kvarvarande granskningsrapport på användarens skrivbord. Lyckade integrationer dokumenteras men arkiveras tyst.
-- Vid serverstart sker en engångsgenomgång av äldre granskningsrapporter med kvarvarande worktree, aktivt mandat och utan pågående jobb.
-- Rapporten från Codex är inte oberoende speltestad. Merge-framgång betyder inte funktionellt godkänd kod.
-- Tester: 117 backendtester OK; JS-syntax OK. Inga riktiga Codex-körningar eller Firefox-test genomförda.
+## NOW — Levererat i denna version
+- 📖 Game Bible som väggobjekt i kontoret och bokvy med bläddringsbara kapitel.
+- Åtta redigerbara kapitel: Vision, Spelvärlden och platser, Karaktärer, Berättelsen, Spelmekanik, Grafik och referenser, Musik och ljud, Idébanken.
+- Befintliga `studio-bible/GAME_BIBLE.md` visas skrivskyddad som originalsida. Befintligt material finns kvar i referensbiblioteket; bokvyn listar bildreferenser med namn/kommentar.
+- Kapitel sparas per projekt i `studio-bible/book/<kapitel>.json` med atomisk filersättning och kontroller mot symlänkar och ogiltiga ID.
+- Misslyckad Codex-session får tydligare "Jag behöver hjälp" i rapportens sammanfattning och felorsak om känd.
+- Agent med olöst misslyckad eller blockerad rapport får en tydlig, ihållande hjälpmarkering ovanför figuren vid nästa synkronisering (kräver aktiv projektvy).
+- Versionsmarkering i gränssnitt och server uppdaterad.
+
+## NEXT — Högsta prioritet
+- End-to-end-test med riktig Codex och Firefox på användarens dator: kontrollera att felrapport, olästmarkering, arbetarpopup och arbetsorderns status alltid stämmer överens.
+- Förfina hjälpmarkeringen med en riktig animerad pratbubbla och ett åtgärdsflöde som kan lösa blockeringen utan att manuellt arkivera rapporten.
+- Redigering och visning av bilder, tabeller, matriser och relationskartor direkt på boksidorna. Vårt materialbibliotek är separat i nuläget.
+- Säker tvåvägssynkning mellan nya bokkapitel och Codex-kontexten (ännu inte implementerad).
+
+## LATER
+- Designmöten med AI-förslag, godkänd uppdatering av Game Bible och versionshistorik för hela boken.
+- Arbetsledargranskning, Gemini/Creative Director, XP/level för projekt, rekrytering med källbelagda modellbetyg.
+
+## Verifiering
+- 122 backendtester passerar i isolerad tillfällig projektrot.
+- JavaScript syntax och samtliga befintliga `.mjs`-kontroller passerar.
+- Inga autentiserade Codex-anrop, ingen riktig Firefox-rendering och inga ändringar i `~/.pixelworks/projects/` i denna utvecklingsmiljö.

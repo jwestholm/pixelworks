@@ -27,16 +27,23 @@ class IntegrationTests(unittest.TestCase):
     (tree/'game.js').write_text('new shovel\n')
     ok,msg=mod.integrate_worker_result(job)
     self.assertTrue(ok,msg);self.assertEqual((self.work/'game.js').read_text(),'new shovel\n')
- def test_parallel_nonconflicting_merges_only_with_manager(self):
+ def test_parallel_nonconflicting_merges_without_manager(self):
     a,ja=self.worker('a'*12);b,jb=self.worker('b'*12)
     (a/'game.js').write_text('shovel\n');(b/'art.css').write_text('new art\n')
     self.assertTrue(mod.integrate_worker_result(ja)[0])
     ok,msg=mod.integrate_worker_result(jb)
-    self.assertFalse(ok);self.assertIn('arbetsledare',msg)
-    # Chief is on duty; integration allowed when git resolves independently.
-    with patch.object(mod,'staff_read',return_value=[{'role_type':'lead','station':'lead'}]):
-      ok,msg=mod.integrate_worker_result(jb)
     self.assertTrue(ok,msg);self.assertEqual((self.work/'art.css').read_text(),'new art\n')
+ def test_same_content_is_not_duplicate_merge(self):
+    a,ja=self.worker('a'*12);b,jb=self.worker('b'*12)
+    (a/'game.js').write_text('shovel\n');(b/'game.js').write_text('shovel\n')
+    self.assertTrue(mod.integrate_worker_result(ja)[0])
+    ok,msg=mod.integrate_worker_result(jb)
+    self.assertTrue(ok,msg);self.assertIn('redan',msg)
+    self.assertEqual((self.work/'game.js').read_text(),'shovel\n')
+ def test_generated_agent_instructions_do_not_use_broken_relative_bible(self):
+    agent=(self.work/'AGENTS.md').read_text()
+    self.assertIn('GAME_BIBLE.md',agent)
+    self.assertNotIn('../studio-bible/GAME_BIBLE.md',agent)
  def test_old_report_recovers_and_is_silently_archived(self):
     tree,job=self.worker('c'*12)
     (tree/'game.js').write_text('recovered shovel\n')

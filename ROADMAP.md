@@ -41,3 +41,15 @@ LATER: Gemini-adapter med konfigurerbara kostnads-/takregler och kontoverifierad
 **NEXT:** Oberoende speltest före/efter integration och automatiska återställningspunkter med tydlig UI-förhandsvisning; arbetsledaren kan begära korrigerat resultat av arbetaren.
 
 **LATER:** Säkert semantiskt konfliktstöd med testade korrigeringsförslag, förslag från Creative Director och verifierade modellbetyg i rekrytering.
+
+## NEXT/LATER – Fikabord och omvärldsbevakning
+- Fikabordet som frivillig inspirationsstation: spelbranschrykten, genrenyheter, roliga klipp, trender och förslag på spelinnehåll.
+- Verkliga webbuppgifter ska ha källa och datum. Inga automatiska externa anrop utan användarens godkännande; idéer skapar inte kodjobb utan godkännande.
+- Fikabordet ska även fortsätta fungera som manuell paus från arbete och kreativitet.
+
+## v0.11.6.5 – riktad integrationsfix (2026-10-21)
+- [x] Automatisk lokal sammanfogning av konfliktfria parallella resultat, utan chefsberoende.
+- [x] Känn igen redan införda, identiska filer.
+- [x] Rättad hänvisning till Game Bible för nya projekt + instruktion för äldre worktrees.
+- [x] Skilj Codex eget påstående från faktiskt integrerad status i samtal.
+- [ ] Lösa verkliga konflikter genom kontrollerad arbetsledargranskning och automatiska tester.

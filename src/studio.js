@@ -32,7 +32,7 @@ export class StudioMenus {
   this.dialog.addEventListener('click',e=>{if(e.target===this.dialog&&!this.creatorActive)this.dialog.close()});this.dialog.addEventListener('cancel',e=>{if(this.creatorActive)e.preventDefault()});this.updateHUD();
  }
  shell(title,caption,body){if(!this.creatorActive)this.dialog.classList.remove('creator-dialog');this.content.innerHTML=`<div class="game-menu"><div class="menu-head"><div><div class="eyebrow">PIXEL WORKS // DEMO</div><h2>${esc(title)}</h2><small>${esc(caption)}</small></div><button class="pixel-button secondary" id="menuClose" aria-label="Stäng">✕</button></div><div class="menu-content">${body}</div></div>`;this.content.querySelector('#menuClose').onclick=()=>{this.creatorActive=false;this.dialog.classList.remove('creator-dialog');this.dialog.close()};if(!this.dialog.open)this.dialog.showModal();}
- updateHUD(){const e=this.model.economy;const burn=this.model.project.agents.filter(a=>a.status==='working').reduce((sum,a)=>sum+(PROVIDERS[a.provider]?.price||60),0);document.querySelector('#creditBalance').textContent=Math.floor(e.credits).toLocaleString('sv-SE');document.querySelector('#creditBurn').textContent=`−${burn}/h`;const unread=this.model.mailbox.filter(x=>!x.read || (x.decision&&x.outcome===null)).length;document.querySelector('#mailCount').textContent=unread;document.querySelector('#mailCount').hidden=!unread;const alert=document.querySelector('#deskAlert');if(alert)alert.hidden=!unread;}
+ updateHUD(){const e=this.model.economy;const burn=this.model.project.agents.filter(a=>a.status==='working').reduce((sum,a)=>sum+(PROVIDERS[a.provider]?.price||60),0);document.querySelector('#creditBalance').textContent=Math.floor(e.credits).toLocaleString('sv-SE');document.querySelector('#creditBurn').textContent=`−${burn}/h`;if(!this.model.project.live){const unread=this.model.mailbox.filter(x=>!x.read || (x.decision&&x.outcome===null)).length;document.querySelector('#mailCount').textContent=unread;document.querySelector('#mailCount').hidden=!unread;const alert=document.querySelector('#deskAlert');if(alert)alert.hidden=!unread;}}
  sync(){this.ui.renderAll();this.updateHUD()}
  newProduction(){this.projectDraft=newDraft();this.creatorActive=true;this.project();}
  project(){
@@ -107,11 +107,9 @@ export class StudioMenus {
   try {
     const base='/api/projects/'+encodeURIComponent(slug);
     const [orderRes,staffRes,jobRes,healthRes]=await Promise.all([
-      fetch(base+'/orders'),fetch(base+'/staff'),fetch(base+'/jobs'),fetch(base+'/dispatch/health')
+      window.pixelWorksApi(base+'/orders'),window.pixelWorksApi(base+'/staff'),window.pixelWorksApi(base+'/jobs'),window.pixelWorksApi(base+'/dispatch/health')
     ]);
-    const responses=[orderRes,staffRes,jobRes,healthRes];
-    for(const response of responses)if(!response.ok){let reason='HTTP '+response.status;try{const detail=await response.json();reason=detail.error||reason}catch{}throw Error(reason)}
-    const [orderData,staffData,jobData,healthData]=await Promise.all(responses.map(r=>r.json()));
+    const [orderData,staffData,jobData,healthData]=[orderRes,staffRes,jobRes,healthRes];
     const orders=orderData.orders||[],staff=staffData.staff||[],jobs=jobData.jobs||[];
     const health=healthData.health||healthData;
     const running=jobs.filter(j=>['queued','running'].includes(j.state));

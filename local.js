@@ -33,6 +33,7 @@ const dialog=document.createElement('dialog');dialog.className='local-dialog';di
 const safeSlug=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,48);
 function view(html){dialog.innerHTML=`<div class="local-shell-header"><h2>⚙ LOKAL STUDIO</h2><button type="button" id="localClose" class="alt" aria-label="Stäng">✕</button></div><small class="local-shell-info">Pixel Works v${info?.version||'okänd'} · chefen delegerar från sitt skrivbord</small><div class="local-shell-body">${html}</div>`;$('#localClose').onclick=()=>dialog.close();if(!dialog.open)dialog.showModal();}
 async function api(path, payload){const r=await fetch(path,{method:payload?'POST':'GET',credentials:'same-origin',headers:{...(token?{'X-Pixelworks-Token':token}:{}),...(payload?{'Content-Type':'application/json'}:{})},...(payload?{body:JSON.stringify(payload)}:{})});const body=await r.json();if(!r.ok)throw Error(body.error||'HTTP '+r.status);return body;}
+window.pixelWorksApi=api;
 async function init(){try{info=await api('/api/bootstrap');token=info.token;const data=await api('/api/projects');projects=data.projects;await refreshLiveRoster();return true}catch(e){view(`<p>Spelet körs utan den lokala projektmotorn.</p><p>Starta med: <code>python3 backend/server.py</code> och öppna <b>http://127.0.0.1:8765</b>.</p><p class="error">${esc(e.message)}</p>`);return false;}}
 async function refreshLiveRoster(){
   const staff={};
@@ -306,13 +307,21 @@ async function talkLive(slug,agentId){
     const agent=staff.find(a=>a.id===agentId);
     const jobs=(await api('/api/projects/'+slug+'/jobs')).jobs.filter(j=>j.agent_id===agentId);
     const record=jobs[0]||null;
-    const events=(record?.events||[]).map(humanEvent).filter(Boolean);
+    // Visa en sammanfattning av arbetet, inte ett terminaltranskript.
+    const raw=record?.events||[];
+    const agentNotes=raw.map(line=>{try{const ev=JSON.parse(line);return ev.type==='item.completed' && ev.item?.type==='agent_message' ? String(ev.item.text||'').trim() : ''}catch{return ''}}).filter(Boolean);
+    const latestNote=agentNotes.at(-1)||'';
+    const status= !record?'Ingen registrerad session':record.state==='running'?'Arbetar just nu':record.state==='queued'?'Väntar på start':record.state==='failed'?'Arbetspasset misslyckades':record.integrated?'Klart och infört i spelet':record.state==='review'?'Klart – integration behöver hanteras':record.state==='done'?'Arbetspasset avslutat':'Status: '+String(record.state||'okänd');
     const name=agent?.name||'Okänd anställd';
-    view(`<h3>☎ ARBETSSAMTAL · ${esc(name)}</h3><p>Motor: ${esc(agent?.provider||'okänd')} · <b>${esc(record?.state||'Ingen egen session')}</b></p>
-      <div class="state"><b>Senaste egna uppdrag</b><p>${esc(record?.instruction||'Den här anställda har ingen registrerad Codex-session i den aktiva serverprocessen.')}</p></div>
-      <h3>📡 Faktiska sessionshändelser · ${esc(name)}</h3><div class="log">${events.length?events.slice(-15).reverse().map(e=>esc(e.label+' – '+e.detail)).join('\n\n'):'Inga verifierade händelser för den här agenten.'}</div>
-      <p class="local-note">Detta är en statusvy, inte en realtidschatt. Historiska sessioner från före serverstart syns via rapporterna.</p>
-      <div class="local-actions"><button id="talkRefresh">↻ Uppdatera</button><button id="talkRaw" ${record?'':'disabled'}>Teknisk logg</button><button id="talkQueue">📄 Arbetsorder</button><button id="talkProfile">⚙ Profil</button>${agent?.role_type==='lead'?'<button id="talkLead">👔 Planera arbete</button>':''}<button id="talkClose" class="alt">Stäng</button></div>`);
+    const note=latestNote.replace(/\\([*`[\]\(\)])/g,'$1').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\[([^\]]+)\]\([^\)]+\)/g,'$1').replace(/`([^`]+)`/g,'$1');
+    const problems=raw.some(line=>/apply_patch verification failed|\"type\":\"error\"/.test(line));
+    view(`<h3>☎ ARBETSSAMTAL · ${esc(name)}</h3><p>Motor: ${esc(agent?.provider||'okänd')} · <b>${esc(status)}</b></p>
+      <div class="state"><b>Uppdrag</b><p>${esc(record?.instruction||'Inget registrerat uppdrag för den här agenten.')}</p></div>
+      <div class="state"><b>Arbetarens egen sammanfattning (inte integrationsstatus)</b><p>${esc(note|| (record?.state==='running'?'Arbetet pågår. Ingen sammanfattning ännu.': 'Ingen färdig arbetsrapport finns ännu.'))}</p></div>
+      ${record?.state==='review'?'<p class="local-note">⚠ Integration blockerad: '+esc(record.integration_note||'Ändringarna behöver kontrolleras.')+'</p>':record?.integrated?'<p class="local-note">✅ Ändringarna är införda i spelversionen. Oberoende speltest kan fortfarande saknas.</p>':''}
+      ${problems?'<p class="local-note">⚠ Ett tekniskt fel inträffade under arbetet. Detaljer finns under Teknisk logg; det innebär inte automatiskt att uppdraget misslyckades.</p>':''}
+      <p class="local-note">Detta är en statusvy, inte en realtidschatt. Kommandon och felsökningsdata finns endast under Teknisk logg.</p>
+      <div class="local-actions"><button id="talkRefresh">↻ Uppdatera</button><button id="talkRaw" ${record?'':'disabled'}>🔧 Teknisk logg</button><button id="talkQueue">📄 Arbetsorder</button><button id="talkProfile">⚙ Profil</button>${agent?.role_type==='lead'?'<button id="talkLead">👔 Planera arbete</button>':''}<button id="talkClose" class="alt">Stäng</button></div>`);
     $('#talkRefresh').onclick=render;
     $('#talkRaw').onclick=()=>{if(record){jobId=record.id;showJob();}};
     $('#talkProfile').onclick=()=>editStaffProfile(slug,agentId);
@@ -433,14 +442,14 @@ function humanEvent(line){
     const x=JSON.parse(line), type=x.type||'', item=x.item||{}, it=item.type||'';
     if(type==='thread.started')return {label:'Session öppnad',detail:'Codex har startat en ny arbetstråd.',kind:'info'};
     if(type==='turn.started')return {label:'Codex börjar arbeta',detail:'Ett verkligt arbetspass pågår.',kind:'working'};
-    if(type==='turn.completed')return {label:'Arbetspass avslutat',detail:'Codex har avslutat sin tur. Resultatet måste granskas.',kind:'done'};
+    if(type==='turn.completed')return {label:'Arbetspass avslutat',detail:'Codex har avslutat arbetspasset. Integrationsstatus visas i arbetsrapporten.',kind:'done'};
     if(type==='turn.failed')return {label:'Arbetspass misslyckades',detail:'Öppna råloggen för felsökning.',kind:'failed'};
-    if(type==='item.started' && it==='command_execution')return {label:'Kör ett kommando',detail:String(item.command||'Kommando startat').slice(0,160),kind:'working'};
-    if(type==='item.completed' && it==='command_execution')return {label:item.exit_code===0?'Kommando lyckades':'Kommando avslutat',detail:'Exitkod: '+(item.exit_code??'okänd'),kind:item.exit_code===0?'done':'info'};
+    if(type==='item.started' && it==='command_execution')return null; // Tekniska kommandon visas bara i råloggen.
+    if(type==='item.completed' && it==='command_execution')return null;
     if(it==='agent_message' && type==='item.completed')return {label:'Codex rapporterar',detail:String(item.text||'').slice(0,320),kind:'info'};
-    if(type==='item.completed' && it==='file_change')return {label:'Filer uppdaterade',detail:'Codex rapporterar filändringar. Kontrollera dem i arbetsmappen.',kind:'working'};
+    if(type==='item.completed' && it==='file_change')return null;
     if(type==='error')return {label:'Codex rapporterar fel',detail:String(x.message||'Okänt fel').slice(0,180),kind:'failed'};
-  }catch{return {label:'Systemmeddelande',detail:String(line).slice(0,180),kind:'info'};}
+  }catch{return null;} // Råtext är inte en agentreplik.
   return null;
 }
 function ensureLivePanel(){
@@ -677,10 +686,10 @@ async function showLiveReport(slug,rid){
   try{
     const found=(await api('/api/projects/'+slug+'/reports')).reports.find(r=>r.id===rid);
     if(!found)throw Error('Rapporten finns inte längre');
-    await api('/api/projects/'+slug+'/reports/'+rid,{action:'read'});
+    await api('/api/projects/'+slug+'/reports/'+rid,{action:'read'});await updateDeskBadge();
     view('<h3>📄 '+esc(found.title)+'</h3><div class="state"><small>'+esc(found.created_at)+(found.source==='studio-dispatch'?' · chefsrapport':' · session '+esc(rid))+'</small><p style="white-space:pre-wrap">'+esc(found.summary)+'</p></div>'+(found.source==='studio-dispatch'?'<p>Detta är en regelbaserad chefsrapport. Ingen AI har anropats för rapporten.</p>':'<p>Status: '+esc(found.state)+' · Exitkod: '+esc(found.exit_code??'okänd')+'</p><p><b>Verifiering: NEJ.</b> Codex rapport har ännu inte oberoende testats.</p>')+'<button id="fromReportPlay">🎮 Spela och granska</button><button id="fromReportArchive">Arkivera rapport</button><button class="alt" id="fromReportBack">Till rapporter</button>');
     $('#fromReportPlay').onclick=()=>playProject(slug);
-    $('#fromReportArchive').onclick=async()=>{await api('/api/projects/'+slug+'/reports/'+rid,{action:'archive'});await liveInbox();};
+    $('#fromReportArchive').onclick=async()=>{await api('/api/projects/'+slug+'/reports/'+rid,{action:'archive'});await updateDeskBadge();await liveInbox();};
     $('#fromReportBack').onclick=liveInbox;
   }catch(e){view('<p class="error">'+esc(e.message)+'</p>');}
 }
@@ -698,8 +707,22 @@ async function updateDeskBadge(){
 },true));
 document.querySelector('#projectSelect')?.addEventListener('change',()=>setTimeout(updateDeskBadge,150));
 setInterval(updateDeskBadge,6500);
+setTimeout(updateDeskBadge,1200);
 
 
+// Book view: each chapter can be edited independently; source Game Bible stays unchanged.
+async function openGameBook(slug, pageIndex=0){
+ try{
+  const {pages}=await api('/api/projects/'+slug+'/book'); if(!pages.length)throw Error('Boken saknar sidor');
+  const current=Math.max(0,Math.min(pageIndex,pages.length-1)),page=pages[current];
+  const {assets}=await api('/api/projects/'+slug+'/assets');const images=assets.filter(a=>/^image\//.test(({png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',gif:'image/gif'})[(a.name||'').split('.').pop()?.toLowerCase()]||'') );
+  view(`<div class="pw-book"><div class="pw-book-top"><b>📖 GAME BIBLE · ${esc(slug)}</b><small>${current+1} / ${pages.length}</small></div><div class="pw-book-chapters">${pages.map((p,i)=>`<button type="button" data-page="${i}" ${i===current?'aria-current="page"':''}>${esc(p.title)}</button>`).join('')}</div><div class="pw-book-spread"><div class="pw-book-page"><h3>${esc(page.title)}</h3><p class="local-note">${page.readonly?'Originaldokumentet visas oförändrat. Redigera dina nya kapitel på de andra sidorna.':'Ditt kapitel – redigeras och sparas lokalt i projektets Game Bible.'}</p><textarea id="pwBookContent" rows="13" ${page.readonly?'readonly':''} placeholder="Beskriv platser, karaktärer, berättelse, idéer…">${esc(page.content||'')}</textarea></div><div class="pw-book-page"><h3>🖼 Referenser & anteckningar</h3><p>${images.length} bildreferenser i biblioteket</p>${images.slice(0,8).map(a=>`<div class="pw-book-asset">🖼 ${esc(a.name)}<small>${esc(a.comment||'')}</small></div>`).join('')||'<p>Inga bilder ännu. Lägg till dem via Game Bible-material.</p>'}<p class="local-note">Bildvisning och fristående blockredigering byggs i nästa steg.</p></div></div><div class="pw-book-actions"><button id="pwBookPrev" ${current===0?'disabled':''}>◀ Föregående</button>${page.readonly?'': '<button id="pwBookSave">💾 Spara sida</button>'}<button id="pwBookNext" ${current===pages.length-1?'disabled':''}>Nästa ▶</button><button id="pwBookMaterials" class="alt">📎 Material</button></div><p id="pwBookMessage" role="status"></p></div>`);
+  dialog.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>openGameBook(slug,Number(b.dataset.page)));
+  $('#pwBookPrev').onclick=()=>openGameBook(slug,current-1);$('#pwBookNext').onclick=()=>openGameBook(slug,current+1);
+  $('#pwBookMaterials').onclick=()=>bibleView(slug);
+  if(!page.readonly)$('#pwBookSave').onclick=async()=>{try{await api('/api/projects/'+slug+'/book',{id:page.id,title:page.title,content:$('#pwBookContent').value});$('#pwBookMessage').textContent='✅ Sidan är sparad i projektet.'}catch(e){$('#pwBookMessage').textContent='⚠ '+e.message}};
+ }catch(e){view('<p class="error">Game Bible: '+esc(e.message)+'</p>')}
+}
 // Studio Bible / station inbox – actual files in studio-bible, no automatic Codex execution.
 const bibleButton=document.createElement('button');bibleButton.className='pixel-button secondary';bibleButton.textContent='📖 Game Bible';bibleButton.id='bibleButton';btn.after(bibleButton);
 async function activeSlug(){if(!info && !await init())return null;const choice=document.querySelector('#projectSelect');const slug=choice?.value||window.__PIXEL_WORKS_DEMO__?.model?.project?.id;return projects.some(p=>p.id===slug)?slug:(projects[0]?.id||null)}
@@ -717,7 +740,7 @@ async function bibleView(slug,station=null){
  dialog.querySelectorAll('[data-update]').forEach(b=>b.onclick=async()=>{const id=b.dataset.update;try{await api('/api/projects/'+slug+'/assets',{kind:'update',action:'edit',id,comment:dialog.querySelector('[data-comment="'+id+'"]').value,status:dialog.querySelector('[data-status="'+id+'"]').value});await bibleView(slug,station)}catch(e){$('#bibleError').textContent=e.message}});
  dialog.querySelectorAll('[data-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Ta bort denna referens från Game Bible?'))return;try{await api('/api/projects/'+slug+'/assets',{kind:'update',action:'delete',id:b.dataset.delete});await bibleView(slug,station)}catch(e){$('#bibleError').textContent=e.message}});
 }
-bibleButton.onclick=async()=>{try{const slug=await activeSlug();if(slug)await bibleView(slug);else view('<p>Skapa ett projekt först.</p>')}catch(e){view('<p class="error">'+esc(e.message)+'</p>')}};
+bibleButton.onclick=async()=>{try{const slug=await activeSlug();if(slug)await openGameBook(slug);else view('<p>Skapa ett projekt först.</p>')}catch(e){view('<p class="error">'+esc(e.message)+'</p>')}};
 // Drop files onto a station; do not intercept agent dragging.
 const office=document.querySelector('#stationLayer');if(office){office.addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('Files'))e.preventDefault()});office.addEventListener('drop',async e=>{if(!e.dataTransfer.files?.length)return;e.preventDefault();const st=e.target.closest('.station');if(!st)return;try{const slug=await activeSlug();await bibleView(slug,st.dataset.id);const fileInput=$('#bibleFiles');fileInput.files=e.dataTransfer.files;fileInput.dispatchEvent(new Event('change'));}catch(error){view('<p class="error">'+esc(error.message)+'</p>')}})}
 
@@ -732,6 +755,8 @@ setInterval(async()=>{
   const slug=await activeSlug();
   const people=(await api('/api/projects/'+slug+'/staff')).staff;
   const jobs=(await api('/api/projects/'+slug+'/jobs')).jobs;
+  const reports=(await api('/api/projects/'+slug+'/reports')).reports;
+  const needsHelp=new Set(reports.filter(r=>!r.archived && (r.state==='failed'||r.state==='review')).map(r=>r.agent_id).filter(Boolean));
   const active=new Set(jobs.filter(j=>j.state==='running'||j.state==='queued').map(j=>j.agent_id));
   const model=window.__PIXEL_WORKS_DEMO__?.model,ui=window.__PIXEL_WORKS_DEMO__?.ui;
   if(model&&ui){
@@ -743,6 +768,12 @@ setInterval(async()=>{
     const desired=active.has(record.id)?'working':'idle';if(agent.status!==desired){agent.status=desired;changed=true;}
    }
    if(changed)ui.renderAgents();
+   for(const node of document.querySelectorAll('#agentLayer .agent')){
+     const blocked=needsHelp.has(node.dataset.id);
+     let badge=node.querySelector('.pw-help-indicator');
+     if(blocked&&!badge){badge=document.createElement('span');badge.className='pw-help-indicator';badge.textContent='❗ Jag behöver hjälp';badge.title='Arbetet väntar på åtgärd – se rapport på ditt skrivbord';node.appendChild(badge);}
+     if(!blocked&&badge)badge.remove();
+   }
   }
  }catch(_error){/* Kontoret visar senast verifierad status vid tillfälligt anslutningsfel. */}
  finally{officeSyncBusy=false;}
@@ -773,3 +804,7 @@ setInterval(async()=>{
  }
  setInterval(refreshChiefHealth,4000);setTimeout(refreshChiefHealth,1200);
 })();
+
+// A physical Game Bible on the office wall, alongside project status.
+const bookWall=document.querySelector('#officeBook');
+if(bookWall)bookWall.addEventListener('click',async()=>{const slug=await activeSlug();if(slug)await openGameBook(slug)});
