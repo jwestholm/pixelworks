@@ -56,10 +56,16 @@ export class GameUI {
 
   renderStations() {
     this.nodes.stationLayer.innerHTML = this.model.stations.map(station => `
-      <div class="station" data-id="${station.id}" data-type="${station.type}" style="left:${station.x}%;top:${station.y}%;--station-color:${station.color}" title="${station.name}">
-        <div class="station-base"></div><div class="station-top"></div><div class="station-screen"></div><div class="station-chair"></div><div class="station-instrument"></div><div class="station-accessory"></div><div class="station-label">${station.short}</div>
+      <div class="station" role="button" tabindex="0" aria-label="Öppna ${station.name}" data-id="${station.id}" data-type="${station.type}" style="left:${station.x}%;top:${station.y}%;--station-color:${station.color}" title="${station.name}">
+        <div class="station-base"></div><div class="station-top"></div><div class="station-screen"></div><div class="station-chair"></div><div class="station-instrument"></div><div class="station-accessory"></div><div class="station-label">${station.short}</div><span class="station-worker" hidden></span>
       </div>`).join('');
-    this.nodes.stationLayer.querySelectorAll('.station').forEach(node=>node.addEventListener('click',()=>this.callbacks?.onStationClick?.(node.dataset.id)));
+    this.nodes.stationLayer.querySelectorAll('.station').forEach(node=>{
+      const open=()=>this.callbacks?.onStationClick?.(node.dataset.id);
+      node.addEventListener('click',open);
+      node.addEventListener('keydown',event=>{
+        if(event.key==='Enter'||event.key===' '){event.preventDefault();open();}
+      });
+    });
   }
 
   renderAgents() {
@@ -68,8 +74,32 @@ export class GameUI {
     for(const agent of this.model.project.agents){
       let node=existing.get(agent.id);
       if(!node){this.nodes.agentLayer.insertAdjacentHTML("beforeend",this.agentHTML(agent));node=this.nodes.agentLayer.lastElementChild;}
+      // Deterministic per-agent phase: agents must not blink, sip coffee or
+      // work in perfect sync. Keep it stable across render/poll cycles.
+      const phaseKey=String(this.model.activeProjectId||'')+':'+String(agent.id);
+      let phaseHash=2166136261;
+      for(let k=0;k<phaseKey.length;k++)phaseHash=Math.imul(phaseHash^phaseKey.charCodeAt(k),16777619)>>>0;
+      const phaseSeconds=((phaseHash%379)/100).toFixed(2);
+      node.style.setProperty('--pw-anim-phase',`-${phaseSeconds}s`);
       if(!this.walks.has(agent.id) && this.drag?.id!==agent.id){node.style.left=`${agent.x}%`;node.style.top=`${agent.y}%`;}
       node.classList.toggle("walking",this.walks.has(agent.id));
+      for(const state of ['idle','working','blocked','done']) node.classList.toggle(state,agent.status===state);
+      for(const activity of ['code','lead','research','qa','cafe','meeting','docs','voice','music','art']) node.classList.toggle('activity-'+activity,(agent.activity||agent.station)===activity);
+      node.setAttribute('aria-label',`${agent.name}, ${agent.role}, ${STATUS_LABELS[agent.status]||'OKÄND'}`);
+    }
+    // Show the name of a *real assigned worker*, never guess from the desk's
+    // profession or from how close a sprite happens to be. Simulated projects
+    // use their own explicitly simulated worker state.
+    for(const station of this.nodes.stationLayer?.querySelectorAll('.station') || []){
+      const badge=station.querySelector('.station-worker');
+      if(!badge)continue;
+      const workers=this.model.project.agents.filter(agent=>
+        agent.station===station.dataset.id && agent.status==='working' &&
+        !this.walks.has(agent.id));
+      const first=workers[0];
+      badge.hidden=!first;
+      badge.textContent=first ? `● ${first.name}${workers.length>1?` +${workers.length-1}`:''}` : '';
+      badge.title=first ? `${workers.map(a=>a.name).join(', ')} arbetar här${this.model.project.live?'':' (demo)'}` : '';
     }
     this.nodes.agentLayer.querySelectorAll('.agent').forEach(node => {
       if (node.dataset.bound) return;
@@ -117,7 +147,21 @@ export class GameUI {
   resetWalks(){this.walks.clear();if(this.animFrame)cancelAnimationFrame(this.animFrame);this.animFrame=null;this.lastFrame=0;}
 
   agentHTML(agent) {
-    return `<div title="${escapeHTML(agent.role)}" class="agent activity-${agent.activity||agent.station} ${agent.status} ${this.selectedAgentId===agent.id?'selected':''}" data-id="${agent.id}" style="left:${agent.x}%;top:${agent.y}%;--agent-color:${agent.color};--hair:${agent.hair};--status-color:${STATUS_COLORS[agent.status] || STATUS_COLORS.idle}" aria-label="${escapeHTML(agent.name)}, ${escapeHTML(agent.role)}, ${STATUS_LABELS[agent.status]}">
+    // Visual profession is independent of provider/skills. Cosmetic variants are stable per employee.
+    const roleType = String(agent.role_type || agent.role || '').toLowerCase();
+    const roleKey = roleType.includes('lead') || roleType.includes('arbetsled') || roleType.includes('projektled') ? 'lead'
+      : roleType.includes('qa') || roleType.includes('test') ? 'qa'
+      : roleType.includes('artist') || roleType.includes('grafik') || roleType.includes('designer') ? 'artist'
+      : roleType.includes('music') || roleType.includes('musik') ? 'musician'
+      : roleType.includes('voice') || roleType.includes('röst') ? 'voice'
+      : roleType.includes('research') || roleType.includes('forsk') ? 'research'
+      : roleType.includes('writer') || roleType.includes('creative') || roleType.includes('story') || roleType.includes('dokument') ? 'writer'
+      : roleType.includes('program') || roleType.includes('utveckl') || roleType.includes('kod') ? 'programmer' : 'allround';
+    const stableHash = [...String(agent.id || agent.name)].reduce((n,ch)=>((n*31+ch.charCodeAt(0))>>>0),7);
+    // Future profile may set appearance_variant explicitly: 0/2 masculine, 1/3 feminine illustration families.
+    const preferredVariant = Number(agent.appearance_variant);
+    const spriteVariant = agent.appearance_variant !== undefined && Number.isInteger(preferredVariant) && preferredVariant >= 0 && preferredVariant < 4 ? preferredVariant : stableHash % 4;
+    return `<div title="${escapeHTML(agent.role)}" class="agent sprite-role-${roleKey} sprite-variant-${spriteVariant} activity-${agent.activity||agent.station} ${agent.status} ${this.selectedAgentId===agent.id?'selected':''}" data-id="${agent.id}" style="left:${agent.x}%;top:${agent.y}%;--agent-color:${agent.color};--hair:${agent.hair};--status-color:${STATUS_COLORS[agent.status] || STATUS_COLORS.idle}" aria-label="${escapeHTML(agent.name)}, ${escapeHTML(agent.role)}, ${STATUS_LABELS[agent.status]}">
       <div class="agent-name">${escapeHTML(agent.name)}</div><div class="agent-shadow"></div><div class="agent-body"></div><div class="agent-head"></div><div class="agent-prop"></div><div class="agent-badge provider-mark ${agent.provider}" title="${agent.provider.toUpperCase()} · ${this.model.project.live?'SKARPT / STATUS SEPARAT':'DEMO'}">${({codex:"◎",claude:"✳",google:"G",microsoft:"▦"})[agent.provider]||"?"}</div><div class="agent-status"></div>
     </div>`;
   }

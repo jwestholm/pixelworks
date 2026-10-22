@@ -5,7 +5,7 @@ for(const key of ['code','qa','art','music','voice','docs','research','meeting',
 for(const text of ['Saknad grafik','Bakgrundsmusik','Intromusik','Skapa karaktär','Felrapport','Eget uppdrag','Chiptune','Jazz'])assert.ok(s.includes(text),text);
 assert.match(s,/dialog\.onpaste=e=>\{if\(!dialog\.open\)return;const images=/);
 assert.match(s,/e\.clipboardData\?\.items/);
-assert.match(s,/!\['done','superseded'\]\.includes\(o\.status\)/);
+for(const status of ['done','superseded','archived','cancelled','rejected']) assert.ok(s.includes("'"+status+"'"), 'Exclude historical status '+status);
 assert.match(s,/render\(\);\s*\}\s*catch\(e\)/);
 assert.match(s,/task-pixel-icon/);
 console.log('PASS Station Creator: all station presets, icons, completion filter, clipboard and render');

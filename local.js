@@ -31,7 +31,7 @@ style.textContent+=`.pw-help-screen{overflow:auto}.pw-help-screen .state{flex-sh
 const btn=document.createElement('button');btn.className='pixel-button secondary';btn.textContent='⚙ Lokal studio';btn.id='localStudioBtn';$('#studioBtn')?.after(btn);
 const dialog=document.createElement('dialog');dialog.className='local-dialog';dialog.id='localStudioDialog';document.body.append(dialog);
 const safeSlug=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,48);
-function view(html){dialog.innerHTML=`<div class="local-shell-header"><h2>⚙ LOKAL STUDIO</h2><button type="button" id="localClose" class="alt" aria-label="Stäng">✕</button></div><small class="local-shell-info">Pixel Works v${info?.version||'okänd'} · chefen delegerar från sitt skrivbord</small><div class="local-shell-body">${html}</div>`;$('#localClose').onclick=()=>dialog.close();if(!dialog.open)dialog.showModal();}
+function view(html){dialog.classList?.toggle('pw-binder-dialog',html.includes('pw-report-binder')||html.includes('pw-report-detail'));dialog.classList?.toggle('pw-staff-dialog',html.includes('PERSONAL ·')||html.includes('PERSONALPROFIL ·'));dialog.innerHTML=`<div class="local-shell-header"><h2>⚙ LOKAL STUDIO</h2><button type="button" id="localClose" class="alt" aria-label="Stäng">✕</button></div><small class="local-shell-info">Pixel Works v${info?.version||'okänd'} · chefen delegerar från sitt skrivbord</small><div class="local-shell-body">${html}</div>`;$('#localClose').onclick=()=>dialog.close();if(!dialog.open)dialog.showModal();}
 async function api(path, payload){const r=await fetch(path,{method:payload?'POST':'GET',credentials:'same-origin',headers:{...(token?{'X-Pixelworks-Token':token}:{}),...(payload?{'Content-Type':'application/json'}:{})},...(payload?{body:JSON.stringify(payload)}:{})});const body=await r.json();if(!r.ok)throw Error(body.error||'HTTP '+r.status);return body;}
 window.pixelWorksApi=api;
 async function init(){try{info=await api('/api/bootstrap');token=info.token;const data=await api('/api/projects');projects=data.projects;await refreshLiveRoster();return true}catch(e){view(`<p>Spelet körs utan den lokala projektmotorn.</p><p>Starta med: <code>python3 backend/server.py</code> och öppna <b>http://127.0.0.1:8765</b>.</p><p class="error">${esc(e.message)}</p>`);return false;}}
@@ -246,7 +246,7 @@ const TASK_OPTIONS={music:[['Jazz','music'],['Chiptune','game'],['Ambient','land
 // Compact, offline pixel pictograms. SVGs are authored for Pixel Works; compatible with a future Pixelarticons adapter.
 const TASK_PICTOGRAMS={music:['00110000','01111000','01001000','01001100','11001100','11001000','01100000','00000000'],bug:['01000100','00101000','01111100','11010110','11000110','01111100','00101000','01000100'],person:['00110000','01111000','01111000','00110000','01111000','11111100','11001100','00000000'],game:['01100110','11111111','11011011','11111111','11111111','11111111','01100110','00000000'],star:['00011000','00011000','11111111','01111110','00111100','01100110','11000011','00000000'],plus:['00011000','00011000','00011000','11111111','11111111','00011000','00011000','00000000'],book:['11111100','11000110','11000110','11000110','11000110','11000110','11111100','00000000'],eye:['00000000','00111100','01100110','11011011','11011011','01100110','00111100','00000000'],grid:['11111111','10011001','10011001','11111111','10011001','10011001','11111111','00000000'],heart:['01100110','11111111','11111111','11111111','01111110','00111100','00011000','00000000'],play:['11000000','11110000','11111100','11111111','11111100','11110000','11000000','00000000'],blank:['11111111','10000001','10111101','10100101','10111101','10000001','11111111','00000000'],box:['11111111','11000011','10100101','10011001','10100101','11000011','11111111','00000000'],land:['00000000','00011000','00111100','01111110','11111111','11011011','11000011','00000000'],edit:['00000011','00000111','00001110','00011100','00111000','01110000','11100000','00000000'],trash:['01111110','00111100','01111110','01100110','01100110','01100110','01111110','00000000'],tool:['01100110','01100110','00111100','00011000','00011000','00011000','00011000','00000000'],speed:['00011000','00111100','01100110','11000011','00011000','00110000','01100000','00000000'],spark:['10011001','01011010','00111100','11111111','00111100','01011010','10011001','00000000'],time:['00111100','01100110','11011011','11011011','11000011','01100110','00111100','00000000'],chat:['01111110','11000011','11000011','11000011','01111110','00011000','00110000','00000000'],bolt:['00110000','00110000','01111100','00111000','00111000','01100000','01100000','00000000']};
 function taskIcon(key){const bits=TASK_PICTOGRAMS[key]||TASK_PICTOGRAMS.game;let shapes='';bits.forEach((line,y)=>{[...line].forEach((c,x)=>{if(c==='1')shapes+=`<rect x="${x*3}" y="${y*3}" width="3" height="3"/>`})});return `<svg class="task-pixel-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${shapes}</svg>`;}
-async function stationOrders(slug,station,placed=false){
+async function stationOrders(slug,station,placed=false,openQueue=false){
  activeOrderStation=station;
  try{
   const all=(await api('/api/projects/'+slug+'/orders')).orders;
@@ -255,7 +255,7 @@ async function stationOrders(slug,station,placed=false){
   if(placed&&!waiting.length){await jobForm(slug,station);return;}
   const assets=(await api('/api/projects/'+slug+'/assets')).assets.filter(a=>a.station===station);
   const name=STATION_FOCUS[station]?.name||station, presets=TASK_CATALOG[station]||TASK_CATALOG.code;
-  let page=0, step='choose', choice=null, selected=new Set(), custom='', draft='',pending=[],showHistory=false;
+  let page=0, step=openQueue?'queue':'choose', choice=null, selected=new Set(), custom='', draft='',pending=[],showHistory=false;
   function shell(inner,actions){view(`<section class="station-builder local-screen"><div class="station-builder-top"><h3>${esc(name)} · ${step==='choose'?'VÄLJ UPPDRAG':step==='details'?'SKAPA ARBETSORDER':'ARBETSKÖ'}</h3><span>📄 ${waiting.length} väntar</span></div>${inner}<div class="local-actions">${actions}</div></section>`);}
   function render(){
    if(step==='choose'){
@@ -266,9 +266,29 @@ async function stationOrders(slug,station,placed=false){
     dialog.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{choice=presets[Number(b.dataset.preset)];draft=choice[2]||'';selected=new Set();step='details';render()});return;
    }
    if(step==='queue'){
-    const visible=rows.filter(o=>showHistory||!['done','superseded'].includes(o.status));
-    shell(`<div class="station-queue"><p>Avslutade uppdrag sparas i historiken, inte i den aktiva pappershögen.</p>${visible.map(o=>`<div class="line"><b>${o.priority===1?'🔴':o.priority===2?'🟡':'🟢'} P${o.priority} · ${esc(o.status)}</b><div>${esc(o.instruction)}</div>${o.attachment_ids?.length?`<small>📎 ${o.attachment_ids.length} bilagor</small>`:''}${o.status==='waiting'?`<div><button data-action="priority" data-id="${o.id}" data-priority="${o.priority===1?2:o.priority===2?3:1}">Prioritet</button><button data-action="move" data-id="${o.id}" data-direction="-1">↑</button><button data-action="move" data-id="${o.id}" data-direction="1">↓</button><button data-action="delete" data-id="${o.id}">Ta bort</button></div>`:''}</div>`).join('')||'<p>Inga aktiva arbetsorder.</p>'}</div>`,`<button id="queueBack">◀ Nytt uppdrag</button><button id="queueHistory" class="alt">${showHistory?'Dölj':'Visa'} historik</button><button id="queueClose" class="alt">Stäng</button><span class="local-error" id="queueError"></span>`);
-    $('#queueBack').onclick=()=>{step='choose';render()};$('#queueClose').onclick=()=>dialog.close();$('#queueHistory').onclick=()=>{showHistory=!showHistory;render()};dialog.querySelectorAll('[data-action]').forEach(b=>b.onclick=async()=>{try{await api('/api/projects/'+slug+'/orders',{action:b.dataset.action,id:b.dataset.id,...(b.dataset.priority?{priority:Number(b.dataset.priority)}:{}),...(b.dataset.direction?{direction:Number(b.dataset.direction)}:{})});await refreshOrderBadges(slug);await stationOrders(slug,station);}catch(e){$('#queueError').textContent=e.message}});return;
+    const hiddenStatuses=new Set(['done','superseded','archived','cancelled','rejected']);
+    const visible=rows.filter(o=>showHistory||!hiddenStatuses.has(o.status));
+    const statusNames={waiting:'Väntar på anställd',claimed:'Tilldelad',running:'Pågår / kontrollera status',review:'Väntar på granskning',failed:'Behöver hjälp',archived:'Arkiverad',done:'Klar',superseded:'Ersatt av nytt försök'};
+    shell(`<div class="station-queue"><p>Väntande order kan prioriteras. Gamla eller blockerade order kan <b>arkiveras</b> utan att spelkod och rapporter raderas. Aktiva Codex-jobb skyddas.</p>${visible.map(o=>`<div class="line"><b>${o.priority===1?'🔴':o.priority===2?'🟡':'🟢'} P${o.priority||2} · ${esc(statusNames[o.status]||o.status)}</b><div>${esc(o.instruction)}</div>${o.attachment_ids?.length?`<small>📎 ${o.attachment_ids.length} bilagor</small>`:''}${o.status==='waiting'?`<div><button data-action="priority" data-id="${esc(o.id)}" data-priority="${o.priority===1?2:o.priority===2?3:1}">Prioritet</button><button data-action="move" data-id="${esc(o.id)}" data-direction="-1">↑</button><button data-action="move" data-id="${esc(o.id)}" data-direction="1">↓</button><button data-action="archive" data-id="${esc(o.id)}">Arkivera</button></div>`:!hiddenStatuses.has(o.status)?`<div><button data-action="archive" data-id="${esc(o.id)}">Arkivera gammalt ärende</button></div>`:''}</div>`).join('')||'<p>Inga aktiva arbetsorder.</p>'}</div>`,`<button id="queueBack">◀ Nytt uppdrag</button><button id="queueHistory" class="alt">${showHistory?'Dölj':'Visa'} historik</button><button id="queueClose" class="alt">Stäng</button><span class="local-error" id="queueError" role="status"></span>`);
+    $('#queueBack').onclick=()=>{step='choose';render()};$('#queueClose').onclick=()=>dialog.close();$('#queueHistory').onclick=()=>{showHistory=!showHistory;render()};
+    dialog.querySelectorAll('[data-action]').forEach(b=>b.onclick=async()=>{
+      if(b.dataset.action==='archive'){
+        // Explicit in-game confirmation, not browser confirm()/prompt().
+        const row=b.closest('.line');
+        if(row.querySelector('.archive-confirm'))return;
+        const box=document.createElement('div');box.className='archive-confirm';
+        box.innerHTML='<p><b>Vill du arkivera arbetsordern?</b> Den försvinner ur aktiva kön. Tidigare rapporter, filer och Git-historik behålls. Ett känt pågående jobb kan inte arkiveras.</p><button type="button" data-archive-yes>Ja, arkivera</button><button type="button" class="alt" data-archive-no>Avbryt</button>';
+        row.append(box);
+        box.querySelector('[data-archive-no]').onclick=()=>box.remove();
+        box.querySelector('[data-archive-yes]').onclick=async()=>{
+          const yes=box.querySelector('[data-archive-yes]');yes.disabled=true;
+          try{await api('/api/projects/'+slug+'/orders',{action:'archive',id:b.dataset.id});await refreshOrderBadges(slug);await stationOrders(slug,station,false,true);}
+          catch(e){$('#queueError').textContent=e.message;yes.disabled=false;}
+        };
+        return;
+      }
+      try{await api('/api/projects/'+slug+'/orders',{action:b.dataset.action,id:b.dataset.id,...(b.dataset.priority?{priority:Number(b.dataset.priority)}:{}),...(b.dataset.direction?{direction:Number(b.dataset.direction)}:{})});await refreshOrderBadges(slug);await stationOrders(slug,station,false,true);}catch(e){$('#queueError').textContent=e.message}
+    });return;
    }
    const options=TASK_OPTIONS[station]||[];
    const pickers=options.length?`<div class="station-option-strip">${options.map(([label,icon])=>`<button type="button" data-style="${esc(label)}" class="station-option ${selected.has(label)?'picked':''}">${taskIcon(icon)}<span>${esc(label)}</span></button>`).join('')}</div>`:'';
@@ -674,7 +694,23 @@ refreshStorageBadge();
 async function autoloadLive(){try{info=await api('/api/bootstrap');token=info.token;projects=(await api('/api/projects')).projects;await refreshLiveRoster();await updateDeskBadge();if(projects.length)await refreshOrderBadges(window.__PIXEL_WORKS_DEMO__?.model.activeProjectId||projects[0].id);}catch(e){console.info('Lokal studio offline. DEMO-världar visas.',e.message);}}
 // Server-owned scheduler can start jobs without this browser creating their job IDs.
 // Discover and follow those sessions. Do not claim Codex is working unless backend says so.
+// In-game permission dialog: no browser confirm()/alert() blocking the studio.
+function askChiefMandatePermission(){
+ return new Promise(resolve=>{
+  const modal=document.createElement('dialog');modal.className='pw-chief-mandate-dialog';
+  modal.innerHTML=`<form method="dialog"><h2>🔒 Godkänn arbetsmandat?</h2>
+   <p>Ge de behöriga AI-anställda tillstånd att ändra filer i det här spelet via separata arbetsytor?</p>
+   <p>Inga ändringar skickas till GitHub. Studion får bara arbeta i projektets godkända mappar.</p>
+   <div class="pw-chief-mandate-actions"><button type="submit" value="cancel">Inte nu</button>
+   <button type="submit" value="approve">Ja, tillåt arbete</button></div></form>`;
+  document.body.append(modal);
+  modal.addEventListener('close',()=>{const approved=modal.returnValue==='approve';modal.remove();resolve(approved);},{once:true});
+  modal.showModal();
+ });
+}
 let serverJobWatchBusy=false,serverJobWatchSelected=null;
+function watchChiefHealthRefresh(){setTimeout(watchServerJobs,200);}
+
 async function watchServerJobs(){
  if(serverJobWatchBusy||!token||!document.body.classList.contains('live-project'))return;
  serverJobWatchBusy=true;
@@ -706,6 +742,20 @@ async function watchServerJobs(){
   overview.textContent=active.length?
    '🔴 Aktiva arbetare ('+active.length+'): '+active.map(j=>(j.agent_name||'Agent')+' · '+(j.station||'?')+' · '+j.state).join(' | ')+(healthError?' · '+statusText:''):
    statusText;
+  // Only actionable approval appears as a button; ordinary manager health is
+  // already visible in this rail. Never grant Codex write permission silently.
+  if(health?.state==='mandate_required' && !active.length){
+   const approve=document.createElement('button');
+   approve.type='button';approve.className='chief-mandate-button';
+   approve.textContent='🔒 Godkänn projektets arbetsmandat';
+   approve.onclick=async()=>{
+    if(!await askChiefMandatePermission())return;
+    approve.disabled=true;
+    try {await api('/api/projects/'+slug+'/mandate',{enabled:true,approval:'ALLOW_CODEX_WORKSPACE_WRITE'});await watchChiefHealthRefresh();}
+    catch(error){approve.disabled=false;overview.insertAdjacentText('beforeend',' · ⚠ '+error.message);}
+   };
+   overview.append(approve);
+  }
   if(chosen){
    if(chosen.id!==serverJobWatchSelected){
     serverJobWatchSelected=chosen.id;jobId=chosen.id;
@@ -738,36 +788,99 @@ window.pixelWorksEditStaffLive=async (slug,id)=>{if(!info)await init();await edi
 window.pixelWorksHireLive=async slug=>{if(!info)await init();await hireScreen(slug);};
 
 
-// Real project inbox. No demo entries and no automatic permission grants.
-async function liveInbox(){
+// Real project report binder. These are persisted Codex/dispatch records, never demo rows.
+// Filtering does not mutate reports; removing a letter archives it on the server.
+const inboxFilter={status:'all',type:'all',read:'all'};
+const REPORT_STATUS={done:'Infört / färdigt',review:'Väntar på granskning',failed:'Behöver hjälp',running:'Arbetar',queued:'Köad'};
+function reportType(r){return r.source==='studio-dispatch'?'chef':r.source==='codex-cli'?'arbete':'ovrigt'}
+function reportTypeLabel(r){return {chef:'Chefsrapport',arbete:'Arbetsrapport',ovrigt:'Annan rapport'}[reportType(r)]}
+function reportStateLabel(r){return r.integrated?'Infört i spelet':r.state==='done'?'Arbetspass avslutat – ej infört':REPORT_STATUS[r.state]||'Okänd status'}
+function reportStatusKey(r){return r.integrated?'done':r.state==='done'?'done':r.state||'other'}
+function inboxMatches(r){return !r.archived && (inboxFilter.type==='all'||reportType(r)===inboxFilter.type) && (inboxFilter.status==='all'||reportStatusKey(r)===inboxFilter.status) && (inboxFilter.read==='all'||(inboxFilter.read==='new'?!r.read:!!r.read));}
+function reportTimestamp(r){const d=new Date(r.created_at||'');return Number.isNaN(d.getTime())?'Tid okänd':d.toLocaleString('sv-SE',{dateStyle:'short',timeStyle:'short'});}
+function reportLabel(r){return r.read?'Läst':'Ny'}
+let inboxCache=[];
+const filterSelect=(id,label,choices,selected)=>`<label class="pw-filter-label">${label}<select id="${id}" aria-label="${label}">${choices.map(([val,text])=>`<option value="${val}" ${selected===val?'selected':''}>${text}</option>`).join('')}</select></label>`;
+async function liveInbox(message=''){
   const slug=document.querySelector('#projectSelect')?.value;
   if(!projects.some(p=>p.id===slug))return;
   try{
     const data=await api('/api/projects/'+slug+'/reports');
-    const reports=data.reports.filter(x=>!x.archived);
-    view('<h3>📬 DITT SKRIVBORD · RIKTIGA RAPPORTER</h3>'+
-      (reports.length?reports.map(r=>'<div class="line"><b>'+esc(r.read?'📄':'❗')+' '+esc(r.title)+'</b><br><small>'+esc(r.created_at)+' · '+esc(r.state)+' · verifierat: NEJ</small><br><button data-report="'+esc(r.id)+'">Läs rapport</button></div>').join(''):'<p>Inga nya verkliga Codex-rapporter ännu.</p>')+
-      '<button class="alt" id="leaveInbox">Till kontoret</button>');
-    $('#leaveInbox').onclick=()=>dialog.close();
-    dialog.querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>showLiveReport(slug,b.dataset.report));
+    inboxCache=data.reports.filter(r=>!r.archived);
+    renderInbox(slug,message);
   }catch(e){view('<p class="error">Rapporter kunde inte läsas: '+esc(e.message)+'</p>');}
+}
+function renderInbox(slug,message=''){
+  const reports=inboxCache.filter(inboxMatches);
+  const newCount=inboxCache.filter(r=>!r.read).length;
+  const displayed=reports.length;
+  view(`<section class="pw-report-binder local-screen">
+    <header class="pw-binder-title"><span aria-hidden="true">📚</span><div><h3>DIN RAPPORTPÄRM</h3><small>${esc(slug)} · ${newCount} nya · ${inboxCache.length} aktiva rapporter</small></div></header>
+    <div class="pw-report-filters" role="group" aria-label="Filtrera rapporter">
+      ${filterSelect('pwFilterRead','Lästa / nya',[['all','Alla'],['new','Nya'],['read','Lästa']],inboxFilter.read)}
+      ${filterSelect('pwFilterType','Rapporttyp',[['all','Alla typer'],['arbete','Arbetsrapport'],['chef','Chefsrapport'],['ovrigt','Övrigt']],inboxFilter.type)}
+      ${filterSelect('pwFilterStatus','Arbetsstatus',[['all','Alla statusar'],['done','Färdigt / infört'],['review','Granskning'],['failed','Behöver hjälp'],['running','Pågår'],['other','Övrigt']],inboxFilter.status)}
+    </div>
+    <div class="pw-binder-list" role="list" aria-label="Rapporter">
+      ${reports.map(r=>`<article class="pw-report-letter ${r.read?'is-read':'is-new'}" role="listitem">
+        <span class="pw-report-icon" aria-hidden="true">${reportType(r)==='chef'?'👔':r.state==='failed'?'❗':'📄'}</span>
+        <div class="pw-report-copy"><b>${esc(r.title||'Arbetsrapport')}</b>
+          <div class="pw-report-badges"><span>${esc(reportTypeLabel(r))}</span><span class="pw-status-${esc(reportStatusKey(r))}">${esc(reportStateLabel(r))}</span><span>${reportLabel(r)}</span></div>
+          <small>${esc(r.agent_name||'Studion')} · ${esc(reportTimestamp(r))}${r.verified?' · Verifierat':' · Ej oberoende speltestat'}</small>
+        </div>
+        <div class="pw-report-buttons"><button type="button" data-report="${esc(r.id)}" aria-label="Läs ${esc(r.title)}">Läs</button><button type="button" class="pw-trash-button" data-report-archive="${esc(r.id)}" aria-label="Arkivera ${esc(r.title)}" title="Arkivera rapport">🗑️</button></div>
+      </article>`).join('')||'<p class="pw-report-empty">📭 Inga rapporter matchar filtret.</p>'}
+    </div>
+    <div class="local-actions pw-binder-footer"><small>Visar ${displayed} av ${inboxCache.length} aktiva · Arkivering raderar inte rapporthistoriken.</small><button type="button" id="pwArchiveFiltered" ${displayed?'':'disabled'}>🗃️ Arkivera ${displayed?'visade ('+displayed+')':'visade'}</button><button type="button" class="alt" id="leaveInbox">Till kontoret</button><span id="pwInboxMessage" role="status">${esc(message)}</span></div>
+  </section>`);
+  for(const [id,key] of [['pwFilterRead','read'],['pwFilterType','type'],['pwFilterStatus','status']]){
+    $('#'+id).onchange=e=>{inboxFilter[key]=e.target.value;renderInbox(slug);};
+  }
+  $('#leaveInbox').onclick=()=>dialog.close();
+  dialog.querySelectorAll('[data-report]').forEach(b=>b.onclick=()=>showLiveReport(slug,b.dataset.report));
+  dialog.querySelectorAll('[data-report-archive]').forEach(b=>b.onclick=async()=>{
+    b.disabled=true;
+    try{await api('/api/projects/'+slug+'/reports/'+b.dataset.report,{action:'archive'});await updateDeskBadge();await liveInbox('Rapporten arkiverades.');}
+    catch(e){b.disabled=false;$('#pwInboxMessage').textContent='Kunde inte arkivera: '+e.message;}
+  });
+  $('#pwArchiveFiltered').onclick=()=>showInboxArchiveConfirm(slug,reports.map(r=>r.id));
+}
+function showInboxArchiveConfirm(slug,ids){
+  view(`<section class="pw-report-binder pw-archive-confirm local-screen" role="group" aria-label="Bekräfta arkivering"><div class="pw-binder-title"><span>📚</span><div><h3>ARKIVERA RAPPORTER?</h3><small>${ids.length} rapport${ids.length===1?'':'er'} i valt filter</small></div></div><div class="pw-archive-warning"><p>Flytta <b>${ids.length}</b> rapport${ids.length===1?'':'er'} från skrivbordet till arkivet?</p><p>De försvinner från aktiva listan, men <b>varken spelkod eller arbetshistorik raderas</b>.</p></div><div class="local-actions"><button type="button" id="pwArchiveYes">Ja, arkivera ${ids.length}</button><button type="button" class="alt" id="pwArchiveNo">Nej, gå tillbaka</button><span id="pwArchiveProgress" role="status"></span></div></section>`);
+  $('#pwArchiveNo').onclick=()=>renderInbox(slug);
+  $('#pwArchiveYes').onclick=async()=>{
+    $('#pwArchiveYes').disabled=true;$('#pwArchiveNo').disabled=true;
+    let count=0;
+    try{
+      for(const id of ids){await api('/api/projects/'+slug+'/reports/'+id,{action:'archive'});count++;$('#pwArchiveProgress').textContent=`Arkiverar ${count} / ${ids.length}…`;}
+      await updateDeskBadge();await liveInbox(`${count} rapport${count===1?'':'er'} arkiverades.`);
+    }catch(e){await updateDeskBadge();await liveInbox(`${count} arkiverades. Resten kunde inte arkiveras: ${e.message}`);}
+  };
 }
 async function showLiveReport(slug,rid){
   try{
     const found=(await api('/api/projects/'+slug+'/reports')).reports.find(r=>r.id===rid);
     if(!found)throw Error('Rapporten finns inte längre');
     await api('/api/projects/'+slug+'/reports/'+rid,{action:'read'});await updateDeskBadge();
-    view('<h3>📄 '+esc(found.title)+'</h3><div class="state"><small>'+esc(found.created_at)+(found.source==='studio-dispatch'?' · chefsrapport':' · session '+esc(rid))+'</small><p style="white-space:pre-wrap">'+esc(found.summary)+'</p></div>'+(found.source==='studio-dispatch'?'<p>Detta är en regelbaserad chefsrapport. Ingen AI har anropats för rapporten.</p>':'<p>Status: '+esc(found.state)+' · Exitkod: '+esc(found.exit_code??'okänd')+'</p><p><b>Verifiering: NEJ.</b> Codex rapport har ännu inte oberoende testats.</p>')+'<button id="fromReportPlay">🎮 Spela och granska</button><button id="fromReportArchive">Arkivera rapport</button><button class="alt" id="fromReportBack">Till rapporter</button>');
+    const reportClass=found.state==='failed'?'pw-report-error':'';
+    view(`<section class="pw-report-detail local-screen ${reportClass}">
+      <header class="pw-binder-title"><span>📄</span><div><h3>${esc(found.title||'Arbetsrapport')}</h3><small>${esc(reportTypeLabel(found))} · ${esc(reportTimestamp(found))}</small></div></header>
+      <div class="pw-report-badges pw-detail-badges"><span>${esc(reportStateLabel(found))}</span><span>${found.verified?'Verifierat':'Inte oberoende verifierat'}</span><span>${esc(found.agent_name||'Studion')}</span></div>
+      <div class="pw-report-paper"><p>${esc(found.summary||'Ingen sammanfattning från arbetaren.').replace(/\n/g,'<br>')}</p></div>
+      <details class="pw-report-tech"><summary>🔧 Visa tekniska detaljer</summary><p>Session: ${esc(rid)} · ${esc(found.state)} · exitkod: ${esc(found.exit_code??'okänd')}</p>${found.integration_note?`<p>${esc(found.integration_note)}</p>`:''}</details>
+      <div class="local-actions"><button type="button" id="fromReportPlay">🎮 Spela</button><button type="button" id="fromReportArchive">🗃️ Arkivera</button><button type="button" class="alt" id="fromReportBack">◀ Till pärmen</button><span id="pwReportDetailMessage" role="status"></span></div>
+    </section>`);
     $('#fromReportPlay').onclick=()=>playProject(slug);
-    $('#fromReportArchive').onclick=async()=>{await api('/api/projects/'+slug+'/reports/'+rid,{action:'archive'});await updateDeskBadge();await liveInbox();};
-    $('#fromReportBack').onclick=liveInbox;
+    $('#fromReportArchive').onclick=async()=>{try{await api('/api/projects/'+slug+'/reports/'+rid,{action:'archive'});await updateDeskBadge();await liveInbox('Rapporten arkiverades.');}catch(e){$('#pwReportDetailMessage').textContent=e.message;}};
+    $('#fromReportBack').onclick=()=>liveInbox();
   }catch(e){view('<p class="error">'+esc(e.message)+'</p>');}
 }
 async function updateDeskBadge(){
   const slug=document.querySelector('#projectSelect')?.value;
   if(!projects.some(p=>p.id===slug))return;
   try{const {reports}=await api('/api/projects/'+slug+'/reports');const unread=reports.filter(r=>!r.read&&!r.archived).length;
-    const alert=document.querySelector('#deskAlert');if(alert)alert.hidden=!unread;
+    const alert=document.querySelector('#deskAlert');if(alert){alert.hidden=!unread;alert.textContent=unread>99?'99+':String(unread);}
+    const desk=document.querySelector('#officeDesk');if(desk){desk.title=unread?`${unread} olästa rapporter – klicka för att läsa`:'Ditt skrivbord – läs rapporter';desk.setAttribute('aria-label',desk.title);}
     const count=document.querySelector('#mailCount');if(count){count.hidden=!unread;count.textContent=unread;}
   }catch(e){console.warn('Rapportstatus saknas:',e.message);}
 }
@@ -859,31 +972,9 @@ setInterval(async()=>{
  finally{officeSyncBusy=false;}
 },5000);
 
-// v0.11.5.3: Show verified local manager state. No silent mandate grants.
-(function(){
- const panel=document.createElement('div');panel.id='chiefDispatchHealth';
- panel.style.cssText='position:fixed;bottom:10px;left:10px;z-index:70;max-width:min(520px,calc(100vw - 20px));background:#243448;color:#f9edcf;border:3px solid #ad9065;padding:7px 10px;font:12px monospace;box-shadow:3px 3px #172337;display:none';
- document.body.appendChild(panel);
- async function refreshChiefHealth(){
-  try{
-   if(!token||!document.body.classList.contains('live-project')){panel.style.display='none';return;}
-   const slug=await activeSlug();if(!slug)return;
-   const state=await api('/api/projects/'+slug+'/dispatch/health');
-   panel.style.display='block';panel.replaceChildren();
-   const caption=document.createElement('span');caption.textContent='👔 CHEF · '+state.reason;panel.append(caption);
-   if(state.state==='mandate_required'){
-    const button=document.createElement('button');button.type='button';button.textContent='✓ Godkänn projektmandat';
-    button.style.cssText='margin-left:8px;padding:4px 8px;cursor:pointer';
-    button.onclick=async()=>{
-     if(!confirm('Tillåt arbetsledaren att automatiskt starta Codex med skrivåtkomst till detta spelprojekts isolerade arbetsytor?'))return;
-     try{await api('/api/projects/'+slug+'/mandate',{enabled:true,approval:'ALLOW_CODEX_WORKSPACE_WRITE'});refreshChiefHealth();}
-     catch(error){caption.textContent='⚠ '+error.message;}
-    };panel.append(button);
-   }
-  }catch(error){panel.style.display='block';panel.textContent='👔 Chefstatus kunde inte läsas: '+error.message;}
- }
- setInterval(refreshChiefHealth,4000);setTimeout(refreshChiefHealth,1200);
-})();
+// Manager health now appears in the server-backed activity rail, not as a
+// fixed overlay covering the office tip strip. An explicit project mandate
+// approval remains available there when required (see watchServerJobs).
 
 // A physical Game Bible on the office wall, alongside project status.
 const bookWall=document.querySelector('#officeBook');

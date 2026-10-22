@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+const css=readFileSync(new URL('./visual-v2.css',import.meta.url),'utf8');
+const uiSource=readFileSync(new URL('./src/ui.js',import.meta.url),'utf8');
+const html=readFileSync(new URL('./index.html',import.meta.url),'utf8');
+const types=['lead','code','qa','research','art','docs','voice','music','meeting','cafe'];
+for(const type of types) if(type!=='code') assert.ok(css.includes(`body .station[data-type=${type}] .station-top`),`missing image mapping for ${type}`);
+assert.match(css,/body \.station \.station-label\{[^}]*opacity:1/s,'station labels must be visible without hover');
+assert.match(css,/body \.station \.station-worker\[hidden\]/,'workers must only appear when truly working');
+assert.match(html,/v0\.12\.0\.9/);
+assert.match(uiSource,/role="button" tabindex="0"/);
+assert.match(uiSource,/event\.key==='Enter'\|\|event\.key===' '/);
+assert.match(uiSource,/agent\.status==='working'/);
+assert.match(uiSource,/badge\.hidden=!first/);
+assert.match(uiSource,/badge\.textContent=first/);
+// Exercise renderAgents with a faked DOM: no assignment => no worker tag.
+const state={badge:{hidden:true,textContent:''}, nodes:[], station:{dataset:{id:'code'}, querySelector(s){return s==='.station-worker'?this.badge:null}}};
+state.station.badge=state.badge;
+const agentLayer={querySelectorAll(){return state.nodes}};
+const stationLayer={querySelectorAll(){return [state.station]}};
+const global={document:{querySelector(s){return s==='#agentLayer'?agentLayer:s==='#stationLayer'?stationLayer:null}},window:{},console};
+const src=uiSource.replace(/^import\s+.*?;\s*$/gm,'').replace('export class GameUI','class GameUI');
+vm.runInNewContext(src+'\nthis.GameUI=GameUI;',global);
+const agent={id:'coder',name:'Programmerarn',role:'Programmerare',x:42,y:51,status:'idle',station:'code'};
+const model={project:{agents:[agent],live:true},activeProjectId:'p',getAgent(id){return id===agent.id?agent:null}};
+const ui=new global.GameUI(model);
+// No DOM building needed when node is already present.
+const node={dataset:{id:'coder',bound:'1'},style:{setProperty(){},left:'',top:''},classList:{toggle(){}},setAttribute(){}};
+state.nodes=[node];
+ui.renderAgents();assert.equal(state.badge.hidden,true);
+agent.status='working';ui.renderAgents();
+assert.equal(state.badge.hidden,false);assert.match(state.badge.textContent,/Programmerarn/);
+agent.station='cafe';ui.renderAgents();assert.equal(state.badge.hidden,true);
+console.log('PASS: 10 isometric desks, visible station categories, actual worker occupancy, keyboard access');

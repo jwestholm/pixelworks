@@ -13,5 +13,5 @@ assert.match(js,/🔎 Mer information \(valfritt\)/, 'technical details should b
 assert.match(js,/const needsHelp=new Set\(\(await refreshHelpCases\(slug\)\)\.keys\(\)\)/);
 assert.match(python,/def list_help_cases\(slug\)/);
 assert.match(python,/def respond_to_help\(slug,payload\)/);
-assert.match(python,/if item\.get\('status'\)=='superseded':continue/);
+assert.match(python,/if item\.get\('status'\) in \('superseded','archived'\):continue/, 'archived and superseded orders must not be revived');
 console.log('PASS: help bubble, response UI and backend feed contract');

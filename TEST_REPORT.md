@@ -1,21 +1,25 @@
-# Testprotokoll – Pixel Works v0.11.8.4
+# TEST_REPORT – Pixel Works v0.12.0.9
+
+Datum: 2026-10-22. **Endast lokal källkod och tillfälliga testdata har ändrats.** Inga externa AI-anrop, GitHub-åtgärder eller riktiga användarspel.
 
 ## Genomfört
-- `python -m unittest discover -s backend -p 'test_*.py' -q`: **156 test, OK**. Regressioner för hjälpärenden, säker omprövning av isolerade jobb, nya uppföljningsorder, dubbla knapptryckningar, gamla rapporter och instruktioner.
-- `node --check local.js`: **OK**.
-- Alla **12** `test-*.mjs`: **OK**.
-- `python -m py_compile backend/server.py`: **OK**.
 
-## Verifierade begränsningar
-- Testerna använder temporära spelprojekt och ingen riktig Codex-/Gemini-körning. Dialogens handlingar startar inget Codex-anrop direkt.
-- Ett rent integrationstest med flera verkliga Codex-processer på Ubuntu är inte utfört i denna version.
-- Försök att kontrollera gränssnittet med headless Chromium stoppades av körmiljöns localhost-policy (`ERR_BLOCKED_BY_ADMINISTRATOR`). Därför är **Firefox-layouten och klickbarheten inte visuellt verifierade**.
-- Ett upprepat jobb kan fortfarande misslyckas; felet ska då visas som ett nytt ärende. Studion skriver aldrig över en konflikt automatiskt och undviker oändliga automatiska försök.
-- Fullständig transaktionssäkerhet mellan JSON-arbetsorder och rapportfiler kräver en större lagringsförändring.
+- **177 backendtester passerar**: `python3 -m unittest discover -s backend -p 'test*.py' -q`. En av befintliga testerna skriver det förväntade felmeddelandet `KRITISKT RAPPORTFEL: disk full` för att testa felvägen; hela testsviten avslutas med `OK`.
+- **20 JavaScript-tester passerar**: `node test-*.mjs` (körda individuellt). Nytt `test-report-binder-v01209.mjs` testar kombinerade filter på typ, arbetsstatus och läst/oläst, att arkiverade poster är dolda, korrekt skillnad mellan integrerat och ej integrerat resultat, samt att nya dialog- och whiteboard-klasser finns.
+- `node --check local.js` och `node --check visual-v2.js` godkända; `python3 -m py_compile backend/server.py` godkänd.
+- Lokal HTTP-kontroll på port **18865** med **separat temporär `PIXEL_WORKS_HOME`**: `/visual-v2.css` gav HTTP 200 med `text/css` och `/local.js` gav HTTP 200 med `text/javascript`.
+- En **statisk visuell designkontroll** av rapportpärmen renderad i headless Chromium med `page.set_content` (förhandsbild ingår separat). Detta är INTE en bekräftelse på att Pixel Works fullständiga Firefox-vy eller interaktionen fungerar på användarens Ubuntu.
 
-## Viktiga regressioner
-- Ett äldre ärende kan inte av misstag avsluta någon annans aktuella arbete.
-- Verklig kollision ⇒ nytt uppdrag med skydd av senaste versionen (utan manuell Git-merge).
-- Saknad gammal arbetsyta ⇒ nytt uppdrag, inte terminalinstruktion.
-- Redan skapat uppföljningsjobb ⇒ ingen ny duplicerad hjälpbubbla.
-- Säkerhetsblockering vid pågående jobb ⇒ ingen obehörig integration.
+## Vad som ändrats
+
+- Gemensam egenritad pixelträinramning med stiliserad ådring och sprickor för popupfamiljerna; ingen extern stockbild och ingen extra extern resurs.
+- Rapportpärmen visar rapporttyp, arbetsstatus, läst/ny, agent, datum och om självständig verifiering saknas.
+- Tre kombinerbara filter (läst, typ, status), enskild arkiveringsikon och grupparkivering av exakt det aktuella filtrets rapport-ID:n.
+- Grupparkivering kräver egen Pixel Works-bekräftelse. Arkiveringskommandon använder befintligt server-API och ändrar enbart rapportflaggor (`archived`). Spelkod, arbetsorder och Git-historik ändras inte.
+- Topplistan för uppdrag får en whiteboard-stil och personalfönstret en kortbaserad variant av samma ram.
+
+## Inte verifierat / kända begränsningar
+
+- Chromium kan inte navigera till `127.0.0.1` i denna testmiljö (`ERR_BLOCKED_BY_ADMINISTRATOR`). Ingen fullständig browser end-to-end-kontroll; användarens Firefox återstår.
+- Grupparkivering skickar **ett lokalt API-anrop per rapport**. Om ett anrop misslyckas kan tidigare poster redan vara arkiverade; UI visar antalet genomförda och lämnar återstående poster kvar. Backend gör ingen atomär grupptransaktion.
+- UI förändrar inte äldre Codex-processer, rapportinnehåll eller integrationsmotor; felen i återhämtning efter serveromstart och previewvalidering är fortfarande separata utvecklingspunkter.

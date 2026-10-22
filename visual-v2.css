@@ -1,0 +1,435 @@
+/* Pixel Works v0.12.0 – first modular visual refresh, NOT a static clickable backdrop. */
+:root{--pw-navy:#0e2032;--pw-panel:#132d44;--pw-border:#365774;--pw-accent:#4cbff3;--pw-text:#e9f5ff}
+html,body{background:#0a1520}
+body .app-shell{padding:0;gap:0;grid-template-rows:auto minmax(0,1fr) 77px;min-height:0;height:100dvh;background:#11253a}
+body .topbar{position:relative;z-index:45;display:flex;flex-wrap:nowrap;justify-content:space-between;align-items:center;gap:10px;min-height:86px;padding:8px 13px;background:linear-gradient(#14283d,#081a2b);border:0;border-bottom:3px solid #2c5975;border-radius:0;box-shadow:0 5px 20px #0c1b27;color:var(--pw-text)}
+body .brand-block{flex:0 0 auto}
+body .brand-mark{background:#233a54;box-shadow:none;border:1px solid #76aad1;border-radius:5px}
+body .brand-title{color:#f0f7ff;white-space:nowrap;font-size:21px}
+body .brand-block .eyebrow{color:#8eb7d2;font-size:8px}
+body .brand-title .version{color:#74cce9}
+body .project-switcher{flex:1 1 280px;min-width:165px;max-width:435px;display:flex;gap:7px}
+body .project-switcher label{color:#abd2ed}
+body .project-switcher select{flex:1;min-width:0;max-width:370px;border:1px solid #4b7293;background:#102a42;color:#f3f7fc;border-radius:7px;padding:10px 12px;box-shadow:none}
+body .project-switcher select:focus{outline:2px solid #40b9f4}
+body .top-statuses{flex:0 0 auto;flex-wrap:nowrap;justify-content:flex-end;gap:5px}
+body .top-statuses .status-pill{min-height:36px;background:#19334d;border:1px solid #305874;border-radius:6px;box-shadow:none;color:#e6f4fe;font-size:9px}
+body .top-statuses #agentModeBadge{max-width:210px}
+body .status-pill .tiny-label{color:#9abfd6}
+body .game-actions{display:none!important} /* Existing controls stay in DOM and are invoked by the game dock. */
+body .top-statuses .credit-pill{display:none!important} /* Do not show fictitious finances as real project metrics. */
+body .top-statuses #pauseSimBtn{font-size:0;min-width:38px;min-height:36px;padding:5px}
+body .top-statuses #pauseSimBtn::before{content:'⏸';font-size:17px}
+body .project-switcher #removeProjectBtn{font-size:10px;padding:8px;background:#1e354b;color:#ffbdb0;border:1px solid #8e5054;box-shadow:none}
+body .game-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(235px,19vw);gap:0;min-height:0}
+body .office-wrap{display:grid;grid-template-rows:44px minmax(0,1fr) 25px;border:0;border-radius:0;box-shadow:none;background:#213a4c}
+body .office-toolbar{border:0;border-bottom:1px solid #668498;background:linear-gradient(90deg,#204356,#2d4c55);color:#eef6ed;padding:6px 16px}
+body .room-title{font-size:16px;color:#fff5dc}
+body .room-subtitle{font-size:10px;color:#d2dfd9}
+body .legend{color:#ecf4ef}
+body .office-stage{background:#b78b65 url('./assets/office-v2/office-backdrop.svg') center center/100% 100% no-repeat;overflow:hidden}
+body .office-stage::after{background:linear-gradient(90deg,rgba(7,26,45,.06),transparent 20%,transparent 75%,rgba(5,25,44,.09));pointer-events:none}
+body .office-stage .skyline,body .office-stage .floor,body .office-stage .wall,body .office-stage .neon-sign{display:none}
+body .office-stage .project-wallboard{top:25%;left:35%;max-width:48%;border:3px solid #7e665b;background:#fae7bd;box-shadow:2px 3px #6a5147;font:900 clamp(10px,1.25vw,17px) ui-monospace,monospace;letter-spacing:1px;opacity:.95}
+body .office-hint{background:#1e354a;color:#cce6f0;border:0;font:11px system-ui,sans-serif;padding:4px 13px}
+body .office-hint-right{color:#a7c9d9}
+body .pw-scene-plant{position:absolute;z-index:3;width:80px;height:132px;pointer-events:none;background:url('./assets/office-v2/plant.png') center/contain no-repeat;filter:drop-shadow(4px 8px 3px #243b3344)}
+body .pw-scene-plant.plant-left{top:26%;left:2%}
+body .pw-scene-plant.plant-right{top:26%;right:2%}
+body .station{width:138px;height:113px;filter:drop-shadow(0 5px 6px #312d374a);transition:filter .15s,transform .15s;z-index:6}
+body .station .station-base,body .station .station-screen,body .station .station-chair,body .station .station-instrument,body .station .station-accessory{display:none!important}
+body .station .station-top{position:absolute;inset:0;border:0;box-shadow:none;transform:none;background:transparent url('./assets/office-v2/desk-code.png') center center/contain no-repeat!important;border-radius:0!important;height:auto!important}
+body .station[data-type=lead] .station-top{background-image:url('./assets/office-v2/desk-lead.png')!important}
+body .station[data-type=research] .station-top{background-image:url('./assets/office-v2/desk-research.png')!important}
+body .station[data-type=qa] .station-top{background-image:url('./assets/office-v2/desk-qa.png')!important}
+body .station[data-type=art] .station-top{background-image:url('./assets/office-v2/desk-art.png')!important}
+body .station[data-type=docs] .station-top{background-image:url('./assets/office-v2/desk-docs.png')!important}
+body .station[data-type=voice] .station-top{background-image:url('./assets/office-v2/desk-voice.png')!important}
+body .station[data-type=music] .station-top{background-image:url('./assets/office-v2/desk-music.png')!important}
+body .station[data-type=meeting] .station-top{background-image:url('./assets/office-v2/desk-meeting.png')!important}
+body .station[data-type=cafe]{width:179px;height:122px;z-index:7}
+body .station[data-type=cafe] .station-top{background-image:url('./assets/office-v2/desk-cafe.png')!important}
+body .station:hover,body .station:focus-within{filter:drop-shadow(0 0 9px #fbe39c);z-index:18}
+body .station.drop-target .station-top{animation:none;filter:drop-shadow(0 0 10px #9fffe4)}
+body .station .station-label{position:absolute;bottom:0;left:50%;border:1px solid #7394aa;background:#16344f;color:#e8f7ff;border-radius:5px;box-shadow:0 2px 3px #11283f66;font:800 10px system-ui,sans-serif;letter-spacing:.03em;padding:5px 9px;opacity:0;transition:opacity .15s;pointer-events:none}
+body .station:hover .station-label,body .station.drop-target .station-label{opacity:1}
+body .station-order-badge{top:5px!important;right:1px!important;border:1px solid #ffdb8b!important;border-radius:5px!important;background:#ffe1a0!important}
+body .agent{width:48px;height:68px;transform:translate(-50%,-74%);background-repeat:no-repeat;background-position:0 0;background-size:192px 68px;image-rendering:pixelated;filter:drop-shadow(1px 4px 2px #081c264d)}
+body .agent .agent-head,body .agent .agent-body,body .agent .agent-shadow,body .agent .agent-prop{display:none!important}
+body .agent .agent-badge.provider-mark{top:29px;right:-2px;font-size:10px;width:17px;height:17px;border:1px solid #c3e3dd;border-radius:50%}
+body .agent .agent-name{background:#142f43;color:#edf8ff;border:1px solid #6991a9;box-shadow:0 3px #18334e55;border-radius:5px;top:-15px;font:800 10px system-ui,sans-serif;padding:2px 6px}
+body .agent .agent-status{bottom:7px;right:1px;width:11px;height:11px;border:2px solid #f1f7eb;border-radius:50%}
+body .agent.selected{filter:drop-shadow(0 0 7px #ffef92)}
+body .agent.idle:not(.walking):not(.dragging),body .agent.done:not(.walking):not(.dragging){animation:pw-agent-steps 2.6s steps(4,end) infinite}
+body .agent.blocked:not(.walking):not(.dragging){animation:pw-agent-steps 3s steps(4,end) infinite}
+body .agent.walking{animation:pw-agent-steps .55s steps(4,end) infinite}
+body .agent.working:not(.walking){animation:pw-agent-steps .85s steps(4,end) infinite}
+body .agent.dragging{animation:none!important;filter:drop-shadow(0 0 9px #e4fae9)}
+@keyframes pw-agent-steps{to{background-position:-192px 0}}
+/* Offset all looping pose animations without altering their real job state. */
+body .agent.idle:not(.walking):not(.dragging),
+body .agent.done:not(.walking):not(.dragging),
+body .agent.blocked:not(.walking):not(.dragging),
+body .agent.walking,
+body .agent.working:not(.walking){animation-delay:var(--pw-anim-phase,0s)}
+
+/* Profession-specific artwork: four independently animated frames for each variant and pose. */
+body .agent.sprite-role-programmer.sprite-variant-0{background-image:url('./assets/office-v2/agent-programmer-0-idle.png')}
+body .agent.sprite-role-programmer.sprite-variant-0.walking{background-image:url('./assets/office-v2/agent-programmer-0-walk.png')}
+body .agent.sprite-role-programmer.sprite-variant-0.working:not(.walking){background-image:url('./assets/office-v2/agent-programmer-0-working.png')}
+body .agent.sprite-role-programmer.sprite-variant-0.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-programmer-0-cafe.png')}
+body .agent.sprite-role-programmer.sprite-variant-1{background-image:url('./assets/office-v2/agent-programmer-1-idle.png')}
+body .agent.sprite-role-programmer.sprite-variant-1.walking{background-image:url('./assets/office-v2/agent-programmer-1-walk.png')}
+body .agent.sprite-role-programmer.sprite-variant-1.working:not(.walking){background-image:url('./assets/office-v2/agent-programmer-1-working.png')}
+body .agent.sprite-role-programmer.sprite-variant-1.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-programmer-1-cafe.png')}
+body .agent.sprite-role-programmer.sprite-variant-2{background-image:url('./assets/office-v2/agent-programmer-2-idle.png')}
+body .agent.sprite-role-programmer.sprite-variant-2.walking{background-image:url('./assets/office-v2/agent-programmer-2-walk.png')}
+body .agent.sprite-role-programmer.sprite-variant-2.working:not(.walking){background-image:url('./assets/office-v2/agent-programmer-2-working.png')}
+body .agent.sprite-role-programmer.sprite-variant-2.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-programmer-2-cafe.png')}
+body .agent.sprite-role-programmer.sprite-variant-3{background-image:url('./assets/office-v2/agent-programmer-3-idle.png')}
+body .agent.sprite-role-programmer.sprite-variant-3.walking{background-image:url('./assets/office-v2/agent-programmer-3-walk.png')}
+body .agent.sprite-role-programmer.sprite-variant-3.working:not(.walking){background-image:url('./assets/office-v2/agent-programmer-3-working.png')}
+body .agent.sprite-role-programmer.sprite-variant-3.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-programmer-3-cafe.png')}
+body .agent.sprite-role-qa.sprite-variant-0{background-image:url('./assets/office-v2/agent-qa-0-idle.png')}
+body .agent.sprite-role-qa.sprite-variant-0.walking{background-image:url('./assets/office-v2/agent-qa-0-walk.png')}
+body .agent.sprite-role-qa.sprite-variant-0.working:not(.walking){background-image:url('./assets/office-v2/agent-qa-0-working.png')}
+body .agent.sprite-role-qa.sprite-variant-0.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-qa-0-cafe.png')}
+body .agent.sprite-role-qa.sprite-variant-1{background-image:url('./assets/office-v2/agent-qa-1-idle.png')}
+body .agent.sprite-role-qa.sprite-variant-1.walking{background-image:url('./assets/office-v2/agent-qa-1-walk.png')}
+body .agent.sprite-role-qa.sprite-variant-1.working:not(.walking){background-image:url('./assets/office-v2/agent-qa-1-working.png')}
+body .agent.sprite-role-qa.sprite-variant-1.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-qa-1-cafe.png')}
+body .agent.sprite-role-qa.sprite-variant-2{background-image:url('./assets/office-v2/agent-qa-2-idle.png')}
+body .agent.sprite-role-qa.sprite-variant-2.walking{background-image:url('./assets/office-v2/agent-qa-2-walk.png')}
+body .agent.sprite-role-qa.sprite-variant-2.working:not(.walking){background-image:url('./assets/office-v2/agent-qa-2-working.png')}
+body .agent.sprite-role-qa.sprite-variant-2.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-qa-2-cafe.png')}
+body .agent.sprite-role-qa.sprite-variant-3{background-image:url('./assets/office-v2/agent-qa-3-idle.png')}
+body .agent.sprite-role-qa.sprite-variant-3.walking{background-image:url('./assets/office-v2/agent-qa-3-walk.png')}
+body .agent.sprite-role-qa.sprite-variant-3.working:not(.walking){background-image:url('./assets/office-v2/agent-qa-3-working.png')}
+body .agent.sprite-role-qa.sprite-variant-3.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-qa-3-cafe.png')}
+body .agent.sprite-role-artist.sprite-variant-0{background-image:url('./assets/office-v2/agent-artist-0-idle.png')}
+body .agent.sprite-role-artist.sprite-variant-0.walking{background-image:url('./assets/office-v2/agent-artist-0-walk.png')}
+body .agent.sprite-role-artist.sprite-variant-0.working:not(.walking){background-image:url('./assets/office-v2/agent-artist-0-working.png')}
+body .agent.sprite-role-artist.sprite-variant-0.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-artist-0-cafe.png')}
+body .agent.sprite-role-artist.sprite-variant-1{background-image:url('./assets/office-v2/agent-artist-1-idle.png')}
+body .agent.sprite-role-artist.sprite-variant-1.walking{background-image:url('./assets/office-v2/agent-artist-1-walk.png')}
+body .agent.sprite-role-artist.sprite-variant-1.working:not(.walking){background-image:url('./assets/office-v2/agent-artist-1-working.png')}
+body .agent.sprite-role-artist.sprite-variant-1.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-artist-1-cafe.png')}
+body .agent.sprite-role-artist.sprite-variant-2{background-image:url('./assets/office-v2/agent-artist-2-idle.png')}
+body .agent.sprite-role-artist.sprite-variant-2.walking{background-image:url('./assets/office-v2/agent-artist-2-walk.png')}
+body .agent.sprite-role-artist.sprite-variant-2.working:not(.walking){background-image:url('./assets/office-v2/agent-artist-2-working.png')}
+body .agent.sprite-role-artist.sprite-variant-2.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-artist-2-cafe.png')}
+body .agent.sprite-role-artist.sprite-variant-3{background-image:url('./assets/office-v2/agent-artist-3-idle.png')}
+body .agent.sprite-role-artist.sprite-variant-3.walking{background-image:url('./assets/office-v2/agent-artist-3-walk.png')}
+body .agent.sprite-role-artist.sprite-variant-3.working:not(.walking){background-image:url('./assets/office-v2/agent-artist-3-working.png')}
+body .agent.sprite-role-artist.sprite-variant-3.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-artist-3-cafe.png')}
+body .agent.sprite-role-musician.sprite-variant-0{background-image:url('./assets/office-v2/agent-musician-0-idle.png')}
+body .agent.sprite-role-musician.sprite-variant-0.walking{background-image:url('./assets/office-v2/agent-musician-0-walk.png')}
+body .agent.sprite-role-musician.sprite-variant-0.working:not(.walking){background-image:url('./assets/office-v2/agent-musician-0-working.png')}
+body .agent.sprite-role-musician.sprite-variant-0.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-musician-0-cafe.png')}
+body .agent.sprite-role-musician.sprite-variant-1{background-image:url('./assets/office-v2/agent-musician-1-idle.png')}
+body .agent.sprite-role-musician.sprite-variant-1.walking{background-image:url('./assets/office-v2/agent-musician-1-walk.png')}
+body .agent.sprite-role-musician.sprite-variant-1.working:not(.walking){background-image:url('./assets/office-v2/agent-musician-1-working.png')}
+body .agent.sprite-role-musician.sprite-variant-1.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-musician-1-cafe.png')}
+body .agent.sprite-role-musician.sprite-variant-2{background-image:url('./assets/office-v2/agent-musician-2-idle.png')}
+body .agent.sprite-role-musician.sprite-variant-2.walking{background-image:url('./assets/office-v2/agent-musician-2-walk.png')}
+body .agent.sprite-role-musician.sprite-variant-2.working:not(.walking){background-image:url('./assets/office-v2/agent-musician-2-working.png')}
+body .agent.sprite-role-musician.sprite-variant-2.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-musician-2-cafe.png')}
+body .agent.sprite-role-musician.sprite-variant-3{background-image:url('./assets/office-v2/agent-musician-3-idle.png')}
+body .agent.sprite-role-musician.sprite-variant-3.walking{background-image:url('./assets/office-v2/agent-musician-3-walk.png')}
+body .agent.sprite-role-musician.sprite-variant-3.working:not(.walking){background-image:url('./assets/office-v2/agent-musician-3-working.png')}
+body .agent.sprite-role-musician.sprite-variant-3.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-musician-3-cafe.png')}
+body .agent.sprite-role-voice.sprite-variant-0{background-image:url('./assets/office-v2/agent-voice-0-idle.png')}
+body .agent.sprite-role-voice.sprite-variant-0.walking{background-image:url('./assets/office-v2/agent-voice-0-walk.png')}
+body .agent.sprite-role-voice.sprite-variant-0.working:not(.walking){background-image:url('./assets/office-v2/agent-voice-0-working.png')}
+body .agent.sprite-role-voice.sprite-variant-0.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-voice-0-cafe.png')}
+body .agent.sprite-role-voice.sprite-variant-1{background-image:url('./assets/office-v2/agent-voice-1-idle.png')}
+body .agent.sprite-role-voice.sprite-variant-1.walking{background-image:url('./assets/office-v2/agent-voice-1-walk.png')}
+body .agent.sprite-role-voice.sprite-variant-1.working:not(.walking){background-image:url('./assets/office-v2/agent-voice-1-working.png')}
+body .agent.sprite-role-voice.sprite-variant-1.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-voice-1-cafe.png')}
+body .agent.sprite-role-voice.sprite-variant-2{background-image:url('./assets/office-v2/agent-voice-2-idle.png')}
+body .agent.sprite-role-voice.sprite-variant-2.walking{background-image:url('./assets/office-v2/agent-voice-2-walk.png')}
+body .agent.sprite-role-voice.sprite-variant-2.working:not(.walking){background-image:url('./assets/office-v2/agent-voice-2-working.png')}
+body .agent.sprite-role-voice.sprite-variant-2.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-voice-2-cafe.png')}
+body .agent.sprite-role-voice.sprite-variant-3{background-image:url('./assets/office-v2/agent-voice-3-idle.png')}
+body .agent.sprite-role-voice.sprite-variant-3.walking{background-image:url('./assets/office-v2/agent-voice-3-walk.png')}
+body .agent.sprite-role-voice.sprite-variant-3.working:not(.walking){background-image:url('./assets/office-v2/agent-voice-3-working.png')}
+body .agent.sprite-role-voice.sprite-variant-3.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-voice-3-cafe.png')}
+body .agent.sprite-role-research.sprite-variant-0{background-image:url('./assets/office-v2/agent-research-0-idle.png')}
+body .agent.sprite-role-research.sprite-variant-0.walking{background-image:url('./assets/office-v2/agent-research-0-walk.png')}
+body .agent.sprite-role-research.sprite-variant-0.working:not(.walking){background-image:url('./assets/office-v2/agent-research-0-working.png')}
+body .agent.sprite-role-research.sprite-variant-0.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-research-0-cafe.png')}
+body .agent.sprite-role-research.sprite-variant-1{background-image:url('./assets/office-v2/agent-research-1-idle.png')}
+body .agent.sprite-role-research.sprite-variant-1.walking{background-image:url('./assets/office-v2/agent-research-1-walk.png')}
+body .agent.sprite-role-research.sprite-variant-1.working:not(.walking){background-image:url('./assets/office-v2/agent-research-1-working.png')}
+body .agent.sprite-role-research.sprite-variant-1.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-research-1-cafe.png')}
+body .agent.sprite-role-research.sprite-variant-2{background-image:url('./assets/office-v2/agent-research-2-idle.png')}
+body .agent.sprite-role-research.sprite-variant-2.walking{background-image:url('./assets/office-v2/agent-research-2-walk.png')}
+body .agent.sprite-role-research.sprite-variant-2.working:not(.walking){background-image:url('./assets/office-v2/agent-research-2-working.png')}
+body .agent.sprite-role-research.sprite-variant-2.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-research-2-cafe.png')}
+body .agent.sprite-role-research.sprite-variant-3{background-image:url('./assets/office-v2/agent-research-3-idle.png')}
+body .agent.sprite-role-research.sprite-variant-3.walking{background-image:url('./assets/office-v2/agent-research-3-walk.png')}
+body .agent.sprite-role-research.sprite-variant-3.working:not(.walking){background-image:url('./assets/office-v2/agent-research-3-working.png')}
+body .agent.sprite-role-research.sprite-variant-3.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-research-3-cafe.png')}
+body .agent.sprite-role-lead.sprite-variant-0{background-image:url('./assets/office-v2/agent-lead-0-idle.png')}
+body .agent.sprite-role-lead.sprite-variant-0.walking{background-image:url('./assets/office-v2/agent-lead-0-walk.png')}
+body .agent.sprite-role-lead.sprite-variant-0.working:not(.walking){background-image:url('./assets/office-v2/agent-lead-0-working.png')}
+body .agent.sprite-role-lead.sprite-variant-0.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-lead-0-cafe.png')}
+body .agent.sprite-role-lead.sprite-variant-1{background-image:url('./assets/office-v2/agent-lead-1-idle.png')}
+body .agent.sprite-role-lead.sprite-variant-1.walking{background-image:url('./assets/office-v2/agent-lead-1-walk.png')}
+body .agent.sprite-role-lead.sprite-variant-1.working:not(.walking){background-image:url('./assets/office-v2/agent-lead-1-working.png')}
+body .agent.sprite-role-lead.sprite-variant-1.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-lead-1-cafe.png')}
+body .agent.sprite-role-lead.sprite-variant-2{background-image:url('./assets/office-v2/agent-lead-2-idle.png')}
+body .agent.sprite-role-lead.sprite-variant-2.walking{background-image:url('./assets/office-v2/agent-lead-2-walk.png')}
+body .agent.sprite-role-lead.sprite-variant-2.working:not(.walking){background-image:url('./assets/office-v2/agent-lead-2-working.png')}
+body .agent.sprite-role-lead.sprite-variant-2.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-lead-2-cafe.png')}
+body .agent.sprite-role-lead.sprite-variant-3{background-image:url('./assets/office-v2/agent-lead-3-idle.png')}
+body .agent.sprite-role-lead.sprite-variant-3.walking{background-image:url('./assets/office-v2/agent-lead-3-walk.png')}
+body .agent.sprite-role-lead.sprite-variant-3.working:not(.walking){background-image:url('./assets/office-v2/agent-lead-3-working.png')}
+body .agent.sprite-role-lead.sprite-variant-3.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-lead-3-cafe.png')}
+body .agent.sprite-role-writer.sprite-variant-0{background-image:url('./assets/office-v2/agent-writer-0-idle.png')}
+body .agent.sprite-role-writer.sprite-variant-0.walking{background-image:url('./assets/office-v2/agent-writer-0-walk.png')}
+body .agent.sprite-role-writer.sprite-variant-0.working:not(.walking){background-image:url('./assets/office-v2/agent-writer-0-working.png')}
+body .agent.sprite-role-writer.sprite-variant-0.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-writer-0-cafe.png')}
+body .agent.sprite-role-writer.sprite-variant-1{background-image:url('./assets/office-v2/agent-writer-1-idle.png')}
+body .agent.sprite-role-writer.sprite-variant-1.walking{background-image:url('./assets/office-v2/agent-writer-1-walk.png')}
+body .agent.sprite-role-writer.sprite-variant-1.working:not(.walking){background-image:url('./assets/office-v2/agent-writer-1-working.png')}
+body .agent.sprite-role-writer.sprite-variant-1.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-writer-1-cafe.png')}
+body .agent.sprite-role-writer.sprite-variant-2{background-image:url('./assets/office-v2/agent-writer-2-idle.png')}
+body .agent.sprite-role-writer.sprite-variant-2.walking{background-image:url('./assets/office-v2/agent-writer-2-walk.png')}
+body .agent.sprite-role-writer.sprite-variant-2.working:not(.walking){background-image:url('./assets/office-v2/agent-writer-2-working.png')}
+body .agent.sprite-role-writer.sprite-variant-2.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-writer-2-cafe.png')}
+body .agent.sprite-role-writer.sprite-variant-3{background-image:url('./assets/office-v2/agent-writer-3-idle.png')}
+body .agent.sprite-role-writer.sprite-variant-3.walking{background-image:url('./assets/office-v2/agent-writer-3-walk.png')}
+body .agent.sprite-role-writer.sprite-variant-3.working:not(.walking){background-image:url('./assets/office-v2/agent-writer-3-working.png')}
+body .agent.sprite-role-writer.sprite-variant-3.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-writer-3-cafe.png')}
+body .agent.sprite-role-allround.sprite-variant-0{background-image:url('./assets/office-v2/agent-allround-0-idle.png')}
+body .agent.sprite-role-allround.sprite-variant-0.walking{background-image:url('./assets/office-v2/agent-allround-0-walk.png')}
+body .agent.sprite-role-allround.sprite-variant-0.working:not(.walking){background-image:url('./assets/office-v2/agent-allround-0-working.png')}
+body .agent.sprite-role-allround.sprite-variant-0.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-allround-0-cafe.png')}
+body .agent.sprite-role-allround.sprite-variant-1{background-image:url('./assets/office-v2/agent-allround-1-idle.png')}
+body .agent.sprite-role-allround.sprite-variant-1.walking{background-image:url('./assets/office-v2/agent-allround-1-walk.png')}
+body .agent.sprite-role-allround.sprite-variant-1.working:not(.walking){background-image:url('./assets/office-v2/agent-allround-1-working.png')}
+body .agent.sprite-role-allround.sprite-variant-1.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-allround-1-cafe.png')}
+body .agent.sprite-role-allround.sprite-variant-2{background-image:url('./assets/office-v2/agent-allround-2-idle.png')}
+body .agent.sprite-role-allround.sprite-variant-2.walking{background-image:url('./assets/office-v2/agent-allround-2-walk.png')}
+body .agent.sprite-role-allround.sprite-variant-2.working:not(.walking){background-image:url('./assets/office-v2/agent-allround-2-working.png')}
+body .agent.sprite-role-allround.sprite-variant-2.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-allround-2-cafe.png')}
+body .agent.sprite-role-allround.sprite-variant-3{background-image:url('./assets/office-v2/agent-allround-3-idle.png')}
+body .agent.sprite-role-allround.sprite-variant-3.walking{background-image:url('./assets/office-v2/agent-allround-3-walk.png')}
+body .agent.sprite-role-allround.sprite-variant-3.working:not(.walking){background-image:url('./assets/office-v2/agent-allround-3-working.png')}
+body .agent.sprite-role-allround.sprite-variant-3.activity-cafe:not(.walking):not(.working){background-image:url('./assets/office-v2/agent-allround-3-cafe.png')}
+body .right-rail{display:flex;flex-direction:column;min-height:0;gap:0;border-left:2px solid #456a86;background:#0e2539;color:#e9f4ff}
+body .right-rail .event-panel,body .right-rail .real-session-panel{min-height:0;flex:1 1 100%;background:#10283e;border:0;box-shadow:none;border-radius:0;color:#dcecf9}
+body.live-project .right-rail:has(.real-session-panel){display:flex;flex-direction:column}
+body.live-project .right-rail .event-panel{display:none}
+body.live-project .right-rail .real-session-panel{order:1;flex:1 1 auto;max-height:none;border:0;border-top:2px solid #56afc9;margin:0;padding:12px;background:#112b40}
+body .panel-heading{background:#173a55;border:0;border-bottom:2px solid #497991;color:#e4f8ff;padding:12px}
+body .panel-heading .eyebrow{color:#91c8db}
+body .event-feed{background:#142e45}
+body .event-row{background:#1c3a56;color:#d5eaf7}
+body .event-msg{font-size:11px}
+body .event-time,body .event-type{color:#9bc1d5}
+body .agent-drawer{right:20%;top:105px;max-height:calc(100dvh - 190px);background:#102a40;border:2px solid #5794b1;border-radius:12px;box-shadow:0 10px 40px #0a1423a8;color:#ecf5ff}
+body .agent-drawer .eyebrow{color:#a6cede}
+body .agent-drawer .agent-role{color:#b9d5e9}
+body .agent-drawer .detail-section{border-top-color:#355670}
+body .agent-drawer .last-event{border-color:#46758f;background:#213e54}
+body .agent-drawer .evidence-card{background:#26425b;color:#e9f3ff}
+body .agent-drawer .evidence-card span{color:#c8dce9}
+body .agent-drawer .skill{background:#244965;color:#e8f6fa;border-color:#406c87}
+body .agent-drawer .skill strong{color:#fff}
+body .agent-drawer .focus-box{background:#17324b;color:#f7fbff;border:1px solid #47718d}
+body .office-prop{border:2px solid #345970;border-radius:5px;background:#f9e4ba;color:#2f4960;box-shadow:0 3px 5px #15314566;width:68px;height:44px}
+body .office-prop small{background:#15354e;color:#e5f0f3;border:1px solid #6a91a4;border-radius:4px;font:900 9px ui-monospace,monospace;padding:3px}
+body .book-prop{left:47%!important;top:22%!important;font-size:24px}
+body .board-prop{left:56%;top:28%;background:#91c8b1}
+body .paper-prop{left:6%;top:80%;background:#d7b17a}
+body .hire-prop{left:92%;top:32%}
+body .game-dock{z-index:55;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;background:linear-gradient(#122e46,#0c2033);border-top:3px solid #39678a;padding:8px 10px 7px}
+body .dock-item{border:1px solid #325b79;border-radius:7px;background:#162f48;color:#cfe4f3;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;font-size:12px;font-weight:800;cursor:pointer;min-width:0}
+body .dock-item span{font-size:26px;line-height:1.1}
+body .dock-item:hover,body .dock-item:focus-visible{border-color:#84caef;background:#234661;outline:none}
+body .dock-item.active{background:linear-gradient(#56bffa,#1b85c5);color:#072038;border-color:#b7e5ff}
+body .dock-dialog{border:2px solid #629bbb;border-radius:12px;background:#132d46;color:#f2f8ff;max-width:min(520px,96vw);width:500px;padding:19px;box-shadow:0 25px 70px #061423b3}
+body .dock-dialog::backdrop{background:#00101fb5}
+body .dock-dialog h2{margin:0 0 13px;font-size:21px}
+body .dock-dialog .dock-row{border-bottom:1px solid #3d6480;padding:11px 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+body .dock-dialog .dock-row button,body .dock-dialog .dock-close{background:#2389c6;border:0;border-radius:6px;color:white;padding:8px 12px;cursor:pointer}
+body .dock-dialog .dock-muted{color:#b0cadc;font-size:12px}
+@media(max-width:1250px){body .topbar{flex-wrap:wrap;min-height:90px}body .top-statuses{display:none}body .project-switcher{flex:1 1 220px}}
+@media(max-width:760px){body .app-shell{grid-template-rows:auto minmax(430px,1fr) auto;height:auto;min-height:100dvh}body .topbar{flex-wrap:wrap}body .game-layout{grid-template-columns:minmax(0,1fr)}body .office-wrap{min-height:530px}body .right-rail{max-height:230px}body .agent-drawer{right:5vw;top:85px}body .game-dock{grid-template-columns:repeat(4,1fr)}body .dock-item{min-height:54px}body .dock-item span{font-size:20px}body .office-stage .project-wallboard{font-size:10px}body .station{width:112px;height:93px}}
+@media(prefers-reduced-motion:reduce){body .agent.walking,body .agent.working:not(.walking),body .agent.idle:not(.walking),body .agent.done:not(.walking),body .agent.blocked:not(.walking){animation:none}body .station,body .agent{transition:none}}
+
+body.live-project .agent .agent-name{color:#fff}body .game-dock button:focus-visible{outline:3px solid #f8d48b;outline-offset:2px}
+/* Previous releases hid the demo event panel when Mission Board was retired.
+   Keep it visible in DEMO; real projects still show the authenticated Codex log. */
+body:not(.live-project) .right-rail .event-panel{display:flex!important}
+
+/* v0.12.0.3 – compact header with the real game navigation. */
+body .app-shell{grid-template-rows:auto minmax(0,1fr);}
+body .topbar{min-height:66px;gap:9px;padding:6px 10px;flex-wrap:nowrap;}
+body .game-dock{background:transparent;border:0;display:flex;gap:4px;flex:1 1 auto;min-width:0;padding:0;order:1;z-index:46;justify-content:flex-end;}
+body .dock-item{flex:0 1 92px;min-height:48px;border-radius:7px;gap:3px;padding:4px 5px;font-size:10px;line-height:1.15;}
+body .dock-item span{font-size:18px;}
+body .brand-block{order:0;min-width:150px;}
+body .topbar .project-switcher{position:absolute;max-width:0;height:0;width:0;overflow:hidden;opacity:0;pointer-events:none;}
+body .top-statuses{display:none!important;}
+body .game-layout{min-height:0;}
+body .dock-item[data-dock=projects]{position:relative;}
+body .dock-item[data-dock=projects]::after{content:'▾';font-size:10px;position:absolute;right:4px;top:5px;color:#9ecce8;}
+@media(max-width:1100px){body .topbar{flex-wrap:wrap}body .brand-block{flex:1 0 100%}body .game-dock{justify-content:space-between;flex-wrap:wrap}body .dock-item{flex:1 1 75px}body .topbar{min-height:86px}}
+@media(max-width:760px){body .app-shell{grid-template-rows:auto minmax(430px,1fr)}body .dock-item{flex:1 1 60px;font-size:10px}body .dock-item span{font-size:16px}}
+
+/* Manager status lives in the activity rail; never cover the office hint. */
+body #realWorkerOverview .chief-mandate-button{
+ display:block;margin:8px 0 4px;padding:8px 10px;max-width:100%;
+ border:1px solid #69b7db;border-radius:5px;background:#24648d;
+ color:#f3faff;font-size:12px;font-weight:700;cursor:pointer;
+}
+body #realWorkerOverview .chief-mandate-button:focus-visible{outline:3px solid #f6df84;outline-offset:2px}
+body #realWorkerOverview .chief-mandate-button:disabled{opacity:.6;cursor:wait}
+
+body .pw-chief-mandate-dialog{width:min(450px,calc(100vw - 24px));box-sizing:border-box;
+ border:2px solid #75a5b9;border-radius:9px;padding:20px;background:#16334c;color:#f0f9ff;
+ box-shadow:0 16px 50px #06192ecc;font:14px/1.5 system-ui,sans-serif}
+body .pw-chief-mandate-dialog::backdrop{background:#061528ae}
+body .pw-chief-mandate-dialog h2{margin:0 0 10px;font-size:19px}
+body .pw-chief-mandate-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:17px}
+body .pw-chief-mandate-actions button{border:1px solid #79b6d0;border-radius:6px;
+ padding:9px 13px;background:#265977;color:#fff;cursor:pointer}
+body .pw-chief-mandate-actions button[value="approve"]{background:#1a8e97;border-color:#9cf4df}
+body .pw-chief-mandate-actions button:focus-visible{outline:3px solid #f9d686;outline-offset:2px}
+
+/* v0.12.0.7 – shared isometric workstation projection, always-readable role labels.
+   Each desk remains an independent clickable/drag-target DOM element. */
+body .station { width:142px; height:116px; transform:translate(-50%,-50%); cursor:pointer; }
+body .station[data-type=cafe]{width:178px;height:133px}
+body .station .station-top{background-size:contain!important;background-position:center center!important;image-rendering:pixelated}
+body .station .station-label{
+  opacity:1;bottom:-8px;left:50%;z-index:12;
+  background:#122e43;border-color:#7cabc1;color:#f4faf5;
+  font-size:10px;padding:3px 8px;box-shadow:0 3px 0 #19314599;
+  max-width:120px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;
+}
+body .station:focus-visible{outline:3px solid #ffdd81;outline-offset:3px;z-index:19}
+body .station:hover .station-label,body .station:focus-visible .station-label,
+body .station.drop-target .station-label{background:#25658b;color:white;border-color:#b9f4ff}
+body .station .station-worker{
+  position:absolute;z-index:11;left:50%;top:-17px;transform:translateX(-50%);
+  border-radius:4px;border:1px solid #90e2c4;padding:2px 5px;
+  background:#153b46;color:#c4ffe1;box-shadow:0 2px 3px #05192488;
+  font:800 10px system-ui,sans-serif;white-space:nowrap;max-width:130px;
+  text-overflow:ellipsis;overflow:hidden;pointer-events:none;
+}
+body .station .station-worker[hidden]{display:none!important}
+body .station[data-type=music] .station-label{border-color:#b7a9ef}
+body .station[data-type=voice] .station-label{border-color:#eab2dc}
+body .station[data-type=qa] .station-label{border-color:#a0e4a5}
+body .station[data-type=art] .station-label{border-color:#f8be8d}
+@media(max-width:760px){body .station{width:116px;height:96px}body .station[data-type=cafe]{width:152px;height:111px}body .station .station-label{font-size:9px;padding:2px 6px;bottom:-6px}}
+
+/* v0.12.0.8: reports are visible on the owner's desk, never behind a hidden status. */
+body #deskAlert[hidden]{display:none!important}
+body #deskAlert:not([hidden]){font-size:15px;min-width:23px;min-height:23px;display:grid;place-items:center;border-radius:50%;z-index:25}
+body .dock-item[data-dock=play]{border-color:#3f99b6;color:#baf4ff}
+body .dock-item[data-dock=play]:hover,body .dock-item[data-dock=play]:focus-visible{background:#19577c;color:#fff}
+
+/* v0.12.0.9 – common handcrafted pixel-wood framing; no paid stock assets. */
+body :is(.local-dialog,.dock-dialog,.game-dialog,.pixel-dialog,.pw-delete-dialog,.pw-chief-mandate-dialog){
+  --pw-wood-dark:#40291f;--pw-wood-mid:#8b5536;--pw-wood-light:#bb8450;
+  border:10px solid var(--pw-wood-mid)!important;
+  border-radius:3px!important;
+  outline:3px solid #291a22;
+  background-color:#202c41;
+  box-shadow:inset 0 0 0 3px #e1ad69,inset 0 0 0 6px #55382d,7px 9px 0 #100f1f,0 18px 46px #090c1ac7!important;
+}
+/* Hand-drawn pixel grain, brackets and small cracks – shared across modal families. */
+body :is(.local-dialog,.dock-dialog,.game-dialog,.pixel-dialog,.pw-delete-dialog,.pw-chief-mandate-dialog)::backdrop{
+  background:#071322c4;
+}
+body :is(.local-dialog,.dock-dialog,.game-dialog,.pixel-dialog,.pw-delete-dialog,.pw-chief-mandate-dialog)::before{
+  content:"";position:absolute;left:-8px;right:-8px;top:-8px;height:7px;pointer-events:none;z-index:1;
+  background:repeating-linear-gradient(90deg,#44291f 0 3px,#ae774b 3px 28px,#dfab70 28px 30px,#70432f 30px 47px,#9b633e 47px 64px),
+             repeating-linear-gradient(90deg,transparent 0 36px,#382623 37px 40px,transparent 40px 87px);
+  box-shadow:0 2px 0 #e9b476;
+}
+body :is(.local-dialog,.dock-dialog,.game-dialog,.pixel-dialog,.pw-delete-dialog,.pw-chief-mandate-dialog)::after{
+  content:"";position:absolute;left:-8px;right:-8px;bottom:-8px;height:7px;pointer-events:none;z-index:1;
+  background:repeating-linear-gradient(90deg,#6f432d 0 5px,#b67c4c 5px 28px,#593525 28px 31px,#c68d55 31px 61px,#56372b 61px 64px);
+  box-shadow:0 -2px 0 #36231f;
+}
+body .local-dialog .local-shell-header,
+body .dock-dialog h2,
+body .game-dialog .menu-head{
+  border-bottom:3px solid #bd8651;
+  padding-bottom:7px;
+  color:#fce4b1;
+  text-shadow:2px 2px 0 #2f2435;
+}
+body .local-dialog button:focus-visible,body .dock-dialog button:focus-visible,
+body .local-dialog select:focus-visible,body .local-dialog input:focus-visible{outline:3px solid #ffeb88;outline-offset:2px}
+body .local-dialog button,body .dock-dialog button{border-radius:2px;image-rendering:pixelated}
+/* Live report inbox: a visible book/binder, not just a vertical technical log. */
+body .local-dialog.pw-binder-dialog{width:min(930px,calc(100vw - 22px));max-height:calc(100dvh - 20px);background:#42392c!important;color:#fff0cb}
+body .local-dialog.pw-binder-dialog .local-shell-info{color:#ffe2a3}
+body .local-dialog.pw-binder-dialog .local-shell-body{overflow:hidden}
+body .pw-report-binder,body .pw-report-detail{background:linear-gradient(90deg,#634c35 0 15px,#e4c18a 15px 20px,#f8e9c4 20px 100%);border:4px solid #b18856;box-shadow:inset 0 0 0 3px #fffae4,4px 4px 0 #332721;padding:12px 15px 10px 28px;color:#2c2932;min-height:0;flex:1}
+body .pw-binder-title{display:flex;align-items:center;gap:12px;padding:0 0 10px;border-bottom:3px double #99734f;flex:none}
+body .pw-binder-title>span{font-size:31px}
+body .pw-binder-title h3{font-size:18px;color:#453028;margin:0 0 3px;text-shadow:none}
+body .pw-binder-title small{color:#5a4940;font-weight:700}
+body .pw-report-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;flex:none;padding:9px;background:#e5c69a;border:2px solid #ad8b62}
+body .pw-filter-label{display:flex!important;flex-direction:column;gap:3px;font-size:11px;font-weight:800;color:#433324;min-width:0;margin:0!important}
+body .pw-filter-label select{width:100%;background:#fff9e8!important;color:#272833!important;border:2px solid #926c43!important;padding:6px!important;font-size:12px}
+body .pw-binder-list{flex:1;min-height:0;overflow:auto;scrollbar-color:#a67b55 #edd6a5;padding:6px 3px;display:flex;flex-direction:column;gap:6px}
+body .pw-report-letter{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px;background:repeating-linear-gradient(0deg,#fff5db 0 28px,#f2dfb8 29px 30px);border:2px solid #b99b71;box-shadow:3px 3px 0 #c4aa82}
+body .pw-report-letter.is-new{border-left:6px solid #d3783b;background:#fff1c7}
+body .pw-report-letter.is-read{opacity:.88}
+body .pw-report-icon{font-size:24px;text-align:center}
+body .pw-report-copy{min-width:0;overflow-wrap:anywhere}
+body .pw-report-copy>b{color:#2a2933;display:block;font-size:13px;line-height:1.3}
+body .pw-report-copy>small{font-size:10px;color:#664c39}
+body .pw-report-badges{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
+body .pw-report-badges span{font:700 10px/1.1 ui-monospace,monospace;color:#3a383a;padding:4px 6px;border:1px solid #95734c;background:#eddbb9}
+body .pw-report-badges .pw-status-failed{background:#f6b3a7;border-color:#aa5242}
+body .pw-report-badges .pw-status-review{background:#f3d280;border-color:#bb8e32}
+body .pw-report-badges .pw-status-done{background:#b5e4ad;border-color:#628d56}
+body .pw-report-buttons{display:flex;align-items:center;gap:5px}
+body .local-dialog .pw-report-buttons button{margin:0;padding:7px 10px;background:#cda363;border-color:#705034;font-size:11px}
+body .local-dialog .pw-report-buttons .pw-trash-button{background:#fff0d1;min-width:40px;font-size:18px}
+body .pw-trash-button:hover{filter:brightness(.9)}
+body .pw-report-empty{padding:28px 15px;text-align:center;font-size:14px;color:#534732}
+body .pw-binder-footer{margin-top:2px;border-top:2px solid #99734f!important}
+body .pw-binder-footer small{color:#514538;flex:1}
+body .pw-binder-footer button:disabled{opacity:.48;cursor:not-allowed}
+body .pw-binder-footer [role=status]{color:#4b3220;font-weight:800}
+body .pw-archive-warning{background:#fff4cc;border:3px dashed #996d43;padding:15px;line-height:1.5;flex:1;min-height:0;overflow:auto}
+body .pw-report-paper{background:#fff8e5;color:#332c2c;border:2px solid #bd9f79;padding:18px;flex:1;min-height:0;overflow:auto;line-height:1.5;overflow-wrap:anywhere}
+body .pw-report-paper p{white-space:normal;line-height:1.6;margin:0}
+body .pw-detail-badges{flex:none}
+body .pw-report-tech{font-size:12px;color:#564336;flex:none;max-height:100px;overflow:auto}
+body .pw-report-tech summary{cursor:pointer}
+body .pw-report-detail .local-actions{border-top:2px solid #99734f}
+body .pw-report-detail .local-actions button{margin:0}
+/* Mission board is a pixel whiteboard mounted inside the same wood frame. */
+body .dock-dialog.pw-whiteboard-dialog{width:min(780px,calc(100vw - 22px));max-width:780px;background:#4a392e;color:#fff9e7}
+body .pw-whiteboard-dialog #dockDialogContent>div{background:#e7f1e8;color:#253744;border:7px solid #d0dbd7;box-shadow:inset 3px 3px #a4b8b7,inset -3px -3px #faffff;padding:13px;max-height:min(56vh,490px);overflow:auto}
+body .pw-whiteboard-dialog .dock-row{background:#fff2b3;border:2px solid #8b9a8d;padding:10px;margin:8px 0;box-shadow:3px 4px #a3b9b1;transform:rotate(-.3deg)}
+body .pw-whiteboard-dialog .dock-row:nth-child(even){background:#f6d4a5;transform:rotate(.35deg)}
+body .pw-whiteboard-dialog .dock-muted{color:#4a5960}
+body .pw-whiteboard-dialog .dock-row button{background:#275f7c;color:#fff;border:2px solid #193b55}
+body .pw-whiteboard-dialog h2{font-weight:950;letter-spacing:.025em}
+/* Staff records look like clipped candidate cards, not generic blue boxes. */
+body .local-dialog.pw-staff-dialog .local-shell-body{background:#2a3444}
+body .pw-staff-dialog .local-card{background:#f7e8c7;border:3px solid #a6764b;box-shadow:4px 4px #172639;color:#302939;gap:5px}
+body .pw-staff-dialog .local-card b,body .pw-staff-dialog .local-card small{color:#302939}
+body .pw-staff-dialog .local-identity{background:#2e4c58;padding:9px;border:2px solid #ad8657}
+body .pw-staff-dialog .local-card button{background:#dfb778;color:#2d2633}
+@media(max-width:650px){
+ body .pw-report-filters{grid-template-columns:1fr;gap:4px}
+ body .pw-report-binder,body .pw-report-detail{padding:8px 9px 8px 20px}
+ body .pw-report-letter{grid-template-columns:25px minmax(0,1fr);gap:6px}
+ body .pw-report-buttons{grid-column:2;justify-content:flex-end}
+ body .pw-report-copy>b{font-size:11px}
+ body .pw-binder-title h3{font-size:14px}
+}

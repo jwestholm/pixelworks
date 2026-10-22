@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#171a2b" />
+  <meta name="theme-color" content="#101e2d" />
   <title>Pixel Works — Studio Simulator</title>
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./visual-v2.css" />
   <script type="module" src="./local.js"></script>
 </head>
 <body>
@@ -15,7 +16,7 @@
         <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
         <div>
           <div class="eyebrow">PIXEL WORKS · STUDIO SIMULATOR</div>
-          <div class="brand-title">Pixel Works <span class="version">v0.11.7.0</span></div>
+          <div class="brand-title">Pixel Works <span class="version">v0.12.0.9</span></div>
         </div>
       </div>
 
@@ -29,6 +30,17 @@
         <div class="status-pill"><span class="tiny-label">REAL KVOT</span><strong>okänt</strong></div>
         <button id="pauseSimBtn" class="pixel-button secondary" type="button">Pausa simulering</button>
       </div>
+    <nav id="gameDock" class="game-dock" aria-label="Spelmeny">
+      <button type="button" class="dock-item active" data-dock="office" aria-current="page"><span>🏢</span>Kontor</button>
+      <button type="button" class="dock-item" data-dock="play" title="Öppna spelet i en ny flik"><span>🎮</span>Spela</button>
+      <button type="button" class="dock-item" data-dock="agents"><span>👥</span>Agenter</button>
+      <button type="button" class="dock-item" data-dock="orders"><span>📋</span>Uppdrag</button>
+      <button type="button" class="dock-item" data-dock="projects"><span>📁</span>Projekt</button>
+      <button type="button" class="dock-item" data-dock="events"><span>🗄️</span>Händelser</button>
+      <button type="button" class="dock-item" data-dock="findings"><span>💡</span>Fynd</button>
+      <button type="button" class="dock-item" data-dock="stats"><span>📊</span>Statistik</button>
+      <button type="button" class="dock-item" data-dock="settings"><span>⚙️</span>Inställningar</button>
+    </nav>
     </header>
 
     <main class="game-layout">
@@ -52,12 +64,13 @@
             <div class="city-block b1"></div><div class="city-block b2"></div><div class="city-block b3"></div>
           </div>
           <div class="floor" aria-hidden="true"></div>
+          <div class="pw-scene-plant plant-left" aria-hidden="true"></div><div class="pw-scene-plant plant-right" aria-hidden="true"></div>
           <div class="wall wall-left" aria-hidden="true"></div>
           <div class="wall wall-back" aria-hidden="true"></div>
           <div class="neon-sign" aria-hidden="true">BUILD // TEST // SHIP</div>
 
           <div id="stationLayer" class="station-layer"></div>
-          <div id="agentLayer" class="agent-layer"></div><button class="office-prop paper-prop" id="officeDesk" title="Läs rapporter">✉<small>DITT SKRIVBORD</small><b id="deskAlert" class="desk-alert">!</b></button><button class="office-prop board-prop" id="officeBoard" title="Projektframsteg">▤<small>PROJEKTSTATUS</small></button><button class="office-prop book-prop" id="officeBook" title="Läs Game Bible">📖<small>GAME BIBLE</small></button><button class="office-prop hire-prop" id="officeHire" title="Personal">✦<small>PERSONAL</small></button>
+          <div id="agentLayer" class="agent-layer"></div><button class="office-prop paper-prop" id="officeDesk" title="Läs rapporter">✉<small>DITT SKRIVBORD</small><b id="deskAlert" class="desk-alert" hidden aria-label="Olästa rapporter">!</b></button><button class="office-prop board-prop" id="officeBoard" title="Projektframsteg">▤<small>PROJEKTSTATUS</small></button><button class="office-prop book-prop" id="officeBook" title="Läs Game Bible">📖<small>GAME BIBLE</small></button><button class="office-prop hire-prop" id="officeHire" title="Personal">✦<small>PERSONAL</small></button>
           <div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
         </div>
 
@@ -81,6 +94,7 @@
       </aside>
     </main>
 
+    <dialog id="dockDialog" class="dock-dialog"><div id="dockDialogContent"></div></dialog>
     <section id="agentDrawer" class="agent-drawer pixel-panel" aria-hidden="true">
       <button id="closeDrawerBtn" class="drawer-close" aria-label="Stäng agentpanel">×</button>
       <div id="agentDrawerContent"></div>
@@ -121,5 +135,6 @@
   </div>
 
   <script type="module" src="./src/main.js"></script>
+  <script type="module" src="./visual-v2.js"></script>
 </body>
 </html>

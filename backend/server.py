@@ -24,7 +24,7 @@ from urllib.parse import urlparse, unquote
 from mimetypes import guess_type
 
 APP = Path(__file__).resolve().parent.parent
-APP_VERSION = '0.11.8.4'
+APP_VERSION = '0.12.0.9'
 ROOT = Path(os.environ.get('PIXEL_WORKS_HOME', '~/.pixelworks')).expanduser().resolve()
 PROJECTS = ROOT / 'projects'
 TOKEN = secrets.token_urlsafe(32)
@@ -721,6 +721,21 @@ def order_action(slug,payload):
             if direction not in (-1,1) or not 0<=j<len(items) or items[j]['station']!=item['station'] or items[j]['priority']!=item['priority']:raise ValueError('Kan inte flytta arbetsordern hit')
             items[i],items[j]=items[j],items[i]
         else:items.remove(item)
+    elif action=='archive':
+        # Acknowledgement/cleanup of stale tasks is NOT deleting game code or reports.
+        # Never let the user hide an order tied to a known active Codex process.
+        item=next((x for x in items if x.get('id')==payload.get('id')),None)
+        if not item:raise ValueError('Arbetsordern saknas')
+        if item.get('status')=='archived':raise ValueError('Arbetsordern är redan arkiverad')
+        jid=item.get('job_id')
+        with LOCK:
+            active=any(j.get('project')==slug and j.get('state') in ('queued','running')
+                       and (j.get('order_id')==item['id'] or (jid and j.get('id')==jid))
+                       for j in JOBS.values())
+        if active:raise ValueError('Arbetet pågår fortfarande. Det kan inte arkiveras ännu.')
+        item['archived_from']=item.get('status','unknown')
+        item['status']='archived'
+        item['archived_at']=datetime.now(timezone.utc).isoformat()
     elif action=='claim':
         item=next((x for x in items if x['id']==payload.get('id')),None)
         if not item or item['status']!='waiting':raise ValueError('Arbetsordern är inte tillgänglig')
@@ -1250,7 +1265,8 @@ def finalize_worker_job(job):
         try:
             items=orders_read(slug)
             for item in items:
-                if item['id']==job['order_id'] and item.get('job_id') in (None, job['id']):
+                if (item['id']==job['order_id'] and item.get('job_id') in (None, job['id'])
+                        and item.get('status')!='archived'):
                     item['job_id']=job['id']
                     item['status']='review' if job['state']=='review' else 'done' if job['state']=='done' else 'failed'
             orders_write(slug,items)
@@ -1305,10 +1321,10 @@ def make_report(job):
             'created_at':job.get('finished_at') or datetime.now(timezone.utc).isoformat(),
             'agent_id':job.get('agent_id'),'agent_name':job.get('agent_name','Okänd anställd'),
             'station':job.get('station'),'order_id':job.get('order_id'),
-            'title':(job.get('agent_name') or 'Codex')+(' – klar för granskning' if job['state']=='review' else ' avslutade sitt arbetspass' if job['state']=='done' else ' – arbetspasset misslyckades'),
+            'title':(job.get('agent_name') or 'Codex')+(' – klar för granskning' if job['state']=='review' else ' – klart och infört i spelet' if job['state']=='done' and job.get('integrated') else ' avslutade sitt arbetspass' if job['state']=='done' else ' – arbetspasset misslyckades'),
             'summary':(('❗ Jag behöver hjälp: '+str(job.get('error') or 'Codex kunde inte slutföra arbetsordern.')+'\n\n') if job.get('state')=='failed' else '') + (job.get('last_agent_message') or (last[-1] if last else ('Codex hann inte påbörja arbetet. Se felorsaken ovan.' if job['state']=='failed' else 'Ingen avslutande agentrapport hittades.'))) + ('\n\n⚠ '+job['integration_note'] if job.get('state')=='review' and job.get('integration_note') else ''),
-            'error':str(job.get('error') or '')[:500],'exit_code':job.get('exit_code'),'verified':False,'read':bool(job.get('integrated')),
-            'archived':bool(job.get('integrated')),'integrated':bool(job.get('integrated')),
+            'error':str(job.get('error') or '')[:500],'exit_code':job.get('exit_code'),'verified':False,'read':False,
+            'archived':False,'integrated':bool(job.get('integrated')),
             'integration_note':job.get('integration_note','')}
     # Exclusive creation guarantees one report per session, even with duplicate polling.
     try:
@@ -1358,7 +1374,7 @@ def recover_completed_reviews(slug):
             saved=json.loads(file.read_text(encoding='utf-8'))
             # Preserve any owner actions that occurred while Git integration ran.
             saved.update(integration_note=note,integrated=ok)
-            if ok:saved.update(state='done',read=True,archived=True,title=(saved.get('agent_name') or 'Arbetare')+' – infört i spelet')
+            if ok:saved.update(state='done',read=False,archived=False,title=(saved.get('agent_name') or 'Arbetare')+' – infört i spelet')
             else:
                 base=saved.get('summary','').split('\n\n⚠ Integration:')[0]
                 saved['summary']=base+'\n\n⚠ Integration: '+note
@@ -1397,7 +1413,7 @@ def reconcile_orders_from_reports(slug):
         elif report.get('integrated') or report.get('state')=='done':target='done'
         elif report.get('state')=='review':target='review'
         else:continue
-        if item.get('status')=='superseded':continue  # Replaced by an explicit help follow-up.
+        if item.get('status') in ('superseded','archived'):continue  # Never revive dismissed/archived work.
         if item.get('status')!=target:
             item['status']=target
             changed+=1
@@ -1448,7 +1464,7 @@ def list_help_cases(slug):
             continue  # A follow-up exists even if the report update was interrupted.
         if order_id:
             if (not order or order.get('job_id')!=report.get('id') or
-                order.get('status') in ('done','superseded')):
+                order.get('status') in ('done','superseded','archived')):
                 continue
         else:
             key=(agent_id,report.get('station'))
@@ -1597,7 +1613,18 @@ class Handler(SimpleHTTPRequestHandler):
         super().end_headers()
     def reply(self,status,data):
         raw=json.dumps(data,ensure_ascii=False).encode('utf-8')
-        self.send_response(status);self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Content-Length',str(len(raw)));self.end_headers();self.wfile.write(raw)
+        try:
+            self.send_response(status)
+            self.send_header('Content-Type','application/json; charset=utf-8')
+            self.send_header('Content-Length',str(len(raw)))
+            self.end_headers()
+            self.wfile.write(raw)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            # Firefox can cancel an in-flight poll when changing pages or
+            # closing a dialog. Do not try to write a *second* JSON error to
+            # the already closed socket (which caused the noisy traceback).
+            self.close_connection = True
+            return None
     def allowed(self):
         host=self.headers.get('Host','').split(':')[0]
         return host in ('127.0.0.1','localhost','[::1]')
@@ -1682,7 +1709,26 @@ class Handler(SimpleHTTPRequestHandler):
             with LOCK: result=JOBS.get(job)
             return self.reply(200,dict(result)) if result else self.reply(404,{'error':'Inget sådant jobb'})
         if route.startswith('/api/'): return self.reply(404,{'error':'Okänd operation'})
-        if route in ('/','/index.html') or (route.startswith('/src/') and re.fullmatch(r'/src/[\w-]+\.js',route)) or route=='/styles.css' or route=='/local.js':
+        # Frontend files are allowlisted individually. The visual-v2 style,
+        # module and sprites must be served as STATIC files, never JSON API
+        # errors (nosniff correctly blocks a CSS/JS request served as JSON).
+        static_page = route in (
+            '/', '/index.html', '/styles.css', '/local.js',
+            '/visual-v2.css', '/visual-v2.js',
+        ) or bool(re.fullmatch(r'/src/[a-zA-Z0-9_-]+\.js', route))
+        visual_asset = bool(re.fullmatch(
+            r'/assets/office-v2/[a-z0-9-]+\.(?:png|svg)', route
+        ))
+        if static_page or visual_asset:
+            if visual_asset:
+                # Avoid serving an arbitrary local path through a substituted
+                # symlink. Only files within the bundled static asset folder.
+                base = APP / 'assets' / 'office-v2'
+                candidate = APP / route.lstrip('/')
+                if (base.is_symlink() or candidate.is_symlink()
+                        or not candidate.resolve().is_relative_to(base.resolve())
+                        or not candidate.is_file()):
+                    return self.reply(404, {'error':'Bildfilen är inte tillgänglig'})
             return super().do_GET()
         return self.reply(404,{'error':'Inte tillgängligt'})
     def do_POST(self):

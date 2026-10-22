@@ -44,7 +44,7 @@ class IntegrationTests(unittest.TestCase):
     agent=(self.work/'AGENTS.md').read_text()
     self.assertIn('GAME_BIBLE.md',agent)
     self.assertNotIn('../studio-bible/GAME_BIBLE.md',agent)
- def test_old_report_recovers_and_is_silently_archived(self):
+ def test_old_report_recovers_and_leaves_a_completion_note(self):
     tree,job=self.worker('c'*12)
     (tree/'game.js').write_text('recovered shovel\n')
     saved={'id':job['id'],'project':'minesweeper','source':'codex-cli','state':'review',
@@ -56,7 +56,8 @@ class IntegrationTests(unittest.TestCase):
     self.assertEqual(len(result),1)
     self.assertTrue(result[0][1])
     self.assertEqual((self.work/'game.js').read_text(),'recovered shovel\n')
-    self.assertTrue(__import__('json').loads(path.read_text())['archived'])
+    self.assertFalse(__import__('json').loads(path.read_text())['archived'])
+    self.assertFalse(__import__('json').loads(path.read_text())['read'])
  def test_conflicting_file_keeps_live_game(self):
     a,ja=self.worker('a'*12);b,jb=self.worker('b'*12)
     (a/'game.js').write_text('shovel\n');(b/'game.js').write_text('other tool\n')

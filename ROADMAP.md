@@ -92,3 +92,47 @@ Två bekräftelser för projektborttagning, lokal papperskorg, skydd mot samtidi
 - [x] Koppla arbetsorder till rätt sessions-ID och hindra gammalt jobb från att skriva över en nyare tilldelning.
 - [ ] Återhämtning av ej kvitterade jobb/rapporter efter serveromstart och persistent schemaläggning.
 - [ ] Fullständigt end-to-end-test med verklig Codex CLI och webbläsarpreview.
+
+
+## Visual Refresh 2026-10-22 – tillägg
+- **NOW:** 0.12.0 Visual Foundation – mörk HUD, bottenmeny, fristående PNG-sprites och stor kontorsscen utan statisk klickbild.
+- **NEXT:** Isometrisk tile-motor, bättre sprites, fler riktiga individuella skrivbordsplatser, kamerafunktioner och full Firefox-verifiering.
+- **LATER:** Expanderbara rum, dekorations-/byggläge, avancerade animationer och agentporträtt.
+
+
+## v0.12.0.2 – visuell animation (2026-10-22)
+- **NOW:** byt ut identiska/knappt olika bildrutor mot synliga gång-, arbets-, viloposer och fikaanimation.
+- **NEXT:** verifiera i Firefox, förbättra kvaliteten på isometriska tillgångar och rumslayouten utan att röra AI-arbetsmotorn.
+- **LATER:** specialanimationer per yrke och modell, musikstudio/QA-gränssnitt, Game Bible och progression.
+
+## v0.12.0.4 – Uppdrag och anslutningar (2026-10-22)
+- [x] Dölj ersatta (`superseded`) och avslutade arbetsorder från topplistan utan att ta bort historiken.
+- [x] Öppna stations arbetskö direkt från menyn **Uppdrag → Visa arbetskö**.
+- [x] Särskilj väntande från pågående och blockerade arbeten i listan.
+- [x] Tysta enbart normala avbrutna HTTP JSON-klienter (`BrokenPipeError`), inte andra serverfel.
+- [ ] En gemensam backenddefinierad uppdragsstatusmodell till alla vyer, även pappershögar och notifieringar.
+- [ ] Testa med verkliga Codex-sessioner och användarens Firefox.
+
+## NOW / NEXT / LATER – efter v0.12.0.5
+- NOW: Kontrollera hantering av gamla jobb i verklig Firefox och att arkivåtgärder inte gömmer aktiva Codex-jobb.
+- NEXT: Beständig registrering av pågående processer och jobb över serveromstarter (SQLite / återhämtningslogik).
+- LATER: Sammanhängande kontors-UI, utökade Game Bible-sidor, verkliga XP/levels efter verifierad integration.
+
+## v0.12.0.6 – Visuell polering
+- [x] Ta bort överliggande chefstatus från vänster nederkant: statusen finns i aktivitetsloggen.
+- [x] Behåll uttryckligt projektmandat via egen dialog i aktivitetsloggen.
+- [x] Förskjut agentanimationerna individuellt och stabilt per projekt/agent, utan att fejkjobba.
+- [ ] Visuell QA av stations- och figuravstånd samt överlapp vid fikabord och Game Bible-skylt.
+- [ ] Fler animationstyper och varierade cykellängder, om spelupplevelsen behöver ännu mer variation.
+
+## v0.12.0.7 – Yrkesborden i kontoret
+**NOW:** Enhetliga isometriska möbelsprites per station, synliga stationsnamn och verkliga arbetsnamn via `working`-status.
+**NEXT:** Sittande arbetare, djupsortering, bättre kontorskomposition och Firefox-visuell kontroll.
+**LATER:** Egna skrivbord per anställd, inredningseditor, utbytbara grafikpaket samt fortsatt jobb-/rapportstabilisering.
+
+## v0.12.0.9 – Gränssnitt med gemensam stil
+- [x] Pixelträinramning för vanliga modaler, ljus uppdragswhiteboard och personal-kortlayout.
+- [x] Rapportpärm med kombinerbara filter för status, typ och ny/läst samt enskild/gruppvis arkivering med bekräftelse.
+- [ ] Verifiera i användarens Firefox: mobilbredd, stora rapportmängder och scrollbeteende.
+- [ ] Ta ställning till om nuvarande **Fynd** ska få en egen verifierad-resultatvy (i dag överlappar den rapportinkorgen) eller tas bort från topplisten.
+- [ ] Ersätt övriga tekniska popupfönster stegvis med stationernas egna verktyg (QA, musik, grafik) och delad visuell ram.

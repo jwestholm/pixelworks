@@ -1,3 +1,39 @@
+# Pixel Works v0.12.0.2 – Levande agentsprites
+
+Detta är ett **komplett ersättningspaket** för v0.12.0.1. Det ändrar bara kontorets visuella animationer och versionstext, inte Codex-, Git- eller projektlogik. Ingen AI-tjänst anropas av animationerna.
+
+## Så här märker du skillnaden
+
+- **Ledig:** långsam andning och blinkningar.
+- **Går:** fyra tydligt skilda steg; den befintliga vägplaneringen för flytt är kvar.
+- **Arbetar:** händerna rör sig över ett litet tangentbord när agentens status är `working`.
+- **Fikar:** dricker ur en animerad kaffekopp vid fikabordet.
+- **Tillgänglighet:** inga spriteanimationer om webbläsaren/OS har `prefers-reduced-motion: reduce`.
+
+Bildarkens fyra rutor är **48 × 68 pixlar**, hela ark **192 × 68**. Alla åtta karaktärsvarianter har fyra animationstyper (`idle`, `walk`, `working`, `cafe`). Sprites visas med `image-rendering: pixelated` och utan externa grafikberoenden.
+
+**Viktigt:** Vanliga vilorörelser är diskreta. Om ingen Codex-session körs ska agenten **inte** göra programmeringsanimationen. Kontorets grafiska detaljnivå ligger fortfarande under de högupplösta isometriska konceptbilderna.
+
+## Uppdatera lokalt
+
+Stoppa tidigare lokalserver helt. Lägg in hela programmets nya filer i din Git-arbetsmapp **utan att radera `.git`**. Starta `python3 backend/server.py` från programkatalogen. Uppdatera Firefox med **Ctrl + Shift + R**. Dina spelprojekt i `~/.pixelworks/projects/` ska vara orörda.
+
+---
+
+# Pixel Works v0.12.0.1 – Visual loading fix
+
+**Komplett paket.** Ersätter v0.12.0. Du behöver inte installera någon annan ZIP först.
+
+**Åtgärd:** `visual-v2.css`, `visual-v2.js` och alla separata kontorsbilder serveras nu korrekt från Python-servern. I v0.12.0 blockerades de av MIME-säkerhetskontrollen och därför syntes det gamla kontoret.
+
+**Uppdatering:** Stoppa tidigare Pixel Works-server; ersätt programfilerna i din lokala Git-arbetsmapp (låt `.git` vara kvar); starta `python3 backend/server.py` i den nya programkatalogen och öppna `http://127.0.0.1:8765/`. Kör **Ctrl+Shift+R** i Firefox om gammal CSS visas. Rör inte `~/.pixelworks/projects/`.
+
+**Snabbkontroll:** Adresserna `http://127.0.0.1:8765/visual-v2.css` och `http://127.0.0.1:8765/visual-v2.js` ska nu visa CSS respektive JavaScript, inte JSON-fel. På kontoret ska även de separata möbel-/agentspritesen synas.
+
+Se `TEST_REPORT.md` och `CURRENT_STATE.md`. Detta är en visuell laddningshotfix, inte en ny arbetsmotor.
+
+---
+
 > **Version 0.11.8.4:** Klicka på en agent som säger *Jag behöver hjälp* för en enkel dialog. Spelaren behöver aldrig utföra Git-/terminalåtgärder. Läs `CURRENT_STATE.md` om begränsningarna.
 
 # Pixel Works v0.11.8.4 – hela paketet
@@ -52,3 +88,16 @@ Vid **Starta delegering** skapar Pixel Works automatiskt en Git-commit i projekt
 
 ## v0.11.8.0: Projektborttagning och stabiliseringsspår
 Två bekräftelser för projektborttagning, lokal papperskorg, skydd mot samtidiga jobb. Kommande prioritet: enda källa för jobb/rapporter/notiser samt end-to-end-verify av preview. Se `CURRENT_STATE.md` och `TEST_REPORT.md`.
+
+
+## v0.12.0 – Visuell grund
+
+Detta paket innehåller **hela tidigare Pixel Works** plus en första modulär visuell uppdatering. Kör som tidigare via lokalservern. Ersätt programfilerna i ditt Git-repo utan att ta bort `.git`; dina egna spel ligger separat under `~/.pixelworks/projects/`. De tillhör inte ZIP-paketet.
+
+Grafiken ligger i `assets/office-v2/`, och hela utseendeskiktet kan stängas av genom att ta bort referenserna till `visual-v2.css` och `visual-v2.js` samt `#gameDock` i `index.html` (de tidigare menyerna kan då visas genom att återställa `.game-actions`).
+
+Ändringar av riktiga spelprojekt sker bara genom de befintliga uttryckliga uppdragsflödena. Den nya HUD:en genererar ingen backendaktivitet på egen hand.
+
+
+### Version 0.12.0.9 – popupstil och rapportpärm
+Rapportpärmen ligger på **Ditt skrivbord** och kan filtreras/arkiveras via spelmenyn. Alla rapporter och projektfiler behålls vid arkivering; inga externa AI-anrop sker i detta gränssnitt. Se `TEST_REPORT.md` för gränser för verifiering.
