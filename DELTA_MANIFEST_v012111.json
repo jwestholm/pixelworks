@@ -1,0 +1,35 @@
+{
+  "release": "0.12.11.1",
+  "based_on": "0.12.11",
+  "launcher": "backend/server.py (unchanged)",
+  "changed_files": [
+    {
+      "path": "backend/pw_v01210.py",
+      "sha256": "47babee45fdef93d7f99585a55fbff8754438bf21fa27064bcf2856b791b6e24"
+    },
+    {
+      "path": "src/pw-v01210.js",
+      "sha256": "3f4414e8d54324acd0c3c8a80b085c3efc414d0571a862b251ab0a65632dc511"
+    },
+    {
+      "path": "src/pw-v01211.js",
+      "sha256": "26687e1b2ead31f54e4e2bd3299804c0d04776f2154232c104ffa24177fd3f38"
+    },
+    {
+      "path": "backend/test_pw_v01210.py",
+      "sha256": "5060e60cc3f67bcebfd578e11a6113e8ca5e60a33eb9a7ee97496043c03262a5"
+    },
+    {
+      "path": "backend/test_pw_v012111.py",
+      "sha256": "75b65e7bb4e13bae82d08ff42513100a971329c73f8ca56db60db4415bf9aa3c"
+    },
+    {
+      "path": "DELTA_README_v012111.md",
+      "sha256": "cd3e50cc449ca11418f68472746f383de07a86344db4f0900d396579ba6723f7"
+    },
+    {
+      "path": "NOW_NEXT_LATER_v012111.md",
+      "sha256": "cd9012011cbf508d49eebcb2a6600f26708ff0fe372d943446d9cd6f8b7b8dea"
+    }
+  ]
+}

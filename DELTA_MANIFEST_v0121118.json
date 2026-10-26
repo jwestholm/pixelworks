@@ -1,0 +1,16 @@
+{
+  "version": "0.12.11.18",
+  "base": "0.12.11.17",
+  "delta_only": true,
+  "files": {
+    "backend/pw_v01210.py": "fe5ebd9f85205dcb95f6ecdd0a1c57453575aa684544e62179764c4f3439867e",
+    "backend/pw_v0121118.py": "1c4e69a6eceb2bbbe0c9178360f30780848c41ea67a07c899222f28a161c5be6",
+    "backend/test_pw_v0121118.py": "3bbdad279d86d2b2f19a98cb2b0f0d727fb22c161203cdcee734acf49f62c678",
+    "src/pw-v0121118.js": "6ad6b77371d43b543bbb1ac2b15221701db6f00d59dd2f7d431e424b7e2a8bd4",
+    "assets/office-v2/graphics-studio-pastel.png": "f4b6cc99a43cea6d93d53d14d66a1d51841ff743641081309d1c712b8b135131",
+    "test_browser_0121118.py": "ff86b545393f9bc471a48c937302ca2acf87d6aaa238a7916bd988e49c56f1e3",
+    "DELTA_README_v0121118.md": "a44f6d6949db647d610a217c6871fe8c27dd0dcb9e0a1e961ad666ccd89638fd",
+    "NOW_NEXT_LATER_v0121118.md": "54a381a616e4e8c0a99b77036f83e20d826246392d7d3588af5d581b8c6e157c",
+    "CURRENT_STATE_v0121118.md": "58b45eca71b296e4fa94000f3434a866077d1bc079b412e5194aae22c51a07a2"
+  }
+}

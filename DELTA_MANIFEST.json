@@ -1,0 +1,35 @@
+{
+  "release": "0.12.10.1",
+  "type": "delta: ersätt ändrade filer ovanpå korrigerad 0.12.10",
+  "repository": "jwestholm/pixelworks",
+  "branch": "dev",
+  "base_commit": "b6fdca9f748c1accee725ff88a246063fffe158d",
+  "files": [
+    {
+      "path": "backend/pw_v01210.py",
+      "bytes": 31342,
+      "sha256": "88846066c19a53c9653ccb825be5d68972f9f1f0546e08d298dbe87bbf58132e"
+    },
+    {
+      "path": "src/pw-v01210.js",
+      "bytes": 22339,
+      "sha256": "52a6f872e008fb552ac3d9f5bfd873e27f08acc325b00a89dd470b84fe0505f7"
+    },
+    {
+      "path": "backend/test_pw_v01210.py",
+      "bytes": 14591,
+      "sha256": "38300e0d6832d9261236de9c670b929518673f341b80e797e20b76c781b1dafc"
+    },
+    {
+      "path": "DELTA_README.md",
+      "bytes": 4622,
+      "sha256": "6a80e026f291339fa0da9ad0697ab86478805a0f5e9e5615acbe85746c88f086"
+    },
+    {
+      "path": "NOW_NEXT_LATER_v01210.md",
+      "bytes": 1757,
+      "sha256": "de8735b45f22bed107995d826ad912ddfb2850d49ba74a125f0307264dca3798"
+    }
+  ],
+  "note": "server.py är inte ändrad; kräver ännu server_v01210.py från tidigare delta."
+}

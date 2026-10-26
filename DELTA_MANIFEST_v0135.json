@@ -1,0 +1,47 @@
+{
+  "version": "0.13.5",
+  "base_version": "0.13.4",
+  "format": "delta-only",
+  "files": [
+    {
+      "path": "backend/pw_v013.py",
+      "size": 15086,
+      "sha256": "395873c811774a8f08ac2c7f141d1a591c841ab5ef7bbf46e3dc220a80b24f8f"
+    },
+    {
+      "path": "backend/pw_v0135.py",
+      "size": 9537,
+      "sha256": "19ff372f132f3f29bead8e540feda88f471ea0c00d731473f1616fbde04c4664"
+    },
+    {
+      "path": "backend/test_pw_v0135.py",
+      "size": 7875,
+      "sha256": "e060b07fa278228acb9b3374f985c8b6c7b6e48b891a8e3bbb2b28f8b462de45"
+    },
+    {
+      "path": "src/pw-v013.js",
+      "size": 36802,
+      "sha256": "ad63ffc7f6f9faac7717e197e0afc173d5c00c36e215219cb5457e2d0143df77"
+    },
+    {
+      "path": "test_browser_0135.py",
+      "size": 2349,
+      "sha256": "21c18554e9b902f9c3ffa6d2199bf17c5780e5a5b455c53c7830b9b8f0fe3549"
+    },
+    {
+      "path": "DELTA_README_v0135.md",
+      "size": 5239,
+      "sha256": "de1572f2597d2756d1922b7416a7b4cc75dd59d3d58e7c9a3ba641e57c784304"
+    },
+    {
+      "path": "CURRENT_STATE_v0135.md",
+      "size": 1091,
+      "sha256": "b3d7c965a7c6dca3534c08cee5d2fbe63b75ffac8a3636021afeb79b909005da"
+    },
+    {
+      "path": "NOW_NEXT_LATER_v0135.md",
+      "size": 954,
+      "sha256": "8d07bbc17d62e51a855bde9a203f3decdac89f586374b603ecc97469c5aef869"
+    }
+  ]
+}

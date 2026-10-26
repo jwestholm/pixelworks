@@ -1,0 +1,65 @@
+{
+  "name": "Pixel Works 0.12.11.14",
+  "base": "0.12.11.13",
+  "type": "delta-only",
+  "changed_and_new_files": [
+    {
+      "path": "backend/pw_v01210.py",
+      "sha256": "e43e58cec19261edb6fc2913588d67d8c068a438f7d4170c6cac56550afc33b8",
+      "bytes": 52899
+    },
+    {
+      "path": "backend/pw_v0121114.py",
+      "sha256": "926485cab5aec8cd524c37c51de79a28ab4360f4b0a0d3196a0acbedcd66ce98",
+      "bytes": 3612
+    },
+    {
+      "path": "backend/test_pw_v01210.py",
+      "sha256": "d4ce31f2d2c68a567430aea9d4e8c11e52f495f8aef59fe55b70062f3ff5cd23",
+      "bytes": 15046
+    },
+    {
+      "path": "backend/test_pw_v0121114.py",
+      "sha256": "116305a73b24e2849c29e13de930e14bfc24be9dca5eafad9de6d41de89da101",
+      "bytes": 5064
+    },
+    {
+      "path": "src/pw-v01210.js",
+      "sha256": "0062fc469cb1238e6ac5ced099234a860bf88f085245822ebf647f73acc46382",
+      "bytes": 23110
+    },
+    {
+      "path": "src/pw-v01211.js",
+      "sha256": "51557afad11cebec6a6dbb9da74d5f2c93c5dd512316830d709051605b81e850",
+      "bytes": 18795
+    },
+    {
+      "path": "src/pw-v012115.js",
+      "sha256": "f416a7d978d30e94a21e1402aa6931a432ddd0d0f388504a26cd94095ce3809a",
+      "bytes": 13802
+    },
+    {
+      "path": "src/pw-v012116.js",
+      "sha256": "0694959d7cbefd27710d12dfd18095c8fc588c9440f4e601632ea1ddba0afb6b",
+      "bytes": 7451
+    },
+    {
+      "path": "src/pw-v012117.js",
+      "sha256": "0642e10c5f0b1153b5c269cba73a968a390acc31d0db1a254c2d9caf6a31775b",
+      "bytes": 8198
+    },
+    {
+      "path": "DELTA_README_v0121114.md",
+      "sha256": "9210efe0c42ba9dbcfc9d10bfbed74bb588e3f977940a666d1a7eb3e9ac38041",
+      "bytes": 3903
+    },
+    {
+      "path": "NOW_NEXT_LATER_v0121114.md",
+      "sha256": "f8b2f0af0916a534322c96800866a0005302886ce7bfc36e77dec21dcf6a3315",
+      "bytes": 1163
+    }
+  ],
+  "real_ai_calls": false,
+  "github_changes": false,
+  "entrypoint": "python3 backend/server.py"
+}

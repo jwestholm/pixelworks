@@ -1,0 +1,54 @@
+{
+  "version": "0.12.11.3",
+  "base": "0.12.11.2",
+  "type": "delta",
+  "startup": "python3 backend/server.py",
+  "deletions": [],
+  "files": [
+    {
+      "path": "backend/pw_v01210.py",
+      "sha256": "ca8ff260139db728f3bb157fed38c183b574593cd384c448aa061a53f95aacab",
+      "size": 44775
+    },
+    {
+      "path": "src/pw-v01210.js",
+      "sha256": "3cb9ec83cab7cdeaf574e79985d51e902957ac113dfe80655f743c6371b19789",
+      "size": 22757
+    },
+    {
+      "path": "src/pw-v01211.js",
+      "sha256": "126e2012ebee94bdf3b9dee8eb99ed51b0f8785f4ac3c5365699ff5278b095c8",
+      "size": 11875
+    },
+    {
+      "path": "backend/test_pw_v01210.py",
+      "sha256": "4bcae348d964a95f5bf909247331788de01f31afc8a7c2ed89c576941c7e189c",
+      "size": 14753
+    },
+    {
+      "path": "backend/test_pw_v01211.py",
+      "sha256": "6e860dbf796a6ab2638675f1f9401dc7b9165a2845f410c7f6c00a873e3ab76b",
+      "size": 7083
+    },
+    {
+      "path": "backend/test_pw_v012112.py",
+      "sha256": "2a47717a6756b1defc006ecdcfd924f2ea34a82fdb5df483fedfb187f4a653cf",
+      "size": 4198
+    },
+    {
+      "path": "backend/test_pw_v012113.py",
+      "sha256": "43a87b76a094f19543273273f9ea45e575ecc660723a9a33452df2f52253958e",
+      "size": 5449
+    },
+    {
+      "path": "DELTA_README_v012113.md",
+      "sha256": "39a93bf9d820cf39fdc1c3ed6195516c8f54866d24bcd10cd32d5f06956610cc",
+      "size": 3547
+    },
+    {
+      "path": "NOW_NEXT_LATER_v012113.md",
+      "sha256": "518f2c50764a367ab8b9923ea51ba265a6bce4f75ee2d15fc8618eb0e5c8bad4",
+      "size": 1186
+    }
+  ]
+}

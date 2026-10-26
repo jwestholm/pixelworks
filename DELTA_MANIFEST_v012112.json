@@ -1,0 +1,43 @@
+{
+  "name": "Pixel Works",
+  "version": "0.12.11.2",
+  "base": "0.12.11.1",
+  "start": "python3 backend/server.py",
+  "deletes": [],
+  "tests": {
+    "python": "35 passed",
+    "javascript": "node --check passed",
+    "chromium_mock": "passed",
+    "real_google": "not tested"
+  },
+  "files": {
+    "backend/pw_v01210.py": {
+      "sha256": "e96ad422a2c31272ed496f68ea854c5159592bc5bb4eb9e5c54b9d57b8074aa1",
+      "bytes": 41761
+    },
+    "src/pw-v01210.js": {
+      "sha256": "bae24466e5029c5523d0ea3c7d8c1069feec4fd68bb95445b4cfd48d2c804b74",
+      "bytes": 22517
+    },
+    "backend/test_pw_v01210.py": {
+      "sha256": "987a18cc61f685d3b84a49448367eb51a7d910ae3e38dbf341da409083a98c98",
+      "bytes": 14141
+    },
+    "backend/test_pw_v01211.py": {
+      "sha256": "6d5468b17b333a8a1d323376be1e3d41ecd37b32fa639d9c86d3545a351d2888",
+      "bytes": 6883
+    },
+    "backend/test_pw_v012112.py": {
+      "sha256": "8433b3a22c13631228dfa70d0da41ba0fff979c27b3dd23be9ddaece91e15fde",
+      "bytes": 4206
+    },
+    "DELTA_README_v012112.md": {
+      "sha256": "b5ef64a1990175a8ec8bdc989e4de724e4f1ee25643be24fd4980432cfec8e77",
+      "bytes": 3112
+    },
+    "NOW_NEXT_LATER_v012112.md": {
+      "sha256": "5ba038a62aea48ed2dff544127b798e7f2d40d21a9b717362abf0ee68c3e61d3",
+      "bytes": 1129
+    }
+  }
+}

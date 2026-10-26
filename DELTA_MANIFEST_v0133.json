@@ -1,0 +1,49 @@
+{
+  "version": "0.13.3",
+  "base_version": "0.13.2",
+  "mode": "delta-only",
+  "does_not_contain": [
+    "project files",
+    "user data",
+    "API keys",
+    "install scripts"
+  ],
+  "files": {
+    "ARCHITECTURE_v0133.md": {
+      "sha256": "0ff6dfe00728a35491afdc78bf19214f50b836969761fb4ab54fac5d9e9cba53",
+      "bytes": 1427
+    },
+    "CURRENT_STATE_v0133.md": {
+      "sha256": "394a7207998f9e33e1f7fd1f8fabca651828a73d52f408d94290b98eeedc5526",
+      "bytes": 790
+    },
+    "DELTA_README_v0133.md": {
+      "sha256": "c2785ace4185bf00b92b30006be613a97313d304b5e519a1a0af4eeed744d14c",
+      "bytes": 5749
+    },
+    "NOW_NEXT_LATER_v0133.md": {
+      "sha256": "5f689b79dcc552719246dbe92871079374807badc8315b414e42ee854e0728c5",
+      "bytes": 1068
+    },
+    "backend/pw_v013.py": {
+      "sha256": "fc47a7c0454e4271da62536866e6cc7a7c656acda976da147fa10b456c5986d8",
+      "bytes": 14994
+    },
+    "backend/pw_v0133.py": {
+      "sha256": "5d614cde13ddd4565f44ebfec09ae61c90f6fdae14b21e5837379de481b01860",
+      "bytes": 24765
+    },
+    "backend/test_pw_v0133.py": {
+      "sha256": "5e20219b8a8c4bc4be8bd7adab3d6ac9a278da9d73db7ec3b65c8f3be6f22e4e",
+      "bytes": 12289
+    },
+    "src/pw-v013.js": {
+      "sha256": "148404d235a605a50510b3f05f5d4211aff9dbb25e2252924296e240abfeb4be",
+      "bytes": 24979
+    },
+    "test_browser_0133.py": {
+      "sha256": "93cbc9ebb56a986c6626bd39457b037aee0ab029c6f9bd818cf144fd078dd222",
+      "bytes": 3235
+    }
+  }
+}

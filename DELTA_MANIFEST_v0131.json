@@ -1,0 +1,33 @@
+{
+  "version": "0.13.1",
+  "base": "0.13.0",
+  "type": "delta",
+  "scope": "visual-only shared-office crowd fix",
+  "files": [
+    {
+      "path": "src/pw-v013.js",
+      "size": 20432,
+      "sha256": "ac00a20fae3fb062c67159bbfe95e108b807c7c90cae16b3e0bc98f66c3d5a3e"
+    },
+    {
+      "path": "backend/pw_v013.py",
+      "size": 14902,
+      "sha256": "ad1a9b62a6f7ff2252e57550d00e4facca13007866f24ffe4a5ba06d5b9a8b23"
+    },
+    {
+      "path": "test_browser_v0131.py",
+      "size": 7910,
+      "sha256": "29cafa29ac8a92e35feef5e103584e8b3643b73d97c96ed1480784cbfcc8306b"
+    },
+    {
+      "path": "DELTA_README_v0131.md",
+      "size": 3276,
+      "sha256": "35f3974bca8c3dba6afe1e48404c73fd70c91028905ab76f629c8025016654c4"
+    },
+    {
+      "path": "NOW_NEXT_LATER_v0131.md",
+      "size": 965,
+      "sha256": "44a4147cc64abc28231b590a54c94bbc135c5066dcfa4a4171cc4be732028395"
+    }
+  ]
+}

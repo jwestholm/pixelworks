@@ -1,0 +1,14 @@
+{
+  "release": "0.13.9",
+  "base": "0.13.8",
+  "contents": {
+    "backend/pw_v0138.py": "205447405e41dbab819ba8c3dc03f66d3499384239b1871a5dcc705966574cd6",
+    "backend/pw_v013.py": "a8ec24683daa14ae0ae7974b52adb3f2b5bdfac57eccb35566d31079e09f09b8",
+    "src/pw-v0121118.js": "9b1ee48bf1ad7593e59326ead42aeae924677238c9625c50beacdcc68887697d",
+    "src/pw-v013.js": "36140c39e6d996a33a823ba788c03996030c73589b64809b2f6ce25f35eede49",
+    "backend/test_pw_v0139.py": "29d81261a143e7bd8b1889a8a3c66bb3b6199455afee42b3f6a5b73a0535bf90",
+    "test_browser_0139.py": "24cabcdf2f4bdb3a4a2fc242101fc52c7bba6111a6c4634792509c8e127a6db0",
+    "DELTA_README_v0139.md": "6b93a56cb176c5860307fbd1fd3bbad3ab1b2524d90a173af88aa69e46692948",
+    "NOW_NEXT_LATER_v0139.md": "5b4ec362753614b207f8412f9851f0c6eec57f01c9e5f49228ab5ded8433f9e6"
+  }
+}

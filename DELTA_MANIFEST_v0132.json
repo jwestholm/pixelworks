@@ -1,0 +1,18 @@
+{
+  "version": "0.13.2",
+  "based_on": "0.13.1",
+  "purpose": "Skrivskyddade chefuppdrag och fungerande explicit start",
+  "files": {
+    "backend/pw_v0121111.py": "93145713d1b0e1b6871383bd3a78946af1698cc69aa31320bf784679bba587c3",
+    "backend/pw_v0121112.py": "f548a236cb5e56ef5b846882993263a8d30db56e6b3ae229ed4c0c09157907b1",
+    "backend/pw_v0121115.py": "1c3f0d805e91c375b2d8a3458af4f2aa76ccf26fe1440e37be59673a2df21374",
+    "backend/pw_v013.py": "b511ea51613fa95b804bf9e9858cb7a7ff94597db194a668bee2a563daf5cd41",
+    "backend/pw_v0132.py": "ce05be1d5b80755d4daecca9dffbdddfec76c9f3da159b6e2b4fa0dfa4ad8f36",
+    "src/pw-v0121117.js": "e9946c77528ff4f6761071200cb91489cee26f9ed0f262698e51e9644a0dfe96",
+    "src/pw-v013.js": "1f5f78f96d17e3ac5e2f710a44c990bd1ff0e5b140d99dbaa86c5585548f101c",
+    "backend/test_pw_v0132.py": "8c424356d9dd0942f8bbe0a7772ee4d1473acb9ca9f69d6c8e73805f29685dd7",
+    "DELTA_README_v0132.md": "8d57712ea7cb8501fc96ab49f544abaeacd9cb4d061e466a77445224987bbc43",
+    "NOW_NEXT_LATER_v0132.md": "dbe0cc2a404c95a56c73d85b9e80d3918ac34098ab3acddea680e497130d8f94"
+  },
+  "notes": "Inga persondata, projektfiler, git push eller installationsskript."
+}

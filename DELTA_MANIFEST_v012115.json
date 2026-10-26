@@ -1,0 +1,47 @@
+{
+  "version": "0.12.11.5",
+  "base_versions": [
+    "0.12.11.3",
+    "0.12.11.4"
+  ],
+  "changes_only": true,
+  "no_install_scripts": true,
+  "no_new_server_file": true,
+  "files": [
+    {
+      "path": "backend/pw_v01210.py",
+      "bytes": 47396,
+      "sha256": "20aa369f1bb386eb267b866f09d9840cf83633254e7adafcdc5ce2ad43cd55d8"
+    },
+    {
+      "path": "src/pw-v01211.js",
+      "bytes": 18613,
+      "sha256": "348461dc09b9f22a428eee3b1b8007f8d32e44eb5f4e3a130717764cb59e5efa"
+    },
+    {
+      "path": "backend/pw_v012115.py",
+      "bytes": 9275,
+      "sha256": "962b589613379f6331cde2eda647c7ceb6d4f18b0123c997cf5ef3506da568f1"
+    },
+    {
+      "path": "src/pw-v012115.js",
+      "bytes": 13748,
+      "sha256": "8e841654319773f921e52a25e3bdf3f1fe0c68e679143a23c9a6f04883d532ff"
+    },
+    {
+      "path": "backend/test_pw_v012115.py",
+      "bytes": 6363,
+      "sha256": "cd7c63f2f35c4bfc76bf55e82761c4d4a68c48526cc14cd4b9fd5e0f0d7aff30"
+    },
+    {
+      "path": "DELTA_README_v012115.md",
+      "bytes": 3164,
+      "sha256": "1ec5733762ee45b3fb5aa12a0f335a829b0b020613a29bff45c7a6231bd904e1"
+    },
+    {
+      "path": "NOW_NEXT_LATER_v012115.md",
+      "bytes": 1004,
+      "sha256": "c64126947d8383631f295573c3c279477be412f6775883ce975975fb1a053d10"
+    }
+  ]
+}

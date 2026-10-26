@@ -1,0 +1,44 @@
+{
+  "name": "Pixel Works v0.12.11.4 – One-time studio consent",
+  "based_on": "v0.12.11.3",
+  "files": [
+    {
+      "path": "backend/pw_v01210.py",
+      "sha256": "d2c89a1ca441a80ff892fa02b4ec70f75bb80d37d5e417d2b4dea53ede5bd4ac",
+      "bytes": 47298
+    },
+    {
+      "path": "src/pw-v01211.js",
+      "sha256": "348461dc09b9f22a428eee3b1b8007f8d32e44eb5f4e3a130717764cb59e5efa",
+      "bytes": 18613
+    },
+    {
+      "path": "backend/test_pw_v01210.py",
+      "sha256": "cbbcf851f51b9f471eebd32cc55de692e311219ab16fe54e6e3d3de10be7285f",
+      "bytes": 14948
+    },
+    {
+      "path": "backend/test_pw_v012113.py",
+      "sha256": "43a87b76a094f19543273273f9ea45e575ecc660723a9a33452df2f52253958e",
+      "bytes": 5449
+    },
+    {
+      "path": "backend/test_pw_v012114.py",
+      "sha256": "6c9fbc6a92ad9595d47872f56e83ac30ceedf37b3413ea4ff03064bf65d7506f",
+      "bytes": 4684
+    },
+    {
+      "path": "DELTA_README_v012114.md",
+      "sha256": "bf5697b328028053ad2fc695e06ec2165c51142f70d48c426163ab463a62cbfc",
+      "bytes": 2572
+    },
+    {
+      "path": "NOW_NEXT_LATER_v012114.md",
+      "sha256": "6b40dea17d8828f3704a2c3aa1660155597c33b0887e0518f31b2426ac315ffb",
+      "bytes": 851
+    }
+  ],
+  "stable_entrypoint": "backend/server.py (unchanged)",
+  "github_push": false,
+  "install_scripts": false
+}

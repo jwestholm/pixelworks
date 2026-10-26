@@ -1,0 +1,31 @@
+{
+  "version": "0.12.11.15",
+  "base_version": "0.12.11.14",
+  "kind": "delta",
+  "files": [
+    {
+      "path": "src/pw-v01211.js",
+      "sha256": "5b025b4a24cd5db902dae791cbdfd9cf9867ec62895f798ee500f9df704bacce"
+    },
+    {
+      "path": "backend/pw_v01210.py",
+      "sha256": "d76faf67420cb92e933b9cc7d978e73eb1a6d6b6c7f0bb2ccc4209556c3cbf1f"
+    },
+    {
+      "path": "backend/pw_v0121115.py",
+      "sha256": "3aec525d5417a8feff2a36fb2ac0ea36ab029cf588776f5969d58a93dbbe5390"
+    },
+    {
+      "path": "backend/test_pw_v0121115.py",
+      "sha256": "3924a1018c117a39a99336b81754e5ed88ef9d72ab4898eca71aeb45af9efa92"
+    },
+    {
+      "path": "DELTA_README_v0121115.md",
+      "sha256": "786bb1273d0fec1fcd6287beb1711f9addd58e7460e4a80ab8a61f1c2346230b"
+    },
+    {
+      "path": "NOW_NEXT_LATER_v0121115.md",
+      "sha256": "f602cfd5257c67862bb6abe5b504966c3bac11fb13c1086b749421f5abdf1791"
+    }
+  ]
+}

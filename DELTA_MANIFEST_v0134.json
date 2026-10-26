@@ -1,0 +1,19 @@
+{
+  "version": "0.13.4",
+  "base": "0.13.3",
+  "type": "DELTA-only",
+  "files": {
+    "backend/pw_v013.py": "aff8de328b211a3f20fc530adbecaf42c9c4bacc274b139129d2f9b3bf05a2bd",
+    "backend/pw_v0133.py": "93a6b101d8d78933a5a21f65c7b2fb2cab71d677980f6b77cc5027bb6f7f22e3",
+    "backend/pw_v0134.py": "e787eb102afbd44bf13bc9921a4b9015909b41134d6f0f452a13a44ec79b3a7b",
+    "backend/test_pw_v0133.py": "fa7d3b74f1bec21df04fc43b5a2dc37df51f5b410e9a80722ba2c97fb5617c4d",
+    "backend/test_pw_v0134.py": "336ba02b0877e9454f6932c4bcd35b564cea11d5a464e80234cc4060760f5517",
+    "src/pw-v013.js": "79841881ef1328a643376ac6f5aa976a903e7ca7a2ac5186ae387ad80f5136f6",
+    "test_browser_0134.py": "6fc88abfdcef6a5e72fd6d48754b41a5dc982399ec974f04a3b6cb6611c8b770",
+    "test_browser_0134_ui.py": "5fd1ba433b347b74b65e4f166ea6f53a301fc1fc6b3396ddae65abcfbd81030b",
+    "DELTA_README_v0134.md": "30bd3d4aa54d3cb57bb9c2a19b9df472df0d63de42496e79be03e5d986e894cd",
+    "CURRENT_STATE_v0134.md": "f2c354eb50b630b09560a4efb7a005b8c70afd244d31294e5f6d87b49859001f",
+    "ARCHITECTURE_v0134.md": "c159b7a7d18b53f9c2bd6edebe11ef56aff361bcb91e01b4b0b3a0fd4bb01456",
+    "NOW_NEXT_LATER_v0134.md": "711ded47ceb9aaa676a2cf234d8f4729812039f35257cd8fd7e3076f337482d6"
+  }
+}

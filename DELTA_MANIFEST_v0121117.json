@@ -1,0 +1,58 @@
+{
+  "version": "0.12.11.17",
+  "base_version": "0.12.11.16",
+  "kind": "delta-only",
+  "start_command": "python3 backend/server.py",
+  "files": [
+    {
+      "path": "backend/pw_v01210.py",
+      "size": 53079,
+      "sha256": "13cc933b797246bec95b8f016e4dc552cfa758a7e1e938edc7e1f686b0fe9901"
+    },
+    {
+      "path": "backend/pw_v0121117.py",
+      "size": 1700,
+      "sha256": "849a084fac6996094fc1aa3c786d10535047d304d4226cf731e61079fff9b9f8"
+    },
+    {
+      "path": "backend/test_pw_v0121117.py",
+      "size": 3139,
+      "sha256": "db059a9f329725cb5a1ccebf3d25e4ebb9abf907d46eb32d2a41967722a204c7"
+    },
+    {
+      "path": "src/pw-v01211.js",
+      "size": 20999,
+      "sha256": "383b7fed4a9ca9270876a66f6519b40cd286924e689ff832ba1d94e5d5383680"
+    },
+    {
+      "path": "src/pw-v0121117.js",
+      "size": 24369,
+      "sha256": "7b2de7762c67815795e1dc7ff180a5fb65f911faf249f3b273c7d97f7cc8dc85"
+    },
+    {
+      "path": "test_browser_0121117.py",
+      "size": 8951,
+      "sha256": "31797c94a37b595155575b9bde1bdcada3b296baf0def9621b52ac4e763b3060"
+    },
+    {
+      "path": "DELTA_README_v0121117.md",
+      "size": 5827,
+      "sha256": "d02ab5492b79dc623232bea42dd72f5c1a21d57b869438d2d1112f8a3b9c0f8b"
+    },
+    {
+      "path": "NOW_NEXT_LATER_v0121117.md",
+      "size": 1239,
+      "sha256": "b9aa6e5fc6b9a50e7e82858fb0242f7229082d996ff3b0c1acbb50a4226460d6"
+    },
+    {
+      "path": "CURRENT_STATE_v0121117.md",
+      "size": 1180,
+      "sha256": "038880619bc62e6cad59531b517307b7b204e7159337ce6ad491208be3c1ad5c"
+    }
+  ],
+  "tests": {
+    "backend_targeted": "33 passed",
+    "browser_stubbed": "passed",
+    "full_suite": "134 tests, 8 failures, 19 errors; identical failure/error count to v0.12.11.16 baseline"
+  }
+}

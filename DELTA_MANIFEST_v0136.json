@@ -1,0 +1,27 @@
+{
+  "version": "0.13.6",
+  "base_version": "0.13.5",
+  "kind": "delta",
+  "files": [
+    {
+      "path": "src/pw-v013.js",
+      "sha256": "4a1a4d5da34d669eb04f9efd2944228f6c52736ea36b7cee1f34d68d70c13165"
+    },
+    {
+      "path": "tests/test_rail_simple.py",
+      "sha256": "04a1e0e2e01c6c461d355c49a4f14ace7aa75fd183abdf37c1c634cde3b8820c"
+    },
+    {
+      "path": "DELTA_README_v0136.md",
+      "sha256": "6f5d81fe4a7dfbf3f592d9bd804edf834a70269711d7acecb4e337803ebe6fe0"
+    },
+    {
+      "path": "NOW_NEXT_LATER_v0136.md",
+      "sha256": "81f1571413503941003a903ed8284e6535eb930a001de7cdb2e84593c3cc38e0"
+    },
+    {
+      "path": "CURRENT_STATE_v0136.md",
+      "sha256": "b9da1ec9abd8b2b165f66214ff5b3bc74cfc0b54e13e699716926902e876fcf4"
+    }
+  ]
+}

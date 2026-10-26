@@ -1,0 +1,26 @@
+{
+  "version": "0.12.11.12",
+  "base": "0.12.11.11",
+  "changed_or_new_files": [
+    "backend/pw_v01210.py",
+    "backend/pw_v012118.py",
+    "backend/pw_v0121112.py",
+    "backend/test_pw_v0121112.py",
+    "src/pw-v012118.js",
+    "src/pw-v0121111.js",
+    "src/pw-v0121112.js",
+    "DELTA_README_v0121112.md",
+    "NOW_NEXT_LATER_v0121112.md"
+  ],
+  "sha256": {
+    "backend/pw_v01210.py": "3770fc932ed758638026c3f8f6a51abd6970682887aea152f9c089c5357e005d",
+    "backend/pw_v012118.py": "2f9ff08a4aab0e830c82993f0a04136b5c04d6dc6aa71c010f9bb7fa7607a25c",
+    "backend/pw_v0121112.py": "1c679608af6dbb33264bb04581e125b83c1931bb30514573b04ba105db6c26ea",
+    "backend/test_pw_v0121112.py": "8c8fbcc241e94407b75e6d6867d2eecbbde823c8fca4be326c30632d9715cd76",
+    "src/pw-v012118.js": "bd91977fb2f361f29580f2432eee5eec122eeb71b0b4c7900a0654b9131a3623",
+    "src/pw-v0121111.js": "40bf3c15ab78677cffa87856cb47da4836ad327a46f80e73823ecb9b4ad6174d",
+    "src/pw-v0121112.js": "d376ea7b83b6c6db2572bc2c776994e3801237e7c77d74311ed57d3d48edd38e",
+    "DELTA_README_v0121112.md": "cb8cf239567298ec231022de8afc22af0da9cece0c8d4c8f75616256edacd518",
+    "NOW_NEXT_LATER_v0121112.md": "42b75cd98f779763b840ec709fe75bad31813171d95283da941235e85c177ef9"
+  }
+}

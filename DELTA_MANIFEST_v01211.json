@@ -1,0 +1,56 @@
+{
+  "version": "0.12.11",
+  "base_repository": "jwestholm/pixelworks",
+  "base_branch": "dev",
+  "base_commit": "b6fdca9f748c1accee725ff88a246063fffe158d",
+  "requires_previous_delta": "0.12.10.1",
+  "only_changed_and_new_files": true,
+  "no_installer": true,
+  "original_git_blob_required": "1abf4bdd611ba543d73f79f6b7f79be28f777899",
+  "start_command": "python3 backend/server.py",
+  "obsolete_remove_manually_after_testing": [
+    "backend/server_v01210.py"
+  ],
+  "files": [
+    {
+      "path": "backend/server.py",
+      "sha256": "447cce37eba46fbda605382d54be53151347b2d51e942112ba013fa8394fcc52",
+      "size": 1927
+    },
+    {
+      "path": "backend/pw_v01210.py",
+      "sha256": "1ffb0660a32e959217219a4524f54557d40cdf81cb6f699232e43a224bc01b3b",
+      "size": 37885
+    },
+    {
+      "path": "backend/test_pw_v01210.py",
+      "sha256": "2eddc76b2f97aed8da28742a2e3f987cdbd778c094cd5da0cceb82b03cd1cf8e",
+      "size": 14139
+    },
+    {
+      "path": "backend/test_pw_v01211.py",
+      "sha256": "1946a7a4c7080904d9e2099a99fa95212bd6dd9e99a1eeeb487daf21aa1b92a2",
+      "size": 6753
+    },
+    {
+      "path": "src/pw-v01210.js",
+      "sha256": "c4fa4042c7fc15b49cc5c5ad0079a7ed3629a7de70f656972b5c4022962f93c1",
+      "size": 19445
+    },
+    {
+      "path": "src/pw-v01211.js",
+      "sha256": "150e6fb9cd06900bb314e2d3556d719a29666a7bff0d8987f1080add72a411f6",
+      "size": 11570
+    },
+    {
+      "path": "DELTA_README_v01211.md",
+      "sha256": "646622ee8b4cb298b2e2fc2285c051cc6a10d667f404c6059739e96dd1e4ecae",
+      "size": 4850
+    },
+    {
+      "path": "NOW_NEXT_LATER_v01211.md",
+      "sha256": "4f8baa1fbc2bc632ed7da5e70514f219af4abf1d4b6c19a5b841da87ad0e0f3e",
+      "size": 1728
+    }
+  ]
+}

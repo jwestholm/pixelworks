@@ -1,0 +1,82 @@
+{
+  "version": "0.13.7",
+  "base": "0.13.6",
+  "type": "delta_only",
+  "files": [
+    {
+      "path": "src/pw-v0121118.js",
+      "sha256": "dbcaddc2ec94f6a732f96fdedf3c7cb9cfc8a9b89e0fa5c5651f8c478909c61b",
+      "size": 39551
+    },
+    {
+      "path": "src/pw-v013.js",
+      "sha256": "efb468cf90142def36ebbc781207460dd1a989ebe21b291998272cd223f1b155",
+      "size": 39520
+    },
+    {
+      "path": "tests/test_rail_simple.py",
+      "sha256": "dd0ffa73e0bce8ff9bfadc13b358441a20989a2e16d04bf831a19578c6a49059",
+      "size": 5245
+    },
+    {
+      "path": "test_visual_0137.py",
+      "sha256": "f7141473e2a683db80737532f50ebdaf3f15a5dc0b5b177bd8452c8594a2d0c6",
+      "size": 3333
+    },
+    {
+      "path": "test_legacy_desk_0137.py",
+      "sha256": "d3c1088cdd06c8afd568bcc163c7797ae6802d9bb8fdc7d9a7f9071a02492a7b",
+      "size": 2380
+    },
+    {
+      "path": "DELTA_README_v0137.md",
+      "sha256": "bb92e1cef4263d555c796c8da811049f77daa8d4a7856523f4a3e2584e3d137a",
+      "size": 3696
+    },
+    {
+      "path": "NOW_NEXT_LATER_v0137.md",
+      "sha256": "fa641a1bb38d9f91af89906fc4dd97e4bee5ae9bcd2d5bcfa670db475df92d7a",
+      "size": 1046
+    },
+    {
+      "path": "assets/office-v2/documentation-studio-pastel.png",
+      "sha256": "3abd0addd50bbeb3eb042ef73b9c58c1906e0ae9029f8d6dfbc6673b9eaf6284",
+      "size": 91910
+    },
+    {
+      "path": "assets/office-v2/leadership-studio-pastel.png",
+      "sha256": "744925d036c5a905934faa0840ce13dc3d4bb06eb50010af9ed1c1bc36300def",
+      "size": 110023
+    },
+    {
+      "path": "assets/office-v2/meeting-studio-pastel.png",
+      "sha256": "46c962cc6dd4bafd01bc215fc5794e7e5ceebde561a26a01d7fb5feea71024e5",
+      "size": 74077
+    },
+    {
+      "path": "assets/office-v2/music-studio-pastel.png",
+      "sha256": "0ec791f0eaa977140ba290ba35e130b7dc44e535cfb61ac55360f55887d3b576",
+      "size": 100297
+    },
+    {
+      "path": "assets/office-v2/programming-studio-pastel.png",
+      "sha256": "162446ca079de8fa70254c84679329b91212f3c912cf6c2117dc40f14a66873c",
+      "size": 113419
+    },
+    {
+      "path": "assets/office-v2/research-studio-pastel.png",
+      "sha256": "f2f45d80e49386f3364f4668beac2314f039c5d7e90ea80b545a65aef1b6e1c0",
+      "size": 93088
+    },
+    {
+      "path": "assets/office-v2/testing-studio-pastel.png",
+      "sha256": "4d996b8bb81bddb1e3e7a75cf413c4315ac627e2fcf7001ebb20f6103b0e4802",
+      "size": 95900
+    },
+    {
+      "path": "assets/office-v2/voice-studio-pastel.png",
+      "sha256": "9e16134faece227855889d7166627a422b9839f9c6a5da1a302c832061938ce7",
+      "size": 102907
+    }
+  ]
+}
