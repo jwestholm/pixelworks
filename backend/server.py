@@ -39,6 +39,9 @@ def main():
     core = load_base()
     from pw_v01210 import install
     install(core)
+    # Delta: extend the already-installed real cafe discussion with safe images.
+    from pw_cafe_images import install as install_cafe_images
+    install_cafe_images(core)
     return core.main()
 
 

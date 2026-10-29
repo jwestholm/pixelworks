@@ -2,6 +2,7 @@ import { GameModel } from './model.js';
 import { GameUI } from './ui.js';
 import { DemoSimulation } from './simulation.js';
 import { StudioMenus } from './studio.js';
+import './pw-cafe-images.js';
 
 const model = new GameModel();
 const ui = new GameUI(model);
