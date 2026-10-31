@@ -1,0 +1,24 @@
+{
+  "name": "Pixel Works Home LAN configuration delta v2.1",
+  "baseline": {
+    "dev": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+    "requires": "LAN v2.0"
+  },
+  "modified_files": [
+    "backend/pw_lan.py",
+    "backend/test_pw_lan.py",
+    "start-lan.sh"
+  ],
+  "additional_files": [
+    "DELTA_LAN_V21_README.md",
+    "DELTA_LAN_V21_MANIFEST.json"
+  ],
+  "files": {
+    "backend/pw_lan.py": "dfe5847471c8f366219a881f0869cafc6d5a903b14af01f0d8c4582e20451941",
+    "backend/test_pw_lan.py": "387ee8aa8953363fa38c2fc0598155717d3a221048bf61a343ac030206e7797b",
+    "start-lan.sh": "8e67b9050e1e2a673e17a312a1d009f4d619d91e14c9ad1ce59d6af6ec8a58ed",
+    "DELTA_LAN_V21_README.md": "bb5a96217994fde5c0614d405dbfee3636975ded4cce97b57c0b1933e2bff6bf"
+  },
+  "no_github_push": true,
+  "no_firewall_changes": true
+}

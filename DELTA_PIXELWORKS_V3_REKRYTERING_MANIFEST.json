@@ -1,0 +1,16 @@
+{
+  "version": "v3.0-recruitment-demo",
+  "git_base": "dev@fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": "previous deltas through v2.8",
+  "files": {
+    "backend/server.py": "2aeeac520f2af53351234173edefbd0cb1cbac51f0d6e0fcc71d2a628dcf0ef5",
+    "backend/pw_recruitment_v3.py": "8e14dc0398209c9d2e00a3ddb055922e85aacec740b23eae134efcce543cacf4",
+    "backend/pw_v3_personas.json": "b0d1f97e86f46e7aec4cdde5421c500daf02cd7e406cd0a421a42322fbe0c3e1",
+    "src/main.js": "faf222b362cb11276e126ccaebe6e94c5e0d8dafd5b1cd8f1b644b0a41d3e6aa",
+    "src/pw-v3-recruit.js": "cfb68e87a3c4ba3ca927b2911335fbb2e91f7cf90f17168fc84decbc05a9fcd2",
+    "backend/test_pw_recruitment_v3.py": "4e83bf5937e862474ba973aaf79998bd5378411f68d73ae91ebd336445b72f81",
+    "tests/test_recruitment_v3_ui.py": "2c632bf1287be1cfbf9136428ecb36350ddaf6151c47959259ab3da7d054f5a7",
+    "DELTA_PIXELWORKS_V3_REKRYTERING_README.md": "57c03e7b21072698ac2859591fe16b5e3ea9884210949e400e48c7f76a359456"
+  },
+  "mode": "No AI calls; server-side opt-in"
+}

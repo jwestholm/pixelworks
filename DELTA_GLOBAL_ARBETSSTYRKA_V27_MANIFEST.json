@@ -1,0 +1,58 @@
+{
+  "version": "v2.7",
+  "base_repo": "jwestholm/pixelworks",
+  "base_branch": "dev",
+  "base_commit": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": "v2.6.1 + v2.5 global registry already registered",
+  "install": "unzip into app root, overwrite, restart backend, Ctrl+F5, explicit activation in Min studio",
+  "does_not_run_migration_on_boot": true,
+  "does_not_dismiss_or_merge_automatically": true,
+  "tests": [
+    "22 Python unit tests passed",
+    "Playwright Chromium desktop and mobile passed",
+    "JavaScript syntax checked",
+    "Python compiled"
+  ],
+  "limitations": [
+    "not tested with live Ubuntu AI workloads",
+    "production scheduler remains project-wide",
+    "historical aliases remain per-project"
+  ],
+  "files": [
+    {
+      "path": "backend/server.py",
+      "bytes": 3443,
+      "sha256": "f4a2677c63f77fde0efd308c50f85577849b969d5180980e8ebe73a3b5ee4ee1"
+    },
+    {
+      "path": "backend/pw_global_workforce_v27.py",
+      "bytes": 19696,
+      "sha256": "0ada51c764e5f4d9d3977f08900197f656d922e237a94b6c64bf7a0ee35d8bd0"
+    },
+    {
+      "path": "backend/test_pw_global_workforce_v27.py",
+      "bytes": 11389,
+      "sha256": "f0a78a93229cd628d3a380d12df3b564b47bd195cab602fd52fa512773a44d60"
+    },
+    {
+      "path": "src/main.js",
+      "bytes": 4850,
+      "sha256": "abfbf8dd64ed9e5d8320f291852fb79105cef88ed7af388cb3942e6992522909"
+    },
+    {
+      "path": "src/pw-global-workforce-v27.js",
+      "bytes": 7050,
+      "sha256": "1c4e8e6561f1519f7209dcd4fe4c426f0c7e316126ca298939107554bb6daa78"
+    },
+    {
+      "path": "tests/test_global_workforce_v27_ui.py",
+      "bytes": 3808,
+      "sha256": "d4639c54a61bbc682affdcb79d451dfcd3d71fc618396db47f0d4a866c965267"
+    },
+    {
+      "path": "DELTA_GLOBAL_ARBETSSTYRKA_V27_README.md",
+      "bytes": 7186,
+      "sha256": "60aae0a40fa852f033955ef77f45fd94d177b648a92266c4e4ab5c076799a241"
+    }
+  ]
+}

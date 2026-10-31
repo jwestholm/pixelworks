@@ -1,0 +1,32 @@
+{
+  "name": "Pixel Works v3.1 – Karaktärer och intervjuer",
+  "base": "v3.0 overlay on dev fb70d1c",
+  "created": "2026-10-30",
+  "automatic_legacy_staff_changes": false,
+  "files": {
+    "backend/pw_recruitment_v3.py": {
+      "sha256": "2a4d9e564c9f21fee2e8ede58e1076eee0a1af480c7e2291774d4016da46d045",
+      "size": 15101
+    },
+    "backend/pw_v3_personas.json": {
+      "sha256": "841646c7d5bde04a549659cbaebdb850ae523b83e1fde3f7f4e2af6c93a40c28",
+      "size": 8456
+    },
+    "src/pw-v3-recruit.js": {
+      "sha256": "59ae987ae5c58ffe893c7a59e3df696b8133fdbb1225dfb4820b3e2a00f9fa2b",
+      "size": 34407
+    },
+    "backend/test_pw_recruitment_v31.py": {
+      "sha256": "9af0c293d7a5d649aab446443961b761c983836ac0cce2e1bd2fa2836212d556",
+      "size": 3757
+    },
+    "tests/test_recruitment_v31_ui.py": {
+      "sha256": "3e3c1cd8fda9a22947d923df57f5f3a41dcc0c40c31bc5f59b3d67e7812a06c3",
+      "size": 8701
+    },
+    "DELTA_PIXELWORKS_V31_KARAKTARER_README.md": {
+      "sha256": "5f9778135eaf7b7a7380dfb554abc15fac91318d771854331ec4acfbfe5e6b6b",
+      "size": 5920
+    }
+  }
+}

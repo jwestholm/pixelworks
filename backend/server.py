@@ -42,6 +42,43 @@ def main():
     # Delta: extend the already-installed real cafe discussion with safe images.
     from pw_cafe_images import install as install_cafe_images
     install_cafe_images(core)
+    # AI employee audio tool; no network calls or migrations at startup.
+    from pw_freesound import install as install_freesound
+    install_freesound(core)
+    # Tool calls stay backend-owned; integrated work queues passive QA handoff.
+    from pw_tool_registry import install as install_tools
+    install_tools(core)
+    from pw_qa_handoff import install as install_qa
+    install_qa(core)
+    # Unified, player-owned approval inbox for actual images and sound previews.
+    from pw_media_review import install as install_media_review
+    install_media_review(core)
+    # One decision center for existing help cases, asset approvals and bounded retries.
+    from pw_decision_center import install as install_decision_center
+    install_decision_center(core)
+    # Optional, password-protected home-LAN access, disabled by default.
+    # Explicit, recoverable global staff inventory. No startup migration.
+    from pw_global_staff_v25 import install as install_global_staff
+    install_global_staff(core)
+    # Opt-in cutover: global workforce is authoritative only after explicit player approval.
+    from pw_global_workforce_v27 import install as install_global_workforce
+    install_global_workforce(core)
+    # V3 recruitment prototype – old worker types remain, old schedulers pause after owner opt-in.
+    from pw_recruitment_v3 import install as install_recruitment_v3
+    install_recruitment_v3(core)
+    # v3.3: real, manual AI tasks with immutable personas and review before integration.
+    from pw_v3_jobs import install as install_v3_jobs
+    install_v3_jobs(core)
+    # v3.4: Chief suggests crew from real availability + fictional skills, never auto-runs AI.
+    from pw_v3_chief import install as install_v3_chief
+    install_v3_chief(core)
+    # v3.5.2: permit ONLY the named new CSS and seven character sprite atlases.
+    # Original core already sends Cache-Control: no-store.
+    from pw_v352_static import install as install_v352_static
+    install_v352_static(core)
+    # Keep the LAN access guard as the outermost HTTP wrapper.
+    from pw_lan import install as install_lan
+    install_lan(core)
     return core.main()
 
 

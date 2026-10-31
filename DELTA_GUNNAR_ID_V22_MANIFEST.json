@@ -1,0 +1,21 @@
+{
+  "delta": "v2.2",
+  "base": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": "installed local deltas through v2.1",
+  "modifies": [
+    "src/main.js"
+  ],
+  "adds": [
+    "src/pw-agent-help-bridge.js",
+    "tests/browser_agent_identity_v22.py",
+    "DELTA_GUNNAR_ID_V22_README.md"
+  ],
+  "files_sha256": {
+    "src/main.js": "15da60621e2cd0c08ff3850592ccb7c9a5101647815bad4f4b1fc9cc8c582841",
+    "src/pw-agent-help-bridge.js": "10bb51b33a0284eb33a81b236dfe253fb0f9dae6690975ba2769a0c2c2f9afc9",
+    "tests/browser_agent_identity_v22.py": "af0105279ec3a0ddf21798489b55b196e14af2cd2f74eacb5697996582547413",
+    "DELTA_GUNNAR_ID_V22_README.md": "4c72dcdf9a807eb89d159e897f56f8ca99990206feb4f36f6ec7ebc52e98836c"
+  },
+  "no_push": true,
+  "no_project_mutations": true
+}

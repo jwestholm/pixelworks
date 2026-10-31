@@ -1,0 +1,19 @@
+{
+  "name": "Pixel Works Beslutslappen CSP/ljud v1.7",
+  "base_git_dev": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": "Lokala Freesound- och Beslutslappsdeltor t.o.m. v1.6",
+  "overwrites": [
+    "backend/pw_media_review.py"
+  ],
+  "adds": [
+    "backend/test_pw_media_csp_v17.py",
+    "tests/browser_media_csp.py",
+    "DELTA_MEDIA_CSP_V17_README.md"
+  ],
+  "files": {
+    "backend/pw_media_review.py": "93ee16f82ea96d415a00cefc514fe615cf5a485630ec113a792fcab5fee838f2",
+    "backend/test_pw_media_csp_v17.py": "749ff9d0a1d487ff9bbb5d04f91e4e94fd5a84aced4878e5bd8888f4b8213fe6",
+    "tests/browser_media_csp.py": "2d9180a5ebd21f50a3858968e2fcf97c4fc8fb432c5fbd44dab28b976dba7b64",
+    "DELTA_MEDIA_CSP_V17_README.md": "bfd272559a4ded5416ea04b6cc13c6697d8d799f0e31b92897dce42069a0ea27"
+  }
+}

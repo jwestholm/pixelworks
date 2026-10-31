@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "size": [
+    48,
+    68
+  ],
+  "frames": 4,
+  "transparency": "RGBA",
+  "character_sprites": {
+    "chef": {
+      "idle": "fc291c66165fc9b9c22e31e35666702297443bc46bde6618277383fae6ebf57c",
+      "walk": "4c6954f1a757a0e7512340af9bbe23acc34f95fba1bdab369ccbd954cd3c3dfd",
+      "working": "00b24a84e24d5c078b1247b501c7ee5d9d4117bcb7c9f9e56580673c78b6b3c0",
+      "cafe": "1d4600fd4070bb852ca996cfdbcf47786a1359fce1fe7ad932e4202b7506fcfd"
+    },
+    "joppe": {
+      "idle": "e9d921f468bcab5fb652056f71c5bf45705dcb60d3981886fcccf0d075d5e330",
+      "walk": "e813beae2c51fb087857df0a2884e52a4c3a64e797b69dedfb2f497ff3011c53",
+      "working": "23b67511f5f49577693a6d3b83322678b0d16e9a3cce68bbd1741c6c206cc2a5",
+      "cafe": "e693ce102ba9d34042b6015ba6c26a2d623aec5630b4c9037de451b2c43e67a0"
+    },
+    "siv": {
+      "idle": "fd67a9c3b743fcc919ebf62fc172256028724048fc44867db75f0c7d6edda15b",
+      "walk": "2a4bf967f7fc4374644c0ffa0ef30f3ce85722a390e22d0968de7cacee624ab8",
+      "working": "755666f71b0b7107a9a38be1976be10fb7b8bd1611383c9ee953152a2792471b",
+      "cafe": "28d1d54291d6450e49dba85105ee2522894e18db0a8adf134de8fd89bf42808e"
+    },
+    "nisse": {
+      "idle": "5184c9c77003679a64b770cd7fcc543fdb1ad9e51885561ec94622e689600eab",
+      "walk": "658a1cee5df3b5676f0c60d7cba98c3b956f59bdd998eb727c8811142bc939aa",
+      "working": "e5d6b7277570a18d9322337d0c3534321b21409b7f679ab472bd57fe2c5e7f2a",
+      "cafe": "9817cbfda58f57ca79edb94995e0d5c1563a5e35bc4cad298fc55f02a7376767"
+    },
+    "mira": {
+      "idle": "4ef40cd61599c7ee23cf56fb7754f291f90bff385c157d348db0c21c01554b17",
+      "walk": "a835e6051ebc13a8b6ef87151503618337778bb54f843d1c205e745c42d17bd6",
+      "working": "203098468325dd50db26d5e21de0c50d8773bba87064f5962ba99192d6e63041",
+      "cafe": "683522cb07623404cfae6a0767844682bd444026fdf43a596c1308668466c3ae"
+    },
+    "vera": {
+      "idle": "c304d116b6b2144407b060395e2c92b19f46a3905b9b9cf7bc1442517c0fecd9",
+      "walk": "3dd1f40afdcf94abf3b85a12a29d67828e7944ed9cc05a71facc1b9195d680fa",
+      "working": "41efc70a4e4aac86260161633c2064ea059e869354ed6db796d597344d3fa07f",
+      "cafe": "84a589dc51a784a902f1239bc27b3eff360c735ce999b145185e9fc87519db0a"
+    },
+    "lova": {
+      "idle": "4aa6cf3085c45c20f87fc76ecafe16a4092f0ce1f93eac18c5353fc5f55fb46d",
+      "walk": "40d81d05a68e833ca8561c4a67a339ff8c338624de8aa9852b2d868fb9a6f286",
+      "working": "10c02b886a1e28657a4e711144b065e083b589147c08d8a34d3879f2848cec81",
+      "cafe": "52ece3faa79cbd7939f2dc08979903d3a04a964df9d07b580e9697208a6f7e2b"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Pixel Works Förhandslyssning v1.6",
+  "basis": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": "v1.5 beslutslapp installerad",
+  "replaces": [
+    "backend/pw_media_review.py",
+    "src/pw-media-review.js",
+    "backend/test_pw_media_review.py"
+  ],
+  "adds": [
+    "backend/test_pw_audio_playback_v16.py",
+    "DELTA_AUDIO_PLAYER_V16_README.md",
+    "DELTA_AUDIO_PLAYER_V16_MANIFEST.json"
+  ],
+  "files": {
+    "backend/pw_media_review.py": "6cb9e38c312c36e47fe25e09fdb15b6e79487ab8c2750e35872d214b47ccbae9",
+    "backend/test_pw_media_review.py": "2b7266693b7830d15e0a5b6905d8c9431301ef8077ee0a6976c62e7e5eeeb24a",
+    "backend/test_pw_audio_playback_v16.py": "520decbf8fa4c90b07b3ab71dbcea1cb4f9403f26f584f23da7b37b298dadeab",
+    "src/pw-media-review.js": "9983d0048c5157aab8af13852782a07382223f7c56c4c2fccba5c88f5a20ee23",
+    "DELTA_AUDIO_PLAYER_V16_README.md": "d7ed3fef205740afda88c290faf637210d9e322ebc5598b42fb373929b8123ee"
+  }
+}

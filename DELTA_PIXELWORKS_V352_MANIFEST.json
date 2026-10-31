@@ -1,0 +1,23 @@
+{
+  "version": "3.5.2",
+  "requires": "Pixel Works v3.5.1",
+  "github_dev_base": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "files": {
+    "backend/server.py": "43cca96978d7cac2db8d122a69b947391962eea715852dd66a9521dba46ddbed",
+    "backend/pw_v352_static.py": "209771657b9f630423b741dd0a2f277bfea0a833fdf2329957c253d1fe18ddb1",
+    "src/main.js": "1ebd85ea69a1ce2f0b644c23e93eeab48db92befe45c05090d1eabc22adebffd",
+    "src/pw-v3-recruit.js": "9252f27dfb8748f3979b5360fe6e3b61b430304d6e9f99ae90f9fbb689ec6217",
+    "src/pw-v351-dialogs.js": "9fc5571e194456f405313bb8f82cd0d50676939e2feeef9a542ebe38a27fc6bf",
+    "src/pw-v351-dialogs.css": "77944b14a1144f156d0dbb0de0e5a4a078987d441fb30a89747acbf502d84e4e",
+    "src/pw-v352-personnel.js": "c946a6a8dc98e700698c61c519497cfbe2718597db1a4fb2a188dcd170a138f2",
+    "src/pw-v352-personnel.css": "76e3dff46ce96c2f127e6a501da4b5f3bfc0d590c2aed67be0b850b3c061eee8",
+    "tests/test_pw_v352_static.py": "ec9269c735a3435181901d02f2953e9487cc2eb2ec352e7f520e15196b4e22c4",
+    "tests/test_pw_v352_browser_assets.py": "40bec6695ad54c8c820098546ac787a410a67c4c92a2701bdca317860b9841b6",
+    "tests/test_pw_v352_personnel.py": "8a4bd6df3e2d18e17eebce327c0f3482bd293e3a5e2688d74693f7dfffdf3532",
+    "docs/PIXELWORKS_V352_DESIGN_OCH_TEST.md": "215396efbe0b67a60a129bf007bb869a8f8bba17c36195c9e3bdbdd9b21e5f49",
+    "DELTA_PIXELWORKS_V352_PERSONAL_GRAFIK_README.md": "61f14a50002a2c77f2dc648b565bdd61b8dc79b817bce7116d598b0959b005c2"
+  },
+  "data_migration": false,
+  "ai_calls": false,
+  "github_push": false
+}

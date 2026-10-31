@@ -1,0 +1,31 @@
+/* Pixel Works 3.5.1: one modal navigation system for V3 & the review inbox.
+   No changes to job permissions, fetches or media objects. */
+:root{--pw351-ink:#213d4d;--pw351-paper:#fff6de;--pw351-blue:#163e56;--pw351-gold:#e9b65c;--pw351-green:#348c73;--pw351-outline:#865934}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg)[open]{border:5px solid var(--pw351-outline)!important;outline:3px solid #1b3e50!important;box-shadow:8px 10px 0 #081c2f99!important;background:var(--pw351-paper)!important;color:var(--pw351-ink)!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg) :is(.pw3-head,.pwr-head,header){background:var(--pw351-blue)!important;color:#fff5db!important;border-bottom:4px solid var(--pw351-gold)!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg) :is(.pw3-head,.pwr-head,header) h2{color:#fff5db!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg) .pw351-navigation{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:8px 13px;background:#e8d4a9;color:var(--pw351-ink);border-bottom:3px solid #bb9360;position:sticky;top:62px;z-index:9;box-sizing:border-box}
+#pwReviewDlg .pw351-navigation{position:static;flex:0 0 auto}
+.pw351-navigation .pw351-menu{display:flex;flex:1 1 410px;gap:6px;flex-wrap:wrap;align-items:center;min-width:0}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg) .pw351-navigation button{appearance:none;border:2px solid #806443!important;border-radius:2px!important;background:#fff7e0!important;color:#234359!important;font:800 12px/1.2 system-ui,sans-serif!important;min-height:44px!important;padding:8px 11px!important;box-shadow:2px 2px 0 #b39770;cursor:pointer;white-space:nowrap}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg) .pw351-navigation button[aria-current=page]{background:#296777!important;color:white!important;border-color:#234d5b!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg) .pw351-navigation button:focus-visible{outline:3px solid #317fa4!important;outline-offset:2px}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg) .pw351-navigation .pw351-back{background:#dfebdd!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg) .pw351-navigation .pw351-home{background:#f5d28a!important}
+/* Preserve the existing, browser-owned single scroll for V3; no scrolling nav-inside-scroll. */
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog){overscroll-behavior:contain;scrollbar-gutter:stable}
+#pwReviewDlg .pwr-shell{min-height:0;max-height:calc(100dvh - 40px)}
+#pwReviewDlg .pwr-body{min-height:0;overscroll-behavior:contain}
+@media(max-width:720px){
+ :is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg)[open]{border:0!important;outline:0!important;box-shadow:none!important;inset:0!important;width:100vw!important;max-width:100vw!important;max-height:100dvh!important;height:100dvh!important;margin:0!important}
+ :is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg) .pw351-navigation{position:static;padding:7px;gap:6px}
+ .pw351-navigation .pw351-menu{order:3;flex:1 1 100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+ :is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg) .pw351-navigation button{padding:8px 3px!important;font-size:11px!important;white-space:normal;overflow-wrap:anywhere;min-width:0}
+ #pwReviewDlg .pwr-shell{max-height:100dvh;height:100%}
+}
+@media(prefers-reduced-motion:reduce){:is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg) .pw351-navigation button{transition:none!important}}
+
+/* Chefen finns nu i samma huvudnavigering; ingen dubbel genväg inne i Uppdrag. */
+#pw33Dialog #pw33ChiefLink{display:none!important}
+/* v3.5.2: do not show two separate Kontor buttons without back-history. */
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog,#pwReviewDlg) .pw351-navigation button[hidden]{display:none!important}

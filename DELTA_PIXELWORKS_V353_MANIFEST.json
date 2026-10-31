@@ -1,0 +1,53 @@
+{
+  "version": "3.5.3",
+  "base_branch": "dev",
+  "base_sha": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": "3.5.2",
+  "files": {
+    "backend/pw_recruitment_v3.py": {
+      "size": 19405,
+      "sha256": "6239749a87f4dcf351bbcb5d04558d9f24bd479b7a4467cd553355581f6c8fdd"
+    },
+    "backend/pw_v352_static.py": {
+      "size": 1586,
+      "sha256": "fa0221cfabadcedc8bca203f28d8ede8d1a267108a582df9d975a424d49ed9a0"
+    },
+    "src/main.js": {
+      "size": 5446,
+      "sha256": "73fc43a34cc6c35c19cb8d81c88985e19b05032866bba306f4b4c4655fab1cea"
+    },
+    "src/pw-v3-recruit.js": {
+      "size": 47945,
+      "sha256": "e72f8f4d8c3ea6e3706e88fd412a1319b7aeac0c06f5f288242ea23ce8cc1f4a"
+    },
+    "src/pw-v353-office.js": {
+      "size": 1737,
+      "sha256": "72b7392ee15637838721aca4940112ac1b974d62bd918c9a5f573bfcb2084140"
+    },
+    "src/pw-v353-office.css": {
+      "size": 4540,
+      "sha256": "9ce3ca536c200209b7343fee027a7d8f73d5478abc2ff68f12382de16ed00592"
+    },
+    "backend/test_pw_v353_office.py": {
+      "size": 2302,
+      "sha256": "8a7f16d5d1eb68cae8e843a4c20736dd9d8bc69f9bfa6bd31cf38cea52791bf1"
+    },
+    "tests/test_pw_v353_office_ui.py": {
+      "size": 6621,
+      "sha256": "a5ee6771e2a00bf5b94ac14e68395d52c29247f2e2ff5afd71f062d850741f25"
+    },
+    "tests/test_pw_v352_static.py": {
+      "size": 4036,
+      "sha256": "b36c1e596dc0e2ca3b0e7942eb479a081bfa44cbba894833ed330e67b3bb4e68"
+    },
+    "docs/PIXELWORKS_V353_NOW_NEXT_LATER.md": {
+      "size": 1168,
+      "sha256": "405821e5b5fcaf9be75c564a736de8ced1ec57e0f89f49ed8a04251de97b3e44"
+    },
+    "DELTA_PIXELWORKS_V353_KONTOR_DRAG_ROLL_README.md": {
+      "size": 4143,
+      "sha256": "5cfa91ac76d2fb6594ca01345419f8e851d733c6c809f632f02b75f6a72f3754"
+    }
+  },
+  "notes": "No AI calls; no GitHub writes; positions persist only on player drag."
+}

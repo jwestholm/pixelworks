@@ -1,0 +1,15 @@
+{
+  "version": "v2.3",
+  "base": "dev fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": "v2.2 installed",
+  "files": {
+    "src/pw-agent-help-bridge.js": "d7ca398ab4a93f21d2eeb453299080f8f6a3a63ea01500a5fab7d52d443fb836",
+    "tests/browser_studio_identity_v23.py": "48c64c80bc81aef42924a8065112d99b2ab6ccec12d6f3d65dade35cca458cec",
+    "DELTA_STUDIO_IDENTITET_V23_README.md": "29abec41c7ec7519e070d14bc11fe3c96954e20e6be38135b89de83193be6bb6"
+  },
+  "tests": [
+    "node --check",
+    "7 Playwright Chromium offline scenarios"
+  ],
+  "verified_with_user_server": false
+}

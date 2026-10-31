@@ -1,0 +1,95 @@
+/* Pixel Works 3.5 / A+B — warm playable office + unified legible menus.
+   Presentation only: no AI state, billing, or worker logic is changed. */
+:root{
+  --pw35-ink:#1d3448;--pw35-frame:#1a3850;--pw35-edge:#9e754b;
+  --pw35-paper:#fff4dc;--pw35-paper-deep:#efddb9;
+  --pw35-teal:#286d70;--pw35-teal-light:#b4e3d7;
+  --pw35-blue:#173a55;--pw35-yellow:#f8c674;--pw35-good:#68c494;
+  --pw35-bad:#c85c54;--pw35-focus:#f1b744;
+}
+/* Decorative, constrained to stage, all pointer-events none. */
+#officeStage{isolation:isolate}
+#pw35-atmosphere{position:absolute;inset:0;pointer-events:none;z-index:56;overflow:hidden;contain:layout style;}
+#pw35-atmosphere .pw35-sky{position:absolute;left:5%;top:3%;width:78%;height:20%;overflow:hidden;
+  border-radius:2px;isolation:isolate;z-index:0;pointer-events:none;transition:background 2s ease,opacity 2s ease;opacity:.58}
+#officeStage[data-pw35-phase="day"] .pw35-sky{background:linear-gradient(#62c6f0,#f2dfa7)}
+#officeStage[data-pw35-phase="dawn"] .pw35-sky{background:linear-gradient(#f48b6b,#edcda5 70%,#f9e4b9)}
+#officeStage[data-pw35-phase="dusk"] .pw35-sky{background:linear-gradient(#68558c,#db8c80 74%,#f8bd87)}
+#officeStage[data-pw35-phase="night"] .pw35-sky{background:linear-gradient(#071c46,#324a73)}
+.pw35-sun,.pw35-moon{position:absolute;width:40px;height:40px;border-radius:50%;transform:translate(-50%,-50%);transition:opacity 1.5s ease,top 3.5s linear,left 3.5s linear}
+.pw35-sun{background:#fff1a8;box-shadow:0 0 0 7px #fff4ab55,0 0 25px 12px #ffd58790;}
+.pw35-moon{width:32px;height:32px;background:#e8f2fa;box-shadow:0 0 0 6px #bbd7f657,0 0 24px 11px #8ab5e8aa}
+.pw35-moon:before{content:'';position:absolute;left:7px;top:8px;width:7px;height:6px;border-radius:40%;background:#b7c8db;box-shadow:9px 10px 0 1px #b7c8db}
+.pw35-stars{position:absolute;inset:0;background-image:radial-gradient(circle,#fff 0 1px,transparent 2px),radial-gradient(circle,#c9deff 0 1px,transparent 2px),radial-gradient(circle,#fff 0 1px,transparent 2px);
+ background-size:51px 37px,73px 29px,97px 53px;background-position:7px 9px,36px 18px,24px 15px;opacity:0;transition:opacity 2s ease}
+#officeStage[data-pw35-phase="night"] .pw35-stars{opacity:.82;animation:pw35-star-twinkle 3.9s ease-in-out infinite alternate}
+.pw35-clouds{position:absolute;left:-30%;top:8%;width:180%;height:70%;background:radial-gradient(ellipse 48px 16px at 12% 66%,#fff8 60%,transparent 67%),radial-gradient(ellipse 35px 14px at 44% 42%,#fff8 60%,transparent 67%),radial-gradient(ellipse 54px 14px at 76% 70%,#fff8 60%,transparent 67%);
+ opacity:.75;animation:pw35-cloud-drift 85s linear infinite}
+#officeStage[data-pw35-phase="night"] .pw35-clouds{opacity:.2}
+/* Foreground tint colours furniture and actors together. */
+.pw35-room-tint{position:absolute;inset:0;pointer-events:none;transition:background 2s ease;background:rgba(255,206,150,.07);z-index:2}
+#officeStage[data-pw35-phase="dawn"] .pw35-room-tint{background:rgba(255,176,104,.17)}
+#officeStage[data-pw35-phase="dusk"] .pw35-room-tint{background:rgba(102,54,101,.18)}
+#officeStage[data-pw35-phase="night"] .pw35-room-tint{background:rgba(5,18,58,.36)}
+.pw35-lightshaft{position:absolute;inset:23% 3% 0 8%;background:linear-gradient(123deg,rgba(255,244,180,.21),transparent 34%),linear-gradient(149deg,rgba(255,222,157,.12),transparent 42%);
+ mix-blend-mode:screen;opacity:.65;transition:opacity 2s ease;z-index:1}
+#officeStage[data-pw35-phase="night"] .pw35-lightshaft{opacity:.08}
+.pw35-lamps{position:absolute;inset:0;z-index:3;transition:opacity 2s ease;opacity:.03}
+#officeStage[data-pw35-phase="dusk"] .pw35-lamps{opacity:.62}
+#officeStage[data-pw35-phase="night"] .pw35-lamps{opacity:.95}
+.pw35-lamp{position:absolute;width:96px;height:88px;transform:translate(-50%,-50%);background:radial-gradient(ellipse,#ffe29b98,rgba(255,188,86,.38) 28%,transparent 70%);filter:blur(8px);animation:pw35-lamp 5s ease-in-out infinite alternate}
+.pw35-lamp:nth-child(2n){animation-delay:-2.3s}
+/* The clock lives in stage, not in top navigation; large thumb targets. */
+#pw35-clock{position:absolute;left:12px;bottom:12px;z-index:83;display:flex;flex-wrap:wrap;gap:7px;align-items:center;
+ color:#fff6d6;background:#142e43ef;border:2px solid #b99159;box-shadow:3px 3px 0 #091724aa;padding:7px 10px;max-width:calc(100% - 150px);font:700 12px/1.35 system-ui,sans-serif}
+.pw35-clock-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.pw35-demo{color:#e9c789;font-size:9px;letter-spacing:.08em}
+.pw35-clock-buttons{display:flex;flex-wrap:wrap;gap:5px}#pw35-clock .pw35-btn{min-width:65px;min-height:36px;cursor:pointer;border:2px solid #87b5b1;background:#254d60;color:#fff4db;padding:6px 8px;font:800 11px system-ui}
+#pw35-clock .pw35-btn:hover{background:#397582}#pw35-clock .pw35-btn:focus-visible{outline:3px solid #ffd56a;outline-offset:2px}
+/* Personal bubbles are playful, clearly DEMO, and never claim AI work. */
+#pw3OfficeAgents .pw35-speech{position:absolute;z-index:80;pointer-events:none;bottom:100%;left:50%;transform:translate(-50%,-8px);min-width:116px;max-width:186px;
+ white-space:normal;overflow-wrap:break-word;color:#233a4a;background:#fff4d6;border:2px solid #365b66;box-shadow:3px 4px #102d3dbb;
+ padding:6px 8px;font:800 10px/1.35 system-ui;animation:pw35-speech-in .18s steps(2,end)}
+/* Asset sheets are explicitly keyed by fixed character ID, never their job role. */
+#pw3OfficeAgents .pw3-person.pw35-talking:not(.walking):not(.working):not(.pw3-sprite-missing){background-image:var(--pw35-talk)!important;background-size:192px 68px!important;animation:pw35-sprite .52s steps(4,end) infinite!important}
+#pw3OfficeAgents .pw3-person.pw35-celebrating:not(.pw3-sprite-missing){background-image:var(--pw35-celebrate)!important;background-size:192px 68px!important;animation:pw35-sprite .56s steps(4,end) infinite!important;filter:drop-shadow(0 0 6px #ffe8a6)}
+@keyframes pw35-sprite{to{background-position:-192px 0}}
+@keyframes pw35-star-twinkle{to{opacity:.48}}
+@keyframes pw35-cloud-drift{to{transform:translateX(29%)}}
+@keyframes pw35-lamp{to{transform:translate(-50%,-50%) scale(1.12);opacity:.72}}
+@keyframes pw35-speech-in{from{opacity:0;transform:translate(-50%,3px)}to{opacity:1;transform:translate(-50%,-8px)}}
+/* Foundation A+B: a single visual language for the actual v3 game dialogs.
+   UI is still kept modular: no rewrites of the job or employee components. */
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog)[open]{
+  color:var(--pw35-ink)!important;background:var(--pw35-paper)!important;
+  border:5px solid var(--pw35-edge)!important;outline:4px solid var(--pw35-frame)!important;
+  box-shadow:9px 10px 0 #07182dc9!important;border-radius:2px!important;
+  scrollbar-color:#9e754b #f3e6cb;scrollbar-width:thin;
+  font-family:system-ui,sans-serif!important;font-size:14px!important;
+}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) :is(.pw3-head,header){background:#153951!important;color:#fff4d8!important;border-bottom:4px solid #c69a59!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) :is(.pw3-head,header) h2{font-size:clamp(19px,2vw,25px)!important;line-height:1.2!important;color:#fff4d8!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) :is(.pw3-body,.pw33-body,.pw34-body){background:var(--pw35-paper)!important;color:var(--pw35-ink)!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) :is(.pw3-card,.pw34-card,.pw33-card,article){border-color:#bca789!important;background:#fff9e9!important;color:var(--pw35-ink)!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) :is(button,select,textarea,input){font-family:system-ui,sans-serif!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) button{min-height:44px!important;border-radius:2px!important;transition:filter .12s ease,transform .12s steps(2,end)}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) button:not(:disabled):active{transform:translate(1px,1px)}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) button:focus-visible{outline:3px solid var(--pw35-focus)!important;outline-offset:3px!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) :is(button.pw3-green,button.primary){background:#347f68!important;border-color:#195d4e!important;color:#fff9e7!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) :is(button.pw3-blue,button.secondary){background:#285d7b!important;border-color:#153d55!important;color:#fff9e7!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) :is(select,textarea,input){border-color:#819a9b!important;background:#fffef7!important;color:#20384b!important;border-radius:2px!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) :is(.pw3-sub,header small){color:#c3e5e0!important}
+:is(#pw3Dialog,#pw33Dialog,#pw34Dialog) :is(.pw3-tag,.pw34-tag){border-color:#82aaa0!important}
+@media(max-width:720px){
+ #pw35-clock{left:6px;bottom:7px;padding:5px 7px;max-width:calc(100% - 12px);font-size:10px;gap:4px}
+ #pw35-clock .pw35-btn{min-height:42px;font-size:10px}
+ :is(#pw3Dialog,#pw33Dialog,#pw34Dialog)[open]{inset:0!important;width:100vw!important;max-width:100vw!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;border:0!important;outline:0!important;box-shadow:none!important}
+ :is(#pw3Dialog,#pw33Dialog,#pw34Dialog) :is(.pw3-body,.pw33-body,.pw34-body){padding:12px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #pw35-atmosphere *,#pw3OfficeAgents .pw35-speech,#pw3OfficeAgents .pw35-talking,#pw3OfficeAgents .pw35-celebrating{animation:none!important;transition:none!important}
+}
+
+#officeStage.pw35-motion-off #pw35-atmosphere *, #officeStage.pw35-motion-off #pw3OfficeAgents .pw35-talking, #officeStage.pw35-motion-off #pw3OfficeAgents .pw35-celebrating{animation:none!important;transition:none!important}
+
+#officeStage.pw35-motion-off #pw3OfficeAgents .pw3-person{left:var(--pw35-home-x)!important;top:var(--pw35-home-y)!important;animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){#officeStage #pw3OfficeAgents .pw3-person{left:var(--pw35-home-x)!important;top:var(--pw35-home-y)!important;animation:none!important;transition:none!important}}

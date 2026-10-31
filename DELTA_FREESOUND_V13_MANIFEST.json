@@ -1,0 +1,40 @@
+{
+  "type": "delta",
+  "version": "1.3",
+  "base_repo": "jwestholm/pixelworks",
+  "base_branch": "dev",
+  "base_git_commit": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires_locally_installed_deltas": [
+    "Freesound v1",
+    "Integrerad Ljudstudio v1.1",
+    "Verktygssystem & QA v1.2"
+  ],
+  "install_into": "project root (contains index.html)",
+  "replaces": [
+    "backend/pw_freesound.py",
+    "src/pw-freesound.js"
+  ],
+  "new": [
+    "backend/test_pw_freesound_hotfix.py"
+  ],
+  "entries": {
+    "backend/pw_freesound.py": {
+      "sha256": "5ce905f866b058b0955904283dca6013252643925853d4f75942a3236ff97877",
+      "bytes": 38301,
+      "expected_v1_2_sha256": "7165b9247c3232add9baffc111800dded1ec290e33b7f8bc02b0a5fa46aa49d2"
+    },
+    "src/pw-freesound.js": {
+      "sha256": "15dad0da3680ffaded0f4beee3c724051092bc37b013c140293bc3205824e85e",
+      "bytes": 17734,
+      "expected_v1_2_sha256": "12853a30b9eb5e29965841c98a321486ff1f13ec27c7561c9c519bae5579305d"
+    },
+    "backend/test_pw_freesound_hotfix.py": {
+      "sha256": "83bc9bc01f2e7ce11c5b0a9e68bb909527e70cbe1e6470f0127c3144ce36af37",
+      "bytes": 9687
+    },
+    "DELTA_FREESOUND_V13_README.md": {
+      "sha256": "531d1b96edd074b72acf207ae077d2ff3ebc0918ad691340efe00db7d9f2d3fa",
+      "bytes": 6080
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "project": "jwestholm/pixelworks",
+  "branch": "dev",
+  "base_commit": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "base_commit_message": "2026-10-29 #1",
+  "extract_to": "project root (index.html folder)",
+  "changes": [
+    {"path":"src/main.js", "action":"modify", "base_git_blob_sha":"dd29e6a3c589704db10c642bd3057651479986c4"},
+    {"path":"backend/server.py", "action":"modify", "base_git_blob_sha":"b724a56ea1e53ec70481571251fa3c281cf4507a"},
+    {"path":"src/pw-freesound.js", "action":"add"},
+    {"path":"backend/pw_freesound.py", "action":"add"},
+    {"path":"backend/test_pw_freesound.py", "action":"add"},
+    {"path":"DELTA_FREESOUND_README.md", "action":"add"},
+    {"path":"DELTA_FREESOUND_MANIFEST.json", "action":"add"}
+  ],
+  "claims": {
+    "tested_offline": true,
+    "real_provider_api_calls": false,
+    "real_freesound_network_calls": false,
+    "git_push_or_repo_modifications": false,
+    "original_audio_download": false,
+    "preview_audio_download_after_approval": true
+  }
+}

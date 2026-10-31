@@ -1,0 +1,61 @@
+{
+  "name": "Pixel Works – Gemensamma dialoger v1.8",
+  "base": {
+    "repository": "jwestholm/pixelworks",
+    "branch": "dev",
+    "sha": "fb70d1c9a927e07e802537c83705db5b8f9876cd"
+  },
+  "requires": "Previous local installed deltas through Beslutslapp CSP Ljud v1.7",
+  "changed_existing_code": [
+    "src/main.js",
+    "src/pw-freesound.js",
+    "src/pw-media-review.js"
+  ],
+  "new_code": [
+    "src/pw-dialog-hub.js"
+  ],
+  "no_server_changes": true,
+  "github_push": false,
+  "files": [
+    {
+      "path": "src/main.js",
+      "sha256": "eb15c26fd60bb841cfab918eacb81fa825e4742d0f213bc25d8bc471ef3aa628",
+      "bytes": 4464
+    },
+    {
+      "path": "src/pw-freesound.js",
+      "sha256": "7bb12b31824ef01682ab4e57617cdd9cbb10e2b9928b0cee241de25b7d13572c",
+      "bytes": 13028
+    },
+    {
+      "path": "src/pw-media-review.js",
+      "sha256": "9e1a42127f5a34d7a8e527659fce2a5907816e3763580d4933a808c0b816ca4a",
+      "bytes": 36032
+    },
+    {
+      "path": "src/pw-dialog-hub.js",
+      "sha256": "04e27af95a2a2c5d1f230af59b8d638e6696378cb79f6d7a38ce9df9888663b6",
+      "bytes": 7729
+    },
+    {
+      "path": "tests/browser_dialog_hub.py",
+      "sha256": "026d9201245e7250b1e046e9d643022404209498c0d97518395d121451311230",
+      "bytes": 7104
+    },
+    {
+      "path": "tests/browser_dialog_mobile.py",
+      "sha256": "1b8f5b1872f77e17f9482c398dcaaef19b5dd66db07993a72b6c9e976e59972f",
+      "bytes": 1583
+    },
+    {
+      "path": "DELTA_DIALOGHUB_V18_README.md",
+      "sha256": "77e659bf59c1f7dcc98fb0fdad46bff7d706a93ac1bccf3759293d36f3edaa10",
+      "bytes": 5202
+    },
+    {
+      "path": "DELTA_DIALOGHUB_V18_NOW_NEXT_LATER.md",
+      "sha256": "62b57a8c4c5dc9ec25cb3fabcb58aba0492cac4f2ae073343b7cc630004d9da1",
+      "bytes": 1623
+    }
+  ]
+}

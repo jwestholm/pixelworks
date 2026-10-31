@@ -1,0 +1,23 @@
+{
+  "version": "v2.8",
+  "git_base": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "depends_on": "v2.7",
+  "files": {
+    "src/main.js": {
+      "sha256": "f7da1e4912523edaea93bad62318b3e7875386a4992b5b3065ffee87d379bece",
+      "bytes": 4886
+    },
+    "src/pw-global-people-v28.js": {
+      "sha256": "126889f0ec497612d3871e3a264500880ed136266102e3fbc725abdc6e444c6a",
+      "bytes": 11066
+    },
+    "tests/test_global_people_v28_ui.py": {
+      "sha256": "10868d2fb0f7703566e771d60767ef113036e1fd7f31744a2a9a646d51b74749",
+      "bytes": 7336
+    },
+    "DELTA_GLOBAL_PERSONALMENY_V28_README.md": {
+      "sha256": "41f94d8675241bba909504145a7ccda79e1d837b448c659e66934396850b656a",
+      "bytes": 5406
+    }
+  }
+}

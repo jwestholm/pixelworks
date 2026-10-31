@@ -1,0 +1,22 @@
+{
+  "release": "2.6.1",
+  "base": "Pixel Works v2.6",
+  "git_base_sha": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "files": [
+    {
+      "path": "src/pw-global-office-v26.js",
+      "sha256": "5d2134ad5cbbe24592e966d8f4059e5ba7d56bfa75e095355037f35c5c9bc94f",
+      "bytes": 15153
+    },
+    {
+      "path": "tests/test_transparent_sprite_v261.py",
+      "sha256": "dce19f8755984a5fbccaa49c3a1e4d8237b4aaad9bb1bd833f4915ebb7456f62",
+      "bytes": 8313
+    },
+    {
+      "path": "DELTA_SPRITE_TRANSPARENS_OCH_PROJEKTRAKNARE_V261_README.md",
+      "sha256": "c37a63ffff1d472068e735968165edcb5bee6f41b92bba964946562173088edb",
+      "bytes": 2674
+    }
+  ]
+}

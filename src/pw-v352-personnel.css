@@ -1,0 +1,60 @@
+/* Pixel Works 3.5.2 - Staff & profile visual rework. No duplicated navigation. */
+#pw3Dialog .pw352-team,#pw3Dialog .pw352-profile{color:#254254}
+#pw3Dialog .pw352-kicker{font:900 11px/1.3 system-ui,sans-serif;letter-spacing:.07em;color:#567280;display:block}
+#pw3Dialog .pw352-team-head{display:flex;align-items:center;justify-content:space-between;gap:16px;
+ padding:13px 17px;margin-bottom:13px;border:3px solid #926e43;background:#fff6df;box-shadow:3px 3px 0 #c4ac84}
+#pw3Dialog .pw352-team-head h3{margin:4px 0 5px;color:#23465a;font:900 clamp(20px,2.6vw,29px)/1.2 system-ui}
+#pw3Dialog .pw352-team-head p{margin:0;color:#4e6871;font-size:13px;line-height:1.4}
+#pw3Dialog .pw352-count{display:inline-block;vertical-align:middle;border:2px solid #4e847f;background:#d9ecdf;
+ padding:3px 8px;font-size:12px;color:#245653;white-space:nowrap}
+#pw3Dialog .pw352-team-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#pw3Dialog .pw352-person-card{min-width:0;display:flex;flex-direction:column;gap:9px;padding:14px;
+ background:#fffdf3;border:4px solid #886849;box-shadow:4px 5px 0 #b8a484;color:#1f3e4a;position:relative}
+#pw3Dialog .pw352-person-card:hover{border-color:#417e8b;box-shadow:4px 5px 0 #6eabb2}
+#pw3Dialog .pw352-card-top{display:grid;grid-template-columns:clamp(82px,10vw,118px) minmax(0,1fr);gap:13px;align-items:center}
+#pw3Dialog .pw352-avatar{height:135px;display:grid;place-items:center;border:3px solid #31526a;background:#cae5d7;
+ box-shadow:3px 3px 0 #c8b07f;overflow:hidden}
+#pw3Dialog .pw352-avatar svg{height:128px;width:110px;image-rendering:pixelated}
+#pw3Dialog .pw352-card-intro{min-width:0;display:grid;gap:5px;align-content:center}
+#pw3Dialog .pw352-card-intro h3{font:950 25px/1 system-ui;margin:2px 0;color:#18394d}
+#pw3Dialog .pw352-best{display:block;padding:6px 8px;color:#20523d;border-left:4px solid #388b68;
+ background:#d7eddd;font:850 12px/1.3 system-ui}
+#pw3Dialog .pw352-bio{display:block;font-size:12px;color:#526972}
+#pw3Dialog .pw352-speech{border:2px solid #8eaaa7;background:#eaf5f0;color:#304b56;
+ margin:0;padding:8px 11px;font:italic 650 13px/1.4 Georgia,serif;min-height:54px}
+#pw3Dialog .pw352-skills{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+#pw3Dialog .pw352-skill{border:1px solid #b5bfab;background:#f0e9d5;font-size:11px;padding:4px 7px}
+#pw3Dialog .pw352-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#pw3Dialog .pw352-actions button{font-size:12px;padding:7px 9px;min-height:44px}
+#pw3Dialog .pw352-company-rules{margin:17px 0 9px;border:2px solid #a9b7aa;background:#f1f1e7;padding:11px}
+#pw3Dialog .pw352-company-rules summary,#pw3Dialog .pw352-expand summary{cursor:pointer;font-weight:850;color:#2d5e64}
+#pw3Dialog .pw352-source{color:#526b72;font-size:11px;margin-top:10px;line-height:1.4}
+/* Profile uses same portrait, palette, headings and actions. */
+#pw3Dialog .pw352-profile-grid{display:grid;grid-template-columns:minmax(240px,35%) minmax(0,1fr);gap:15px;margin-top:12px}
+#pw3Dialog .pw352-profile-hero{background:#f7edcf;border:4px solid #866746;padding:14px;min-width:0}
+#pw3Dialog .pw352-profile-portrait{background:#cce4d7;border:3px solid #31526a;display:grid;place-items:center;min-height:182px;margin:0 0 10px}
+#pw3Dialog .pw352-profile-portrait svg{height:170px;width:165px;image-rendering:pixelated}
+#pw3Dialog .pw352-profile-hero h3{font:950 29px/1.1 system-ui;color:#23445b;margin:4px 0 9px}
+#pw3Dialog .pw352-profile-facts{font-size:12px;color:#47626a}
+#pw3Dialog .pw352-profile-work{background:#fffbeb;border:3px solid #a4b8aa;padding:15px;min-width:0}
+#pw3Dialog .pw352-work-head{border-bottom:3px solid #b4b5a0;padding-bottom:7px;margin-bottom:12px}
+#pw3Dialog .pw352-work-head h3{font-size:22px;margin:3px 0;color:#254a5d}
+#pw3Dialog .pw352-work-head p{font-size:12px;margin:0;color:#506771}
+#pw3Dialog .pw352-profile-work>label{display:block;margin:12px 0}
+#pw3Dialog .pw352-profile-work>label b{display:block;margin-bottom:5px}
+#pw3Dialog .pw352-profile-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+#pw3Dialog .pw352-expand{padding:10px;border:2px solid #a8bdb3;margin-top:10px;background:#f0f3e8;overflow-wrap:anywhere}
+#pw3Dialog .pw352-expand .pw3-bars{margin-top:12px}
+#pw3Dialog .pw352-prompt{white-space:pre-wrap;overflow-wrap:anywhere;background:#fbfbf8;padding:9px;max-height:200px;overflow:auto;font:11px/1.5 ui-monospace,monospace}
+@media(max-width:840px){#pw3Dialog .pw352-team-grid{grid-template-columns:1fr}#pw3Dialog .pw352-profile-grid{grid-template-columns:1fr}}
+@media(max-width:720px){
+ #pw3Dialog .pw352-team-head{padding:12px;align-items:stretch;flex-direction:column}
+ #pw3Dialog .pw352-team-head>button{width:100%}
+ #pw3Dialog .pw352-card-top{grid-template-columns:88px minmax(0,1fr);gap:11px}
+ #pw3Dialog .pw352-person-card{padding:10px}
+ #pw3Dialog .pw352-avatar{height:111px}#pw3Dialog .pw352-avatar svg{height:108px;width:85px}
+ #pw3Dialog .pw352-card-intro h3{font-size:21px}
+ #pw3Dialog .pw352-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #pw3Dialog .pw352-speech{min-height:0}
+ #pw3Dialog .pw352-profile-work{padding:11px}
+}

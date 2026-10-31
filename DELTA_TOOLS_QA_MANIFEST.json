@@ -1,0 +1,58 @@
+{
+  "package": "Pixel Works – Tool Bridge + QA handoff v1.2",
+  "base_branch": "dev",
+  "base_commit": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": [
+    "Freesound v1 delta on dev fb70d1c",
+    "Freesound v1.1 delta"
+  ],
+  "install_root": "project root containing index.html",
+  "files": [
+    {
+      "path": "backend/server.py",
+      "sha256": "834a73789ebb4da1de238b10aa4a8129454e0937aac908b2ba585891ffa41e8d",
+      "bytes": 2494,
+      "operation": "replace",
+      "expected_prior_sha256": "1fbbc1b25afbbeb5b90162208a7fbc20eadee871bdeaee89f812ef77b0871a76"
+    },
+    {
+      "path": "backend/pw_freesound.py",
+      "sha256": "7165b9247c3232add9baffc111800dded1ec290e33b7f8bc02b0a5fa46aa49d2",
+      "bytes": 31995,
+      "operation": "replace",
+      "expected_prior_sha256": "4a3932a405d18fca1c951268aa7ebf25ab5b08094bb5c52005431baadbd81904"
+    },
+    {
+      "path": "backend/pw_tool_registry.py",
+      "sha256": "53af96d169de05fda5df9591cc3036d33962ac506052bc939752ee024f56cef4",
+      "bytes": 5100,
+      "operation": "add"
+    },
+    {
+      "path": "backend/pw_qa_handoff.py",
+      "sha256": "146835767d70618abed5cd02b2b2e6ddc05295e7856b19661dd6213b956d61f0",
+      "bytes": 4326,
+      "operation": "add"
+    },
+    {
+      "path": "backend/test_pw_toolbridge_v3.py",
+      "sha256": "854458467ef8261a014edbe68d0cf7f1c2d499e00a905e5b536d9835372693fe",
+      "bytes": 4896,
+      "operation": "add"
+    },
+    {
+      "path": "src/pw-freesound.js",
+      "sha256": "12853a30b9eb5e29965841c98a321486ff1f13ec27c7561c9c519bae5579305d",
+      "bytes": 17053,
+      "operation": "replace",
+      "expected_prior_sha256": "fe76907eb1ed0cdb1bfa62737be20404a1f92337d8f8e910f29cdf35b9631a8e"
+    },
+    {
+      "path": "DELTA_TOOLS_QA_README.md",
+      "sha256": "00fc44a80ab42512161ad311d3f113922fa7b482cedd3aa061ac4c6a0898ad32",
+      "bytes": 6469,
+      "operation": "add"
+    }
+  ],
+  "external_actions": "none"
+}

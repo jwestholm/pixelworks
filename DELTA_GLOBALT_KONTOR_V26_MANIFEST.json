@@ -1,0 +1,13 @@
+{
+  "name": "Pixel Works – Globalt kontor v2.6",
+  "base": "jwestholm/pixelworks dev fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": "Pixel Works v2.5 global registry activated",
+  "files": {
+    "src/main.js": "ac21fcc67eadd9108dd351015f3c2decd7b2ae1268a516eed54a74a227a19a28",
+    "src/pw-global-office-v26.js": "6ca4c0d31844bd60d620e680fa7c05cc6204e0d002674215c95e65c5af882460",
+    "tests/test_global_office_v26.py": "5578d44e9e34e710050f7bfa14e39a510aee4a93bb2253840fd134239f55e5c6",
+    "DELTA_GLOBALT_KONTOR_V26_README.md": "b9504c1dd400aec1e4ec466e454aa643c5d4fea7d64752cd657690a1e480f4bc"
+  },
+  "no_project_data": true,
+  "no_server_restart": true
+}

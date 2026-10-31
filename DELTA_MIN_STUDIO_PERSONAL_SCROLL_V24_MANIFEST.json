@@ -1,0 +1,38 @@
+{
+  "version": "v2.4",
+  "base_branch": "dev",
+  "base_commit": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires_delta": "v2.3",
+  "safe_readonly_on_load": true,
+  "files": [
+    {
+      "path": "src/main.js",
+      "sha256": "13bd73d7f8931ae66d96748662c01d8afcd39591f502827a025203d750b91e03",
+      "bytes": 4740
+    },
+    {
+      "path": "src/pw-studio-roster-v24.js",
+      "sha256": "2abb9aac842817dd015cee3965d608ff6a52ac72e480e35df7830d680f13cb6c",
+      "bytes": 13369
+    },
+    {
+      "path": "tests/browser_roster_v24.py",
+      "sha256": "8739d53d2c560b8bb078d9749548024ce7bc4a888f84220866ed720d16ec14e5",
+      "bytes": 9300
+    },
+    {
+      "path": "DELTA_MIN_STUDIO_PERSONAL_SCROLL_V24_README.md",
+      "sha256": "62a57382dc3104263b5589dc7b12eef16de35983f39ac8940e0b4bf06d961f40",
+      "bytes": 4814
+    }
+  ],
+  "changes": [
+    "frontend studio roster scroll/search/filters",
+    "explicit double-confirm dismissal through existing backend"
+  ],
+  "not_included": [
+    "destructive personnel migration",
+    "synchronization server refactor",
+    "GitHub push"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "version": "3.4",
+  "base_git_dev": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": "v3.3 + v3.2 sprite assets",
+  "files": {
+    "backend/server.py": "af15f7ce6e92a91c03648c178fef38fee4f4d00f780157f1a183802580cca845",
+    "backend/pw_v3_chief.py": "9b9a217a45c9ce7b1858ebdb6541ca2be32eb285279d438bbeb29fc600d3ea60",
+    "backend/test_pw_v3_chief.py": "d89736b6144221a300fbf278957c68eaf91370ff5309863c3a158ec6c2767164",
+    "src/main.js": "410d69ce19c13585ff4adb3e55919ff3d0cbf413e67cc5802656a5f0ce565cef",
+    "src/pw-v3-chief.js": "3ceb8da9b4e14038dd4447c52e9d5ed825b936afb70df0dc7cf7352504b06570",
+    "src/pw-v3-jobs.js": "fb458349bfcbe28a6cc614211804ec63ce7c1aa59aa5af2edf13eab40fcd7374",
+    "src/pw-v3-recruit.js": "d711583936b3b54dd127bb525c986575af0a78add084b998dd8a481a61ef7d79",
+    "tests/test_pw_v34_ui.py": "35950b6dfa1b634416e574913e744e48e8fd615e6b7883dcd05b8dee9d8fdb25",
+    "docs/PIXELWORKS_V34_NOW_NEXT_LATER.md": "d1065e1e13e4046f0db5ce01d7790bb98d333853c19782ca79aca2fbf498005d",
+    "DELTA_PIXELWORKS_V34_CHEFEN_KONTOR_README.md": "334135bb7fb9d31a55725d17b52f07f9f2c2f0520d10a6c90344f657529d36e9"
+  },
+  "notes": "No old staff migration, no AI calls or project changes during installation"
+}

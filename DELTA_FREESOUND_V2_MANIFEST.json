@@ -1,0 +1,24 @@
+{
+  "baseline_repo": "jwestholm/pixelworks",
+  "baseline_branch": "dev",
+  "baseline_commit": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires_previous_delta": "PixelWorks_Freesound_Ljudstudion_v1_DEV_fb70d1c_DELTA.zip",
+  "install_location": "project root (beside index.html)",
+  "modified": [
+    "src/pw-freesound.js",
+    "backend/pw_freesound.py"
+  ],
+  "new": [
+    "backend/test_pw_freesound_v2.py",
+    "DELTA_FREESOUND_V2_README.md",
+    "DELTA_FREESOUND_V2_MANIFEST.json"
+  ],
+  "files_sha256": {
+    "src/pw-freesound.js": "fe76907eb1ed0cdb1bfa62737be20404a1f92337d8f8e910f29cdf35b9631a8e",
+    "backend/pw_freesound.py": "4a3932a405d18fca1c951268aa7ebf25ab5b08094bb5c52005431baadbd81904",
+    "backend/test_pw_freesound_v2.py": "64efa5e61af4512c60419dd67856a4a8623ea706110c181d57e121484de8ccc7",
+    "DELTA_FREESOUND_V2_README.md": "eef3f58966910de44e13c945fb4453bee96201fb40e3c6b6200ff8abe0b86588"
+  },
+  "real_ai_calls_during_creation": 0,
+  "real_freesound_calls_during_creation": 0
+}

@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "art_version": "v3.1",
+  "purpose": "Canonical visual identity for eventual sprite animation; documentation, NOT live character data",
+  "source_sha256": {
+    "personas_json": "841646c7d5bde04a549659cbaebdb850ae523b83e1fde3f7f4e2af6c93a40c28",
+    "portrait_js": "59ae987ae5c58ffe893c7a59e3df696b8133fdbb1225dfb4820b3e2a00f9fa2b",
+    "six_faces_reference_png": "fa7de81fa809440846030dbc196ca280767f15335b737f5ae86c70e43fb936d5"
+  },
+  "canonical_source_paths": [
+    "backend/pw_v3_personas.json",
+    "src/pw-v3-recruit.js"
+  ],
+  "reference_image": "assets/character-reference/v31-six-faces-reference.png",
+  "characters": [
+    {
+      "id": "chef",
+      "name": "Chefen",
+      "portrait_key": "chef",
+      "characteristic": "Kort prydlig frisyr, välordnad uppsyn, markerad kontorsskjorta med slipsliknande detalj.",
+      "signature": "lead",
+      "skin": "#efc09f",
+      "shirt": "#385e6c",
+      "hair": "#b19a76",
+      "palette_base": [
+        "#efc09f",
+        "#385e6c",
+        "#b19a76"
+      ],
+      "reference": {
+        "kind": "inline_svg",
+        "path": "src/pw-v3-recruit.js",
+        "function": "portrait(c)",
+        "character_file": "backend/pw_v3_personas.json"
+      },
+      "fixed_person_identity": true,
+      "role_independent": true
+    },
+    {
+      "id": "joppe",
+      "name": "Joppe Nyström",
+      "portrait_key": "joppe",
+      "characteristic": "Röd keps med gul detalj, mörka sidolockar, blå jacka/tröja och ett brett, kaxigt leende.",
+      "signature": "cap",
+      "skin": "#f1c191",
+      "shirt": "#50618a",
+      "hair": "#fa895e",
+      "palette_base": [
+        "#f1c191",
+        "#50618a",
+        "#fa895e"
+      ],
+      "reference": {
+        "kind": "inline_svg",
+        "path": "src/pw-v3-recruit.js",
+        "function": "portrait(c)",
+        "character_file": "backend/pw_v3_personas.json"
+      },
+      "fixed_person_identity": true,
+      "role_independent": true
+    },
+    {
+      "id": "siv",
+      "name": "Siv Paragraf",
+      "portrait_key": "siv",
+      "characteristic": "Gråblå uppsatt frisyr med högre hårtopp på ena sidan, fyrkantiga glasögon, lila överdel.",
+      "signature": "glasses",
+      "skin": "#eac9a7",
+      "shirt": "#665477",
+      "hair": "#8eafc5",
+      "palette_base": [
+        "#eac9a7",
+        "#665477",
+        "#8eafc5"
+      ],
+      "reference": {
+        "kind": "inline_svg",
+        "path": "src/pw-v3-recruit.js",
+        "function": "portrait(c)",
+        "character_file": "backend/pw_v3_personas.json"
+      },
+      "fixed_person_identity": true,
+      "role_independent": true
+    },
+    {
+      "id": "nisse",
+      "name": "Nisse Genväg",
+      "portrait_key": "nisse",
+      "characteristic": "Kort kantig grön frisyr, markerat brunt skägg och mörk tröja med gul mittdetalj.",
+      "signature": "beard",
+      "skin": "#dba37b",
+      "shirt": "#4c4953",
+      "hair": "#9bbd82",
+      "palette_base": [
+        "#dba37b",
+        "#4c4953",
+        "#9bbd82"
+      ],
+      "reference": {
+        "kind": "inline_svg",
+        "path": "src/pw-v3-recruit.js",
+        "function": "portrait(c)",
+        "character_file": "backend/pw_v3_personas.json"
+      },
+      "fixed_person_identity": true,
+      "role_independent": true
+    },
+    {
+      "id": "mira",
+      "name": "Mira Byte",
+      "portrait_key": "mira",
+      "characteristic": "Lång asymmetrisk turkos frisyr, gul hårnål, liten rosig detalj på kinden, lila överdel.",
+      "signature": "pony",
+      "skin": "#f5c6ac",
+      "shirt": "#5c5075",
+      "hair": "#91c5c6",
+      "palette_base": [
+        "#f5c6ac",
+        "#5c5075",
+        "#91c5c6"
+      ],
+      "reference": {
+        "kind": "inline_svg",
+        "path": "src/pw-v3-recruit.js",
+        "function": "portrait(c)",
+        "character_file": "backend/pw_v3_personas.json"
+      },
+      "fixed_person_identity": true,
+      "role_independent": true
+    },
+    {
+      "id": "vera",
+      "name": "Vera Volt",
+      "portrait_key": "vera",
+      "characteristic": "Lila/rosa mössa/hårdetalj, stora gula hörlurar och mörkblå överdel.",
+      "signature": "headphones",
+      "skin": "#efb67b",
+      "shirt": "#375972",
+      "hair": "#b6a4d5",
+      "palette_base": [
+        "#efb67b",
+        "#375972",
+        "#b6a4d5"
+      ],
+      "reference": {
+        "kind": "inline_svg",
+        "path": "src/pw-v3-recruit.js",
+        "function": "portrait(c)",
+        "character_file": "backend/pw_v3_personas.json"
+      },
+      "fixed_person_identity": true,
+      "role_independent": true
+    },
+    {
+      "id": "lova",
+      "name": "Lova Sagofrö",
+      "portrait_key": "lova",
+      "characteristic": "Lång varmkorallfärgad frisyr/fläta, gult örhänge och grön överdel.",
+      "signature": "braid",
+      "skin": "#eac6a9",
+      "shirt": "#536955",
+      "hair": "#d98a7c",
+      "palette_base": [
+        "#eac6a9",
+        "#536955",
+        "#d98a7c"
+      ],
+      "reference": {
+        "kind": "inline_svg",
+        "path": "src/pw-v3-recruit.js",
+        "function": "portrait(c)",
+        "character_file": "backend/pw_v3_personas.json"
+      },
+      "fixed_person_identity": true,
+      "role_independent": true
+    }
+  ]
+}

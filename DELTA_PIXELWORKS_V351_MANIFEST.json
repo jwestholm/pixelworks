@@ -1,0 +1,15 @@
+{
+  "name": "Pixel Works 3.5.1 Gemensamma speldialoger",
+  "base_version": "3.5.0",
+  "git_base": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "ai_calls": false,
+  "data_migrations": false,
+  "files": {
+    "src/main.js": "76d3703277d224cf69f14cf74ce986f0155e1b61f72f07f938517e7077611297",
+    "src/pw-v351-dialogs.js": "02bf56b17c07106ab01a92819716d83471a60887009f49ad038b9494b82d571a",
+    "src/pw-v351-dialogs.css": "2080c70bf722aad135ba521d1f8d44b3613c5567cc6926fa7983d8e4633faf86",
+    "tests/test_pw_v351_dialogs.py": "13a7f5ad6a90f562b4f5df5409ab07e2c3486e3521ec024eeb27fe8a07eba95a",
+    "docs/PIXELWORKS_V351_DIALOGSYSTEM.md": "20df44796288eedc8dc2fc5bcb97df1eb549dca1df5b91abffd3f7215f9e6c1a",
+    "DELTA_PIXELWORKS_V351_DIALOGER_README.md": "97ee4f396e75171d5998957f4e81751f8f3d838f176c1622808c947e1c8fab1c"
+  }
+}

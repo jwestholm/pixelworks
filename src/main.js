@@ -3,6 +3,23 @@ import { GameUI } from './ui.js';
 import { DemoSimulation } from './simulation.js';
 import { StudioMenus } from './studio.js';
 import './pw-cafe-images.js';
+import './pw-freesound.js';
+import './pw-media-review.js';
+import './pw-dialog-hub.js';
+import './pw-provider-presence.js';
+import './pw-agent-help-bridge.js';
+// Pixel Works v3 recruitment replaces legacy project-staff UI, not worker objects.
+import './pw-v3-recruit.js';
+import './pw-v3-jobs.js';
+import './pw-v3-chief.js';
+// v3.5 A+B pixel office: visual-only ambient cycle and shared dialog theme.
+import './pw-v35-world.js';
+// V3.5.1: one navigation controller for personnel, jobs, chief and review.
+import './pw-v351-dialogs.js';
+// v3.5.2: readable pixel-game personnel cards; CSS is served by the allowlisted backend.
+import './pw-v352-personnel.js';
+// V3.5.3: window-aligned ambient art and readable office placement controls.
+import './pw-v353-office.js';
 
 const model = new GameModel();
 const ui = new GameUI(model);
@@ -21,6 +38,7 @@ ui.bind({
     ui.selectedAgentId = null;
     ui.closeDrawer();
     ui.renderAll();
+    window.dispatchEvent(new Event('pixelworks:v3-office-refresh'));
     window.pixelWorksRefreshOrders?.(projectId);
     ui.toast(`Projektvärld: ${model.project.title}`);
   },
@@ -57,7 +75,12 @@ ui.bind({
     ui.showSpeech(model.getLead(), `${result.agent.name} tar ${result.task.requiredSkill}.`);
     ui.toast(`${result.task.title} → ${result.agent.name}`);
   },
-  onTalk(id){studio.talk(id);},
+  onTalk(id){
+    if(model.project.live && window.pixelWorksTalkOrHelpLive){
+      window.pixelWorksTalkOrHelpLive(model.activeProjectId,id,model.getAgent(id));return;
+    }
+    studio.talk(id);
+  },
   onStationClick(id){studio.station(id);},
   onSkills(id){studio.skills(id);},
   onClearEvents() { model.clearEvents(); ui.renderEvents(); },
@@ -70,7 +93,7 @@ model.sendIdleToCafe();
 ui.renderAll();
 studio.bind();
 simulation.start();
-window.pixelWorksApplyLive = (projects,staffById,available)=>{const active=model.activeProjectId;ui.resetWalks();model.loadLiveProjects(projects);for(const p of projects)model.setLiveStaff(p.id,staffById[p.id]||[],available);if(projects.some(p=>p.id===active))model.activeProjectId=active;ui.closeDrawer();ui.renderAll();simulation.setRunning(false);};
+window.pixelWorksApplyLive = (projects,staffById,available)=>{const active=model.activeProjectId;ui.resetWalks();model.loadLiveProjects(projects);for(const p of projects)model.setLiveStaff(p.id,staffById[p.id]||[],available);if(projects.some(p=>p.id===active))model.activeProjectId=active;ui.closeDrawer();ui.renderAll();simulation.setRunning(false);window.dispatchEvent(new Event('pixelworks:v3-office-refresh'));};
 window.pixelWorksAgentTravel=(agentId,station,state)=>{if(!model.project.live)return;const agent=model.project.agents.find(a=>a.id===agentId);if(!agent)return;agent.status=state==='running'?'working':'idle';agent.activity=state==='running'?'code':'cafe';if(ui.walkTo(agent.id,station,()=>ui.renderAgents()))ui.renderAgents();};
 // Pratbubblor för faktiska Codex-sessioner. Texten är UI-tolkningar av logghändelser,
 // aldrig fria påståenden om att en bugg har verifierats som löst.

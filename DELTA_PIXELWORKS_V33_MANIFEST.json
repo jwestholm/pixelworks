@@ -1,0 +1,55 @@
+{
+  "name": "PixelWorks_V33_PERSONAS_RIKTIGA_AI_JOBB",
+  "based_on": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": "v3.2 installed",
+  "auto_ai_runs_on_install": false,
+  "github_push": false,
+  "tests": {
+    "backend": 37,
+    "chromium_new": 5,
+    "chromium_prior_regression": "6 desktop/mobile flows",
+    "actual_provider_calls": 0
+  },
+  "files": {
+    "backend/server.py": {
+      "bytes": 3814,
+      "sha256": "da321d02863c333c5b7cdbfcd2d9983ef1a79b9a674b9f47ab144fef86620374"
+    },
+    "backend/pw_v3_jobs.py": {
+      "bytes": 20906,
+      "sha256": "c41041daf1309b7e7d77cc68ea9dff5f1908745a8b3543240a364d97ed5cce1a"
+    },
+    "backend/test_pw_v3_jobs.py": {
+      "bytes": 15596,
+      "sha256": "d5e8c75d3934a36d044fd42efc5df10ade5ea755ae80bf2ae4e2219105053300"
+    },
+    "backend/test_pw_v33_routes.py": {
+      "bytes": 3854,
+      "sha256": "4a0201cf46c7d18145b3f920f10635155e7cc983bd5365b00deab15f81c15f48"
+    },
+    "src/main.js": {
+      "bytes": 4843,
+      "sha256": "3b1c3fd17960537b8fb9d330c774c046b90c71b43048a32c84feb19d4da8b42a"
+    },
+    "src/pw-v3-recruit.js": {
+      "bytes": 38216,
+      "sha256": "1210aa072ec5180281264fd481a42395791110505956226985a79c8632c58bf6"
+    },
+    "src/pw-v3-jobs.js": {
+      "bytes": 14178,
+      "sha256": "0a37458b9cf6c8297f02b3880198116448b73ea68854e643c9416d3e65306a85"
+    },
+    "tests/test_pw_v33_ui.py": {
+      "bytes": 7141,
+      "sha256": "0291a73611151b2c589d13ec99a58ffcb7062b65e6e82881b712d5a28e0dc900"
+    },
+    "docs/PIXELWORKS_V33_NOW_NEXT_LATER.md": {
+      "bytes": 2660,
+      "sha256": "b77932c62c88ea5400371bd869baf269f4c029dd11ec9b2471391e4ee18a0980"
+    },
+    "DELTA_PIXELWORKS_V33_PERSONA_AI_JOBB_README.md": {
+      "bytes": 6956,
+      "sha256": "0c115f87583ad221faad55f8093c64c8770c7c26a1d931ca8fb8c12fd138e2e0"
+    }
+  }
+}

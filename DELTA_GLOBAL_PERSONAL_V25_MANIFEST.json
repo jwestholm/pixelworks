@@ -1,0 +1,24 @@
+{
+  "title": "Pixel Works – Global personal v2.5 safe migration",
+  "git_branch": "dev",
+  "git_commit": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "applies_on": "v2.4",
+  "tested": {
+    "python": 8,
+    "chromium": [
+      "desktop",
+      "mobile"
+    ],
+    "live": false
+  },
+  "behavior": "no automatic migrations or dismissals; explicit backup and activation",
+  "files": {
+    "backend/server.py": "55b197940c134c172861102e2316731f59c0770d0334b4d986a29ebc11de8652",
+    "backend/pw_global_staff_v25.py": "78f8f4860cf59edf4d9f3f2a5fef7387d4663c59c0d7c5b9be5ab1d78ebb2e3d",
+    "src/main.js": "24ce179e22740213cd819652d0d8da497ca2ded8100d5c93879680d35d8c2e85",
+    "src/pw-global-staff-v25.js": "b553ed9d9d0df0371480eada79841b57f1dce6ead45f1f4998308ce1550498ca",
+    "backend/test_pw_global_staff_v25.py": "6b750e2a7c50295ad421de367cec2309a0ff6a22094bb139636bf8362b001997",
+    "tests/browser_global_staff_v25.py": "dfec2d116d4736004723b8b233ac405e9d8532dbb8095cce6702ba65c039ccc2",
+    "DELTA_GLOBAL_PERSONAL_V25_README.md": "aca55405d9ad3892ace33662dbd0ec6f8fbe033de3df3ce271564ce8fa55cd88"
+  }
+}

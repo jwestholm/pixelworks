@@ -1,0 +1,20 @@
+{
+  "title": "Pixel Works – Personalläge Gemini v1.9",
+  "base_dev_commit": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": "Installed PixelWorks v1.8 + previous delta files",
+  "install": "extract ZIP at project root",
+  "modifies_existing_files": [
+    "src/main.js"
+  ],
+  "adds_files": [
+    "src/pw-provider-presence.js",
+    "tests/test_browser_presence.py",
+    "DELTA_PERSONALSTATUS_V19_README.md"
+  ],
+  "files": {
+    "src/main.js": "705ac0dd5a2532311276d9a5700d83f2b2f8d3daec0300e3f851f588f74c073c",
+    "src/pw-provider-presence.js": "39403198907b7369a3adb4b4a4671be09dddaa39644ea58c935ea1a21a9ff858",
+    "tests/test_browser_presence.py": "01e3d2036a4c4f041f907a53894b0c327609f5125135bbbc73d28407a2ca70ab",
+    "DELTA_PERSONALSTATUS_V19_README.md": "d9bd587b4b23a40935d06dec8c6c8178198220499400bdaba29cdd57675a00e0"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "version": "v1.4-private",
+  "repository": "jwestholm/pixelworks",
+  "branch": "dev",
+  "base_commit": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "overlay_base": "PixelWorks_Freesound_Codex_DNS_Kontrast_v1_3_fb70d1c_DELTA.zip",
+  "install": "Packa upp direkt i projektroten",
+  "modified": [
+    "backend/pw_freesound.py",
+    "src/pw-freesound.js"
+  ],
+  "added": [
+    "backend/test_pw_freesound_v14.py",
+    "DELTA_FREESOUND_PRIVAT_README.md",
+    "DELTA_FREESOUND_PRIVAT_MANIFEST.json"
+  ],
+  "files": {
+    "backend/pw_freesound.py": "2eaa635179aae363ab1a7e587d04db405486c6924f6689991fa5cbcf1e0c6ad2",
+    "src/pw-freesound.js": "8e863e7c2bab7dbf5e82298a881af695eb021cd17d96ac42de5aebd9c261c6f2",
+    "backend/test_pw_freesound_v14.py": "dda793979ca8e1a658186a072ac9d6d8647f84b79f6076e2d49caa1671434d99",
+    "DELTA_FREESOUND_PRIVAT_README.md": "7f359bb13953c25f39fc727271ce97812c5d8ad76b4b49965859dd794dd68c69"
+  },
+  "test_results": {
+    "private_and_search_tests": 9,
+    "existing_hotfix_tests": 13,
+    "toolbridge_qa_tests": 5,
+    "chromium_gui": "PASS"
+  },
+  "external_calls": 0,
+  "git_push": false
+}

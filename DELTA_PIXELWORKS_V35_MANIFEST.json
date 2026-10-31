@@ -1,0 +1,29 @@
+{
+  "package": "Pixel Works 3.5.0 A+B levande pixelstudio (first slice)",
+  "baseline": "fb70d1c9a927e07e802537c83705db5b8f9876cd + deltas through v3.4",
+  "no_provider_calls": true,
+  "no_backend_changes": true,
+  "files": {
+    "src/main.js": "30d0e89d073558ce1985547e98bbfcef9d7d3c7d5e0faaae8ff7b5dddd06e282",
+    "src/pw-v35-world.js": "0790744582c7f147a98ee206df00e110ade256be0d18f55b2433c614a8ef37c4",
+    "src/pw-v35-world.css": "e75cc76097c4831fe5ff3f52cc8fc0d25d89e306c0c2abc4ec7fb35f6b454fa0",
+    "tests/test_pw_v35_visual.py": "7fa3ad26494bc74d2266d1dff5abb14a43582b252ec1640ded534a1d4809df2b",
+    "tests/pw35-fixture.html": "1ea41214c839240ec9c7c9c1d52ea734ccd6ed388db147f9207f9b1e96873f9c",
+    "docs/PIXELWORKS_V35_A_PLUS_B_DESIGNSYSTEM.md": "7ea094a7a9879b9a2c897fc2a3cfda9222b4af5632f80f17d4699548d8f5b7c5",
+    "DELTA_PIXELWORKS_V35_A_PLUS_B_README.md": "c9617ae4e42a65ea600314a310b2685fe21fcedb353f975ccdef454885463118",
+    "assets/characters/chef/chef-talk.png": "e4c9519b756feade5f3bcc9803a692a86067e4ff04ed6dcb19ea661820ffdc4c",
+    "assets/characters/chef/chef-celebrate.png": "e11ed927187efbebda9d62a57fea81510a4d9ef1030fd408bf2deca6f27ba366",
+    "assets/characters/joppe/joppe-talk.png": "6400e47649975ccbdb42551aecc59e45971b512a21d6268d986ee921ba444614",
+    "assets/characters/joppe/joppe-celebrate.png": "49460f76abc63283f7728c3579c55b126e171fefad3b8002ae9ef59ad9d7eb78",
+    "assets/characters/siv/siv-talk.png": "25e720806886d5e03a827698096a4360020cb9accaa16d30d99ad6a25c0d86e7",
+    "assets/characters/siv/siv-celebrate.png": "c55bfc3e3f61a16edc1363dfbdb08c73fe1b8fc4fa3907116b13e44994540d53",
+    "assets/characters/nisse/nisse-talk.png": "75bc52fd2bb67741ab6e390e066334ac8803275c3da79c16e9d77c8063d83615",
+    "assets/characters/nisse/nisse-celebrate.png": "87552d7927349861bfe8d500777d229640d994365739094ca78a1bca2ddb23a3",
+    "assets/characters/mira/mira-talk.png": "0ffaa69d7dc99f2bc763c9de0286a4d76c18568a1bba946163eed6b8e80fff00",
+    "assets/characters/mira/mira-celebrate.png": "c636bc947607845825a6a3257155353e7a27a8bb8adc4c52ab47a94959e73f7f",
+    "assets/characters/vera/vera-talk.png": "70123daa186bbd39f85d7177f4ca8debcac96a468da89a0cae5b9ca15b7a9e81",
+    "assets/characters/vera/vera-celebrate.png": "82b49b99d2ee3d6dd9f2eb01031210305a6d6e68ce9cbc746800c26185908047",
+    "assets/characters/lova/lova-talk.png": "97a91e5a76e667814e00279ec5c15133c8c19bacae92f1976233920570b597ab",
+    "assets/characters/lova/lova-celebrate.png": "00e0532ee2ebd1cf76a778f8e205db320c00c3e7938fb2d57fdd0db3c8e20d54"
+  }
+}

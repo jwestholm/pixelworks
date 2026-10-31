@@ -1,0 +1,57 @@
+{
+  "package": "Pixel Works Beslutslappen v1.5",
+  "base_branch": "dev",
+  "base_commit": "fb70d1c9a927e07e802537c83705db5b8f9876cd",
+  "requires": [
+    "PixelWorks Freesound PRIVAT v1.4",
+    "PixelWorks ToolBridge QA v1.2"
+  ],
+  "overwrite_root": true,
+  "files": [
+    {
+      "path": "src/main.js",
+      "sha256": "b2c72c776b2ab69423955bae01c99cf05210b18e26e71715dd81a8ddaeeb4c37",
+      "bytes": 4435
+    },
+    {
+      "path": "src/pw-freesound.js",
+      "sha256": "ae4d35a0621b23df92a7496671910525c0ffc8bebb5e6777fc7f90067f4df5bd",
+      "bytes": 14173
+    },
+    {
+      "path": "src/pw-media-review.js",
+      "sha256": "9b7df68113238b427e021ba44799d4252f6e75b50b2efc06e0b30350bf8a9b8c",
+      "bytes": 24687
+    },
+    {
+      "path": "backend/server.py",
+      "sha256": "9cff8b9311b4106312ec0a33fe6d8067c6c36d4be7d9c11339a37930dcefd1d6",
+      "bytes": 2862
+    },
+    {
+      "path": "backend/pw_media_review.py",
+      "sha256": "1c145fd6308fde47b539746d53bf66e99574bb62c01bc764d45ab7d1c1486da1",
+      "bytes": 23964
+    },
+    {
+      "path": "backend/pw_decision_center.py",
+      "sha256": "4e4b147dbf9dd2f9556d6f692bed339748d106b8b1d248a83731e8dfad63a93a",
+      "bytes": 9224
+    },
+    {
+      "path": "backend/test_pw_decision_center.py",
+      "sha256": "fc91e0dbacb02df3a01c5d8f5d64c89f21d42ee7608187f85631681995043c77",
+      "bytes": 6739
+    },
+    {
+      "path": "backend/test_pw_media_review.py",
+      "sha256": "bf62520be63f35c2ea63d3ea64a1a141be89131bf5977a604d1d92918cb15f6d",
+      "bytes": 10521
+    },
+    {
+      "path": "DELTA_BESLUTSLAPP_V15_README.md",
+      "sha256": "2a715ab22ab6f99e90251146938909dd97425b318b659a9579491b25213dfcd1",
+      "bytes": 6315
+    }
+  ]
+}
